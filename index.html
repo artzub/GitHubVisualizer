@@ -81,6 +81,7 @@ function parseRepos(data) {
     opts.data(ghcs.users[ghcs.login].repos)
       .enter()
       .append("option")
+      .text(function(d) {return d.name})
       .attr("class", "ritem");      
     lbl.text("Repo (" + ghcs.users[ghcs.login].repos.length + "):");
   }
