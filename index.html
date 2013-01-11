@@ -70,12 +70,13 @@ function parseRepos(data) {
   
   opts.remove();
   if (data) {
-    if (!ghcs.users.hasOwnProperty(ghcs.login))
+    if (!ghcs.users.hasOwnProperty(ghcs.login) || !ghcs.users[ghcs.login].hasOwnProperty("repos")) {
       ghcs.users[ghcs.login].repos = data.filter(function(d) { return !d.private; }).map(function(d) { return { 
         id: d.id, 
         name : d.name, 
         url : d.url
       }; });
+    }
     
     opts.data(ghcs.users[ghcs.login].repos)
       .enter()
