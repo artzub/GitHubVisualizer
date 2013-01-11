@@ -36,7 +36,9 @@
 <div id="console" class="popup"></div>
 
 <script type="text/javascript">
-  var ghcs = {users:{}};
+'use strict';
+
+var ghcs = {users:{}};
 
 
 var log = (function() {
@@ -79,7 +81,7 @@ function parseRepos(data) {
       .enter()
       .append("option")
       .attr("class", "ritem");      
-    lbl.text("Repo (" + ghcs.users[ghcs.login].repos.lenght + "):");
+    lbl.text("Repo (" + ghcs.users[ghcs.login].repos.length + "):");
   }
   else
     delete ghcs.users[ghcs.login]["repos"];
@@ -97,10 +99,15 @@ d3.select("#user")
           ghcs.login = login;          
           if (!ghcs.users.hasOwnProperty(login) || !ghcs.users[login].hasOwnProperty("repos")) {
             d3.json("https://api.github.com/users/" + login, function(data) {
+              if (!data) {
+                parseRepos(null);
+                return;
+              }
+
               ghcs.users[data.login] = {info : data};
               ghcs.login = data.login;
-              
-              if (data && data.repos_url)
+
+              if (data.repos_url)
                 d3.json(data.repos_url, parseRepos);
               else
                 parseRepos(null);
