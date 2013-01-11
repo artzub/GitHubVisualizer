@@ -97,8 +97,7 @@ d3.select("#user")
           ghcs.login = login;          
           if (!ghcs.users.hasOwnProperty(login) || !ghcs.users[login].hasOwnProperty("repos")) {
             d3.json("https://api.github.com/users/" + login, function(data) {
-              
-              ghcs.users[data.login].info = data;
+              ghcs.users[data.login] = {info : data};
               ghcs.login = data.login;
               
               if (data && data.repos_url)
