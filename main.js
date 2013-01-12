@@ -6,8 +6,30 @@
 
 'use strict';
 
-var ghcs = {users: {}};
+var ghcs = {
+    users: {},
+    states: {cur:0, max:0},
+    limits: {commits : 1000}
+};
 
+ghcs.asyncForEach = function(items, fn, time) {
+    if (!(items instanceof Array))
+        return;
+
+    var workArr = items.concat();
+
+    setTimeout(function loop() {
+        if (workArr.length > 0)
+            fn(workArr.shift(), workArr);
+        if (workArr.length > 0)
+            setTimeout(loop, time || 1);
+    }, time || 1);
+}
+
+function makeUrl(url) {
+    var sec = "client_id=c45417c5d6249959a91d&client_secret=4634b3aa7549c3d6306961e819e5ec9b355a6548";
+    return url ? (url + (url.indexOf('?') === -1 ? '?' : '&') + sec) : url;
+}
 
 var log = (function () {
     var logCont = d3.select("#console")
@@ -45,21 +67,41 @@ psBar.setPos = function(pos) {
 };
 
 
-var runBtn = d3.select("#runBtn");
-runBtn.enable = function () {
-    this.attr("disabled", null);
-    return this;
-};
-runBtn.disable = function () {
-    this.attr("disabled", "disabled");
-    return this;
-};
+var runBtn = d3.select("#runBtn"),
+    rpsSel = d3.select("#repo");
+[runBtn, rpsSel].forEach(function(item) {
+    item.enable = function () {
+        this.attr("disabled", null);
+        return this;
+    };
+    item.disable = function () {
+        this.attr("disabled", "disabled");
+        return this;
+    };
+})
 
 runBtn.on("click", function() {
-    if (!ghcs.repo)
-        runBtn.disable();
-    JSONP(ghcs.repo.commits_url, function(req) {
-        parseCommits(getDataFromRequest(req))
+    runBtn.disable();
+    rpsSel.disable();
+
+    ghcs.states.max = 0;
+    ghcs.states.complete = function() {
+        rpsSel.enable();
+        runBtn.enable();
+    }
+
+    JSONP(makeUrl(ghcs.repo.commits_url), function getAll(req) {
+        ghcs.states.max++;
+        parseCommits(getDataFromRequest(req));
+        if (req && req.meta && req.meta.Link && ghcs.limits.commits > ghcs.states.max) {
+            var next = req.meta.Link.reduce(function(a, b) {
+                if (!a && b[1].rel == "next")
+                    return b[0];
+                return a;
+            }, null);
+            if (next)
+                JSONP(next, getAll);
+        }
     });
 });
 
@@ -104,12 +146,13 @@ function parseCommit(org_commit, commit){
 
 function parseCommits(commits) {
     ghcs.repo.commits = ghcs.repo.commits || [];
-    if (commits && commits.length != ghcs.repo.commits.length) {
-        var cc = commits.length;
-        psBar.setPos("0%")
-            .setLabel("parsing commits...")
+    if (commits && commits.length) {
+        psBar.setPos((ghcs.states.cur * 100 / (ghcs.states.max || 1)) + "%")
+            .setLabel("Completed " + ghcs.states.cur + " from " + ghcs.states.max + " commits ...")
             .show();
-        commits.forEach(function(d, i) {
+
+        ghcs.states.max += commits.length - 1;
+        ghcs.asyncForEach(commits, function(d, arr) {
             d = {
                 url : d.url,
                 sha : d.sha,
@@ -123,20 +166,25 @@ function parseCommits(commits) {
                 parents : d.parents
             };
             d.index = ghcs.repo.commits.push(d) - 1;
-            JSONP(d.url, (function(c) {
+            JSONP(makeUrl(d.url), (function(c) {
                 return function(req) {
                     parseCommit(getDataFromRequest(req), c);
+                    psBar.setPos((ghcs.states.cur++ * 100 / (ghcs.states.max || 1)) + "%")
+                        .setLabel("Completed " + ghcs.states.cur + " from " + ghcs.states.max + " commits ...");
+                    if (ghcs.states.cur >= ghcs.states.max) {
+                        psBar.setPos("100%").hide();
+                        if (ghcs.states.complete)
+                            ghcs.states.complete();
+                    }
                 };
             })(d));
-            psBar.setPos((i * 100 / cc) + "%")
         });
-        psBar.setPos("100%").hide();
     }
 }
 
 function parseRepos(data) {
     ldrTop.hide();
-    var opts = d3.select("#repo")
+    var opts = rpsSel
             .on("change", null)
             .selectAll("option.ritem"),
         lbl = d3.selectAll("label[for='repo']");
@@ -170,7 +218,7 @@ function parseRepos(data) {
                 })
                 .attr("class", "ritem");
             lbl.text("Repo (" + ghcs.users[ghcs.login].repos.length + "):");
-            d3.select("#repo")
+            rpsSel
                 .on("change", chSelect);
         }
     }
@@ -179,7 +227,7 @@ function parseRepos(data) {
 }
 
 d3.select("#user")
-    .on("change", function (e) {
+    .on("change", function () {
         if (ghcs.chUserTimer) {
             clearTimeout(ghcs.chUserTimer);
             delete ghcs.chUserTimer;
@@ -191,7 +239,7 @@ d3.select("#user")
                     ghcs.login = login;
                     if (!ghcs.users.hasOwnProperty(login) || !ghcs.users[login].hasOwnProperty("repos")) {
                         ldrTop.show();
-                        JSONP("https://api.github.com/users/" + login, function (req) {
+                        JSONP(makeUrl("https://api.github.com/users/" + login), function (req) {
                             var data = getDataFromRequest(req);
                             if (!data) {
                                 parseRepos(null);
@@ -202,7 +250,7 @@ d3.select("#user")
                             ghcs.login = data.login;
 
                             if (data.repos_url)
-                                JSONP(data.repos_url, function(req) {
+                                JSONP(makeUrl(data.repos_url), function(req) {
                                     parseRepos(getDataFromRequest(req));
                                 });
                             else
