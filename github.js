@@ -20,44 +20,59 @@ function parseCommit(org_commit, commit){
     if (!commit || !org_commit || commit.sha != org_commit.sha)
         return;
 
-    var _changes = 0,
-        _additions = 0,
-        _deletions = 0;
+    var s = commit.stats = {
+        f : {
+            m : 0,
+            a : 0,
+            d : 0
+        },
+        changes : 0,
+        additions : 0,
+        deletions : 0
+    };
 
     commit.files = org_commit.files.map(function(f) {
-        _changes += f.changes;
-        _additions += f.additions;
-        _deletions += f.deletions;
+        if (f.changes > 0) {
+            s.changes += f.changes;
+            s.additions += f.additions;
+            s.deletions += f.deletions;
+        }
+        else if(f.status == "added" || f.status == "modified") {
+            commit.stats.changes++;
+            commit.stats.additions++;
+        }
+        else if(f.status == "deleted") {
+            commit.stats.changes -= commit.stats.changes ? 1 : 0;
+            commit.stats.additions -= commit.stats.additions ? 1 : 0;
+        }
+
+        f.status == "modified" && s.f.m++;
+        f.status == "added" && s.f.a++;
+        f.status == "deleted" && s.f.d++;
+
         return {
             name : f.filename,
-            changes : f.changes,
-            additions : f.additions,
-            deletions : f.deletions,
+            changes : f.changes || 0,
+            additions : f.additions || 0,
+            deletions : f.deletions || 0,
             status : f.status
         }
     });
 
-    commit.stats = {
-        changes : _changes,
-        additions : _additions,
-        deletions : _deletions
-    };
-
-    _deletions = d3.max([_deletions, _additions]);
-
-    var max = ghcs.repo.changes || 0;
-    ghcs.repo.changes = _deletions > max ? _deletions : max;
+    ghcs.repo.stats = ghcs.repo.stats || {};
+    ghcs.repo.stats.changes = d3.max([ghcs.repo.stats.changes || 0, commit.stats.deletions, commit.stats.additions]);
+    ghcs.repo.stats.files = d3.max([ghcs.repo.stats.files || 0, commit.files.length]);
 }
 
 function parseCommits(commits) {
     ghcs.repo.commits = ghcs.repo.commits || [];
     if (commits && commits.length) {
-        psBar.setPos((ghcs.states.cur * 100 / (ghcs.states.max || 1)) + "%")
-            .setLabel("Completed " + ghcs.states.cur + " of " + ghcs.states.max + " commits ...")
-            .show();
+        updateStatus(ghcs.states.cur);
+        psBar.show();
+        ldrTop.show();
 
         ghcs.states.max += commits.length - 1;
-        ghcs.asyncForEach(commits, function(d, arr) {
+        /*ghcs.asyncForEach(*/commits.forEach(function(d) {
             d = {
                 url : d.url,
                 sha : d.sha,
@@ -66,33 +81,36 @@ function parseCommits(commits) {
                     email : d.commit.author.email
                 },
                 date : Date.parse(d.commit.author.date),
-                avatar_url : d.author && d.author.avatar_url ? d.author.avatar_url : "",
+                avatar_url : (d.author && d.author.avatar_url ? d.author.avatar_url : null),
                 message : d.commit.message,
                 parents : d.parents
             };
             d.index = ghcs.repo.commits.push(d) - 1;
             JSONP(makeUrl(d.url), (function(c) {
-                ghcs.repo.dates.push(c.date)
+                ghcs.repo.dates.push(c.date);
                 ghcs.repo.dates.sort(d3.ascending);
                 return function(req) {
                     parseCommit(getDataFromRequest(req), ghcs.repo.commits[c.index]);
-                    if (ghcs.redrawTimer) {
-                        clearTimeout(ghcs.redrawTimer);
-                        ghcs.redrawTimer = null;
-                    }
-                    ghcs.redrawTimer = setTimeout(function() {
-                        vis.redrawStat(ghcs.repo);
-                        ghcs.redrawTimer = null;
-                    }, 100);
-                    psBar.setPos((ghcs.states.cur++ * 100 / (ghcs.states.max || 1)) + "%")
-                        .setLabel("Completed " + ghcs.states.cur + " of " + ghcs.states.max + " commits ...");
-                    if (ghcs.states.cur >= ghcs.states.max) {
-                        psBar.setPos("100%").hide();
-                        if (ghcs.states.complete)
-                            ghcs.states.complete();
-                    }
+                    redrawStats();
+                    updateStatus(ghcs.states.cur++);
+                    ldrTop.show();
+                    psBar.show();
+                    checkCompleted();
                 };
-            })(d));
+            })(d), {
+                onerror : function() {
+                    redrawStats();
+                    updateStatus(ghcs.states.cur++);
+                    ldrTop.show();
+                    psBar.show();
+                    checkCompleted();
+                }
+            });
+
+            if (d.avatar_url) {
+                d.author.avatar = new Image();
+                d.author.avatar.src = d.avatar_url;
+            }
         });
     }
 }
@@ -135,6 +153,7 @@ function parseRepos(data) {
             lbl.text("Repo (" + ghcs.users[ghcs.login].repos.length + "):");
             rpsSel
                 .on("change", chSelect);
+            rpsSel.enable();
         }
     }
     else if (ghcs.users.hasOwnProperty(ghcs.login) && ghcs.users[ghcs.login].hasOwnProperty("repos"))
@@ -146,6 +165,7 @@ function chSelect(e) {
     if (e) {
         ghcs.repo = e;
         e.dates = [];
+        e.changes = [];
         runBtn.enable();
     }
 }
@@ -158,6 +178,7 @@ function chUser() {
     ghcs.chUserTimer = setTimeout((function (login) {
         return function () {
             if (login) {
+                rpsSel.disable();
                 runBtn.disable();
                 ghcs.login = login;
                 if (!ghcs.users.hasOwnProperty(login) || !ghcs.users[login].hasOwnProperty("repos")) {

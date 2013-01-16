@@ -19,6 +19,31 @@ var cs, svg,
     w, h,
     psBar, runBtn, rpsSel, ldrTop;
 
+function updateStatus(pos) {
+    psBar.setPos((pos * 100 / (ghcs.states.max || 1)) + "%")
+        .setLabel("Completed " + pos + " of " + ghcs.states.max + " commits ...");
+}
+
+function checkCompleted() {
+    if (ghcs.states.cur >= ghcs.states.max) {
+        psBar.setPos("100%").hide();
+        if (ghcs.states.complete)
+            ghcs.states.complete();
+        return true;
+    }
+    return false;
+}
+
+function redrawStats() {
+    if (ghcs.redrawTimer) {
+        clearTimeout(ghcs.redrawTimer);
+        ghcs.redrawTimer = null;
+    }
+    ghcs.redrawTimer = setTimeout(function () {
+        vis.redrawStat(ghcs.repo);
+        ghcs.redrawTimer = null;
+    }, 100);
+}
 
 function init() {
     cs = d3.select("#canvas");
@@ -62,13 +87,16 @@ function init() {
     runBtn.on("click", function() {
         runBtn.disable();
         rpsSel.disable();
+        ldrTop.show();
 
         ghcs.states.max = 0;
+        ghcs.states.cur = 0;
         ghcs.states.complete = function() {
             rpsSel.enable();
             runBtn.enable();
+            ldrTop.hide();
             vis.redrawStat(ghcs.repo);
-        }
+        };
 
         JSONP(makeUrl(ghcs.repo.commits_url), function getAll(req) {
             ghcs.states.max++;
@@ -79,19 +107,24 @@ function init() {
                         return b[0];
                     return a;
                 }, null);
-                if (next)
+                if (next) {
+                    updateStatus(ghcs.states.cur);
+                    psBar.show();
+                    ldrTop.show();
                     JSONP(next.toString(), getAll);
+                }
             }
         });
     });
 
     ldrTop = d3.select("#ldrTop");
+    ldrTop.pntNode = d3.select(ldrTop.node().parentNode);
     ldrTop.show = function () {
-        this.style("display", "inline-block");
+        this.pntNode.style("display", null);
         return this;
     };
     ldrTop.hide = function () {
-        this.style("display", null);
+        this.pntNode.style("display", "none");
         return this;
     };
 

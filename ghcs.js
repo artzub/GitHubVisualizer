@@ -9,7 +9,7 @@
 var ghcs = {
     users: {},
     states: {cur:0, max:0},
-    limits: {commits : 1000},
+    limits: {commits : 100},
     asyncForEach: function(items, fn, time) {
         if (!(items instanceof Array))
             return;
