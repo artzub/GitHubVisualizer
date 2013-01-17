@@ -11,6 +11,10 @@ function makeUrl(url) {
     return url ? (url + (url.indexOf('?') === -1 ? '?' : '&') + sec) : url;
 }
 
+function randTrue() {
+    return Math.round((Math.random() * 2) % 2);
+}
+
 
 function getDataFromRequest(req) {
     return req && req.meta && req.meta.status == 200 && req.data ? req.data : null;
@@ -115,58 +119,57 @@ function parseCommits(commits) {
     }
 }
 
+function clearUserRepos() {
+    if (ghcs.users.hasOwnProperty(ghcs.login) && ghcs.users[ghcs.login].hasOwnProperty("repos"))
+        delete ghcs.users[ghcs.login]["repos"]
+}
+
 function parseRepos(data) {
-    ldrTop.hide();
-    var opts = rpsSel
-            .on("change", null)
-            .selectAll("option.ritem"),
-        lbl = d3.selectAll("label[for='repo']");
-
-    lbl.text("Repo:");
-
-    opts.remove();
     if (data) {
-        if (!ghcs.users.hasOwnProperty(ghcs.login) || !ghcs.users[ghcs.login].hasOwnProperty("repos")) {
-            ghcs.users[ghcs.login] = ghcs.users[ghcs.login] || {};
-            ghcs.users[ghcs.login].repos = data.filter(function (d) {
-                return !d.private;
+        ghcs.users[ghcs.login] = ghcs.users[ghcs.login] || {};
+        ghcs.users[ghcs.login].repos = (ghcs.users[ghcs.login].repos || []).concat(
+            data.filter(function (d) {
+                return !d.private && !d.hasOwnProperty("x");
             }).map(function (d) {
-                    return {
+                return {
+                    x : (Math.random() * w) || 1,
+                    y : (Math.random() * h) || 1,
+                    nodeValue : {
                         id: d.id,
                         name: d.name,
                         url: d.url,
-                        commits_url : d.commits_url.replace(/{.*$/, "")
-                    };
-                });
-        }
-
-        if (ghcs.users[ghcs.login].repos.length) {
-            opts.data(ghcs.users[ghcs.login].repos, function(d) {
-                return d.id;
+                        commits_url : d.commits_url.replace(/{.*$/, ""),
+                        size : d.size,
+                        date : Date.parse(d.updated_at),
+                        desc : d.description,
+                        lang : d.language || "none"
+                    }
+                };
             })
-                .enter()
-                .append("option")
-                .text(function (d) {
-                    return d.name
-                })
-                .attr("class", "ritem");
-            lbl.text("Repo (" + ghcs.users[ghcs.login].repos.length + "):");
-            rpsSel
-                .on("change", chSelect);
-            rpsSel.enable();
-        }
+        );
+        ghcs.states.cur = ghcs.users[ghcs.login].repos.length;
     }
-    else if (ghcs.users.hasOwnProperty(ghcs.login) && ghcs.users[ghcs.login].hasOwnProperty("repos"))
-        delete ghcs.users[ghcs.login]["repos"];
+
+    updateStatus(ghcs.states.cur, "loading ...");
+    ldrTop.show();
+    psBar.show();
+    checkCompleted();
+
+    redrawRepos();
 }
 
 function chSelect(e) {
-    e = d3.select(this[this.selectedIndex]).datum();
     if (e) {
-        ghcs.repo = e;
-        e.dates = [];
-        e.changes = [];
+        ghcs.repo = e.nodeValue;
+        ghcs.repo.dates = [];
+        ghcs.repo.changes = [];
         runBtn.enable();
+        curRep.setName(e);
+    }
+    else {
+        ghcs.repo = null;
+        runBtn.disable();
+        curRep.setName(null);
     }
 }
 
@@ -178,10 +181,15 @@ function chUser() {
     ghcs.chUserTimer = setTimeout((function (login) {
         return function () {
             if (login) {
-                rpsSel.disable();
+                curRep.setName(null);
+                vis.clearRepos();
+                userTxt.disable();
+                showBtn.disable();
                 runBtn.disable();
                 ghcs.login = login;
+
                 if (!ghcs.users.hasOwnProperty(login) || !ghcs.users[login].hasOwnProperty("repos")) {
+
                     ldrTop.show();
                     JSONP(makeUrl("https://api.github.com/users/" + login), function (req) {
                         var data = getDataFromRequest(req);
@@ -190,20 +198,74 @@ function chUser() {
                             return;
                         }
 
-                        ghcs.users[data.login] = {info: data};
+                        var u = ghcs.users[data.login] = {info: data};
+                        u.info.avatar =  new Image();
+                        u.info.avatar.src = u.info.avatar_url;
+
                         ghcs.login = data.login;
 
+                        ghcs.states.max = +u.info.public_repos;
+                        ghcs.states.cur = 0;
+                        ghcs.states.complete = function() {
+                            ldrTop.hide();
+                        };
+
+                        updateStatus(ghcs.states.cur, "loading ...");
+                        psBar.show();
+
                         if (data.repos_url)
-                            JSONP(makeUrl(data.repos_url), function(req) {
+                            JSONP(makeUrl(data.repos_url), function getAll(req) {
                                 parseRepos(getDataFromRequest(req));
+                                getNext(req, function(next) {
+                                    ldrTop.show();
+                                    JSONP(next, getAll);
+                                });
+                                divStat.updateInfo();
                             });
                         else
                             parseRepos(null);
+                        divStat.updateInfo();
                     });
                 }
                 else
                     parseRepos(ghcs.users[login].repos);
+                divStat.updateInfo();
+                userTxt.enable();
             }
         }
-    })(this.value), 100);
+    })(userTxt.property("value")), 300);
+}
+
+function getNext(req, fn) {
+    if (req && req.meta && req.meta.Link) {
+        var next = req.meta.Link.reduce(function (a, b) {
+            if (!a && b[1].rel == "next")
+                return b[0];
+            return a;
+        }, null);
+        next && fn && fn(next);
+    }
+}
+function analyseCommits() {
+    runBtn.disable();
+    ldrTop.show();
+
+    ghcs.states.max = 0;
+    ghcs.states.cur = 0;
+    ghcs.states.complete = function() {
+        runBtn.enable();
+        ldrTop.hide();
+        vis.redrawStat(ghcs.repo);
+    };
+
+    JSONP(makeUrl(ghcs.repo.commits_url), function getAll(req) {
+        ghcs.states.max++;
+        parseCommits(getDataFromRequest(req));
+        ghcs.limits.commits > ghcs.states.max && getNext(req, function(next) {
+            updateStatus(ghcs.states.cur);
+            psBar.show();
+            ldrTop.show();
+            JSONP(next, getAll);
+        });
+    });
 }

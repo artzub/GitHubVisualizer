@@ -17,11 +17,11 @@ var log = (function () {
 var cs, svg,
     margin = {top: 20, right: 20, bottom: 20, left: 20},
     w, h,
-    psBar, runBtn, rpsSel, ldrTop;
+    psBar, runBtn, ldrTop, toolTip, showBtn, userTxt, curRep, divStat;
 
-function updateStatus(pos) {
+function updateStatus(pos, label) {
     psBar.setPos((pos * 100 / (ghcs.states.max || 1)) + "%")
-        .setLabel("Completed " + pos + " of " + ghcs.states.max + " commits ...");
+        .setLabel(label || "Completed " + pos + " of " + ghcs.states.max + " commits ...");
 }
 
 function checkCompleted() {
@@ -35,13 +35,29 @@ function checkCompleted() {
 }
 
 function redrawStats() {
-    if (ghcs.redrawTimer) {
-        clearTimeout(ghcs.redrawTimer);
+    if (ghcs.redrawStatsTimer) {
+        clearTimeout(ghcs.redrawStatsTimer);
         ghcs.redrawTimer = null;
     }
-    ghcs.redrawTimer = setTimeout(function () {
+    ghcs.redrawStatsTimer = setTimeout(function () {
         vis.redrawStat(ghcs.repo);
         ghcs.redrawTimer = null;
+    }, 100);
+}
+
+function redrawRepos() {
+    if (ghcs.redrawReposTimer) {
+        clearTimeout(ghcs.redrawReposTimer);
+        ghcs.redrawTimer = null;
+    }
+    ghcs.redrawReposTimer = setTimeout(function () {
+        vis.redrawRepos(ghcs.users
+            && ghcs.users[ghcs.login]
+            && ghcs.users[ghcs.login].repos
+            ? ghcs.users[ghcs.login].repos
+            : null
+        );
+        ghcs.redrawReposTimer = null;
     }, 100);
 }
 
@@ -71,9 +87,15 @@ function init() {
     };
 
     runBtn = d3.select("#runBtn");
-    rpsSel = d3.select("#repo");
+    showBtn = d3.select("#showBtn");
+    userTxt = d3.select("#user").on("change", function() {
+        if (this.value && this.value != ghcs.login)
+            showBtn.enable();
+        else
+            showBtn.disable();
+    });
 
-    [runBtn, rpsSel].forEach(function(item) {
+    [runBtn, showBtn, userTxt].forEach(function(item) {
         item.enable = function () {
             this.attr("disabled", null);
             return this;
@@ -84,38 +106,8 @@ function init() {
         };
     });
 
-    runBtn.on("click", function() {
-        runBtn.disable();
-        rpsSel.disable();
-        ldrTop.show();
-
-        ghcs.states.max = 0;
-        ghcs.states.cur = 0;
-        ghcs.states.complete = function() {
-            rpsSel.enable();
-            runBtn.enable();
-            ldrTop.hide();
-            vis.redrawStat(ghcs.repo);
-        };
-
-        JSONP(makeUrl(ghcs.repo.commits_url), function getAll(req) {
-            ghcs.states.max++;
-            parseCommits(getDataFromRequest(req));
-            if (req && req.meta && req.meta.Link && ghcs.limits.commits > ghcs.states.max) {
-                var next = req.meta.Link.reduce(function(a, b) {
-                    if (!a && b[1].rel == "next")
-                        return b[0];
-                    return a;
-                }, null);
-                if (next) {
-                    updateStatus(ghcs.states.cur);
-                    psBar.show();
-                    ldrTop.show();
-                    JSONP(next.toString(), getAll);
-                }
-            }
-        });
-    });
+    runBtn.on("click", analyseCommits);
+    showBtn.on("click", chUser);
 
     ldrTop = d3.select("#ldrTop");
     ldrTop.pntNode = d3.select(ldrTop.node().parentNode);
@@ -128,8 +120,89 @@ function init() {
         return this;
     };
 
-    d3.select("#user")
-        .on("change", chUser);
+    toolTip = d3.select("#tooltip");
+    toolTip.show = function () {
+        this.style("display", "block");
+        return this;
+    };
+    toolTip.hide = function () {
+        this.style("display", null);
+        return this;
+    };
 
     initGraphics(svg);
+
+    curRep = d3.select("#curRep")
+        .on("mouseover", function(d) {
+            if (d) {
+                vis.meRepo(d);
+                vis.mtt(d, null, null, {pageX : d.x, pageY : d.y});
+            }
+        })
+        .on("mouseout", function(d) {
+            if (d)
+                vis.mlRepo(d);
+        });
+
+    curRep.setName = function(r) {
+        this.datum(r).html(
+            !r ? "" :
+            "<span class='mega-icon mega-icon-public-repo' style='color:" + d3.rgb(vis.forceRep.colors(r.nodeValue.lang)).brighter() + "'></span>" +
+            "<strong style='text-shadow: 0 0 3px rgba(0, 0, 0, 1);color:" + d3.rgb(vis.forceRep.colors(r.nodeValue.lang)).brighter() + "'>" + (r.nodeValue.name || "") + "</strong>"
+        );
+        return this;
+    }
+
+    divStat = d3.select("#divStat");
+    divStat.updateInfo = function() {
+        var user;
+        if (ghcs.login && (user = ghcs.users[ghcs.login]) && user.info) {
+            divStat.selectAll("*").remove();
+            user.info.avatar && d3.select(divStat.node().appendChild(user.info.avatar)).style({
+                width : "96px",
+                height : "auto"
+            });
+            divStat.append("ul")
+                .call(function(ul) {
+                    user.info.name && ul.append("li").call(function(li) {
+                        li.append("h1")
+                            .text(user.info.name)
+                            .append("a")
+                            .attr("class", "a-icon")
+                            .attr("target", "_blank")
+                            .attr("title", "Go to GitHub")
+                            .attr("href", user.info.html_url)
+                            .append("span")
+                            .attr("class", "mini-icon mini-icon-octocat")
+                        ;
+                        li.append("hr");
+                    });
+                    user.info.location && ul.append("li")
+                        .html("<span class='mini-icon mini-icon-location'></span><strong>" + user.info.location + "</strong>")
+                    user.info.blog && ul.append("li")
+                        .call(function(li) {
+                            li.append("span")
+                                .attr("class", "mini-icon mini-icon-link")
+                            li.append("a")
+                                .attr("target", "_blank")
+                                .attr("href", user.info.blog)
+                                .text(user.info.blog)
+                        });
+                    ul.append("li")
+                        .call(function(li) {
+                            li.append("span")
+                                .attr("class", "mini-icon mini-icon-public-repo")
+                            li.append("strong")
+                                .text(user.info.public_repos)
+                        });
+                    user.info.updated_at && ul.append("li")
+                        .call(function(li) {
+                            li.append("span")
+                                .attr("class", "mini-icon mini-icon-time")
+                            li.append("strong")
+                                .text(d3.time.format("%b %d, %Y")(new Date(Date.parse(user.info.updated_at))))
+                        });
+                })
+        }
+    }
 }
