@@ -17,7 +17,7 @@ var log = (function () {
 var cs, svg,
     margin = {top: 20, right: 20, bottom: 20, left: 20},
     w, h,
-    psBar, runBtn, ldrTop, toolTip, showBtn, userTxt, curRep, divStat;
+    psBar, runBtn, ldrTop, toolTip, showBtn, userTxt, curRep, divStat, stepsBar;
 
 function updateStatus(pos, label) {
     psBar.setPos((pos * 100 / (ghcs.states.max || 1)) + "%")
@@ -86,13 +86,30 @@ function init() {
         return this;
     };
 
+    stepsBar = d3.select(".steps");
+    stepsBar.firstStep = function() {
+        this.attr("class", "steps sfirst");
+        return this;
+    };
+    stepsBar.secondStep = function() {
+        this.attr("class", "steps ssecond");
+        return this;
+    };
+    stepsBar.thirdStep = function() {
+        this.attr("class", "steps");
+        return this;
+    };
+
     runBtn = d3.select("#runBtn");
     showBtn = d3.select("#showBtn");
     userTxt = d3.select("#user").on("change", function() {
-        if (this.value && this.value != ghcs.login)
+        stepsBar.firstStep();
+        if (!this.value)
+            showBtn.disable();
+        else if (this.value != ghcs.login)
             showBtn.enable();
         else
-            showBtn.disable();
+            stepsBar.secondStep();
     });
 
     [runBtn, showBtn, userTxt].forEach(function(item) {
@@ -146,7 +163,7 @@ function init() {
 
     curRep.setName = function(r) {
         this.datum(r).html(
-            !r ? "" :
+            !r ? "<span>Select repo...</span>" :
             "<span class='mega-icon mega-icon-public-repo' style='color:" + d3.rgb(vis.forceRep.colors(r.nodeValue.lang)).brighter() + "'></span>" +
             "<strong style='text-shadow: 0 0 3px rgba(0, 0, 0, 1);color:" + d3.rgb(vis.forceRep.colors(r.nodeValue.lang)).brighter() + "'>" + (r.nodeValue.name || "") + "</strong>"
         );
@@ -158,10 +175,7 @@ function init() {
         var user;
         if (ghcs.login && (user = ghcs.users[ghcs.login]) && user.info) {
             divStat.selectAll("*").remove();
-            user.info.avatar && d3.select(divStat.node().appendChild(user.info.avatar)).style({
-                width : "96px",
-                height : "auto"
-            });
+            user.info.avatar && divStat.node().appendChild(user.info.avatar);
             divStat.append("ul")
                 .call(function(ul) {
                     user.info.name && ul.append("li").call(function(li) {

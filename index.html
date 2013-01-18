@@ -12,13 +12,25 @@
 <body onload="init()">
 
 <header>
-    <div id="controls" class="popup tooltip">
-        <input placeholder="User" type="text" id="user">
-        <button id="showBtn" title="Press for loading data about user repositories." class="btn" disabled="disabled">Show</button>
+    <div id="controls" class="popup">
+        <div class="row">
+            <ul class="steps sfirst">
+                <li style="z-index: 2" class="first">
+                    <input placeholder="User" type="text" id="user">
+                    <button id="showBtn" title="Press for loading data about user repositories." class="btn" disabled="disabled">Show</button>
+                </li>
+                <li style="z-index: 1" class="second">
+                    <label id="curRep"><span>Select Repo...</span></label>
+                    <button id="runBtn" title="Press for analyse repository." class="btn" disabled="disabled">Analyse</button>
+                </li>
+                <li class="third">
+                    <button id="visBtn" title="Press for dynamic visualization." class="btn" disabled="disabled">Run</button>
+                </li>
+            </ul>
+        </div>
+    </div>
 
-        <label for="runBtn" style="line-height: 3px;" id="curRep"></label>
-        <button id="runBtn" title="Press for analyse repository." class="btn" disabled="disabled">Analyse</button>
-
+    <div id="userInfo" class="popup tooltip">
         <div class="row" id="divStat"></div>
     </div>
 </header>

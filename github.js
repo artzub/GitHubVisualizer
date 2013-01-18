@@ -170,6 +170,7 @@ function chSelect(e) {
         ghcs.repo = null;
         runBtn.disable();
         curRep.setName(null);
+        stepsBar.secondStep();
     }
 }
 
@@ -181,6 +182,7 @@ function chUser() {
     ghcs.chUserTimer = setTimeout((function (login) {
         return function () {
             if (login) {
+                stepsBar.firstStep();
                 curRep.setName(null);
                 vis.clearRepos();
                 userTxt.disable();
@@ -207,6 +209,7 @@ function chUser() {
                         ghcs.states.max = +u.info.public_repos;
                         ghcs.states.cur = 0;
                         ghcs.states.complete = function() {
+                            stepsBar.secondStep();
                             ldrTop.hide();
                         };
 
@@ -253,6 +256,7 @@ function analyseCommits() {
     ghcs.states.max = 0;
     ghcs.states.cur = 0;
     ghcs.states.complete = function() {
+        stepsBar.thirdStep();
         runBtn.enable();
         ldrTop.hide();
         vis.redrawStat(ghcs.repo);

@@ -103,8 +103,8 @@ var vis = {
         d._tg.selectAll("text")
             .style("fill", function(d) {
                 return d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).darker();
-            });
-            //.style("visibility",  "visible");
+            })
+            .style("visibility",  "visible");
         toolTip.html([
             "<h1>", d.nodeValue.name, "</h1><hr>",
             "<blockquote>", d.nodeValue.desc, "</blockquote><br />",
@@ -130,15 +130,19 @@ var vis = {
         toolTip.hide();
     },
     clRepo : function(d) {
-        if (vis.forceRep.selected && vis.forceRep.selected == d)
+        if (vis.forceRep.selected && vis.forceRep.selected == d) {
             vis.forceRep.selected = null;
+            d.fixed = 4;
+        }
         else {
             if (vis.forceRep.selected) {
+                vis.forceRep.selected.fixed = 0;
                 vis.mlRepo(vis.forceRep.selected, "deselect");
                 toolTip.show();
             }
 
             vis.forceRep.selected = d;
+            d.fixed = true;
         }
         chSelect(vis.forceRep.selected);
     },
