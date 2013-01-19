@@ -552,50 +552,6 @@ hr {
 }
 /** stepbar */
 
-/*.steps {
-    list-style: none;
-
-    padding: 2px;
-    margin: 0;
-    border: 1px solid white;
-}
-
-.steps li {
-    display: inline-block;
-    position: relative;
-    padding-right: 1em;
-}
-
-.steps li:first-child {
-    display: inline-block;
-}
-
-.steps li:after {
-    border: 1em solid transparent;
-    width: 0;
-    height: 0;
-    content: "";
-    display: inline-block;
-    border-left-color: #ffffff;
-    top: -2px;
-    position: absolute;
-    right: -1.2em;
-    z-index: 1;
-}
-
-.steps li:before {
-    border: 1em solid transparent;
-    width: 0;
-    height: 0;
-    content: "";
-    display: inline-block;
-    border-left-color: #ff0000;
-    top: -2px;
-    position: absolute;
-    right: -1.1em;
-    z-index: 2;
-}*/
-
 .steps {
     list-style: none;
 
@@ -672,6 +628,10 @@ hr {
 
 .steps.ssecond li.third:before {
     border-left-color: #858689;
+}
+
+.steps li > label {
+    vertical-align: middle;
 }
 
 /** end stepbar */
