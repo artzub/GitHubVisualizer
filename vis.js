@@ -27,8 +27,6 @@ function toRgba(color, a) {
     return "rgba(" + [color.r, color.g, color.b, a || 1] + ")";
 }
 
-
-
 var vis = {
     sC : function(a, b) {
         return d3.ascending(b.date, a.date);
@@ -119,7 +117,7 @@ var vis = {
         else {
             var g = d._tg || d._g;
             g.selectAll("circle")
-                .style("fill", toRgba(vis.forceRep.colors(d.nodeValue.lang), vis.forceRep.opt(d.nodeValue.date)));
+                .style("fill", toRgba(vis.forceRep.colors(d.nodeValue.lang), vis.forceRep.opt(vis.forceRep.radO(d))));
             g.selectAll("text")
                 .style("fill", function(d) {
                     return d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).brighter();
@@ -159,9 +157,20 @@ var vis = {
             ;
         }
     },
+    clearStat: function(layout) {
+        if (layout) {
+            layout.selectAll("*").remove();
+            layout.cont && (layout.cont = null);
+        }
+    },
     redrawStat: function(data, layout) {
 
         layout = layout || vis.layouts.stat;
+
+        if (!ghcs.repo || !ghcs.repo.commits || !ghcs.repo.commits.length) {
+            vis.clearStat(layout);
+            return;
+        }
 
         var textFormat = d3.format(",");
 
@@ -193,7 +202,7 @@ var vis = {
                 {
                     color: colors.deletedFile,
                     values: sorted.map(function (d) {
-                        return {t : 1, x: d.date, y0 : 0, y: (d.stats ? d.stats.f.d : 0)}
+                        return {t : 1, x: d.date, y0 : 0, y: (d.stats ? -d.stats.f.d : 0)}
                 })},
                 {
                     color: colors.modifiedFile,
@@ -208,15 +217,27 @@ var vis = {
             ]
         ;
 
+        function interpolateSankey(points) {
+            var x0 = points[0][0], y0 = points[0][1], x1, y1, x2,
+                path = [x0, ",", y0],
+                i = 0,
+                n = points.length;
+            while (++i < n) {
+                x1 = points[i][0], y1 = points[i][1], x2 = (x0 + x1) / 2;
+                path.push("C", x2, ",", y0, " ", x2, ",", y1, " ", x1, ",", y1);
+                x0 = x1, y0 = y1;
+            }
+            return path.join("");
+        }
+
         var y1 = d3.scale.linear()
-                .range([h6 * 3, h6 * 1.5])
-                .domain([0, ghcs.repo.stats.files]),
-                //.domain([0, d3.max(layers, function(layer) { return d3.max(layer.values, function(d) { return d.y0 + d.y; }); })]),
+                .range([h6 * 4.5, h6 * 3, h6 * 1.5])
+                .domain([-ghcs.repo.stats.files, 0, ghcs.repo.stats.files]),
             area = d3.svg.area()
-                .interpolate(false ? "linear" : "basis")
+                .interpolate(interpolateSankey /*true ? "linear" : "basis"*/)
                 .x(function(d) { return x(d.x); })
                 .y0(function(d) { return y1(d.y0); })
-                .y1(function(d) { return !d.t ? y1(d.y0 + d.y) : y1(d.y0 + d.y) + (d.y ? y1(d.y0) : 0); })
+                .y1(function(d) { return y1(d.y0 + d.y); })
             ;
 
         var xAxis = d3.svg.axis()
@@ -426,23 +447,42 @@ var vis = {
 
         vis.forceRep = vis.forceRep || d3.layout.force()
             .size([w, h])
-            .friction(.9)
+            .friction(.99)
             .gravity(.05)
-            .charge(function(d) { return -vis.forceRep.radius(d.nodeValue.size) * 5; })
+            .charge(function(d) { return -vis.forceRep.radius(vis.forceRep.rad(d)) * 5; })
             .on("tick", tick)
         ;
 
-        var padding = 16;
+        vis.forceRep.dateNow = Date.now();
+        vis.forceRep.rad = vis.forceRep.rad || function (d) {
+            return d.nodeValue.cdate/* + d.nodeValue.date - vis.forceRep.dateNow*/;
+        };
 
+        vis.forceRep.radO = vis.forceRep.radO || function (d) {
+            return d.nodeValue.date - vis.forceRep.dateNow; //d.nodeValue.cdate
+        };
+
+        data = data.sort(function(a, b) { return a.nodeValue.date - b.nodeValue.date; });
+
+        var kof = (h > w ? h : w) / (4 * ((Math.log(data.length || 1) / Math.log(1.5)) || 1));
+
+        var r = [kof / 5, kof];
+        var padding = r[1];
         (vis.forceRep.radius || (vis.forceRep.radius = d3.scale.linear()))
-                .range([10, (h > w ? h : w) * .1])
-                .domain(d3.extent(data, function(d) { return d.nodeValue.size })),
-        (vis.forceRep.opt || (vis.forceRep.opt = d3.scale.linear().range([.4, .8])))
-                .domain(d3.extent(data, function(d) { return d.nodeValue.date })),
+                .range(r)
+                .domain(d3.extent(data, vis.forceRep.rad));
+
+        data.length == 1 && vis.forceRep.radius.domain([vis.forceRep.radius.domain()[0] - 1, vis.forceRep.radius.domain()[1]]);
+
+        (vis.forceRep.opt || (vis.forceRep.opt = d3.scale.log().range([.01,.9])))
+                .domain(
+                    d3.extent(data, vis.forceRep.radO)
+//                    [d3.min(data, vis.forceRep.radO), vis.forceRep.dateNow]
+                );
         vis.forceRep.colors = vis.forceRep.colors || d3.scale.category20();
 
-        vis.forceRep.visible = function(d) {
-            return vis.forceRep.radius.range()[1] / 4 <= vis.forceRep.radius(d.nodeValue.size) ? null : "hidden";
+        vis.forceRep.visible = vis.forceRep.visible || function(d) {
+            return this.clientWidth < vis.forceRep.radius(vis.forceRep.rad(d)) * 2.1 ? null : "hidden";
         };
 
         vis.forceRep.appCT = vis.forceRep.appCT || function(g) {
@@ -460,12 +500,12 @@ var vis = {
         vis.forceRep.upCT = vis.forceRep.upCT || function(g) {
             g.selectAll("circle")
                 .style("stroke-width", 1)
-                .style("stroke", function(d) { return toRgba(d3.rgb(vis.forceRep.colors(d.nodeValue.lang)), 1); })
-                .style("fill", function(d) { return toRgba(vis.forceRep.colors(d.nodeValue.lang), vis.forceRep.opt(d.nodeValue.date)); })
+                .style("stroke", function(d) { return toRgba(d3.rgb(vis.forceRep.colors(d.nodeValue.lang)), 1 - d3.rgb(vis.forceRep.colors(d.nodeValue.lang))); })
+                .style("fill", function(d) {  return toRgba(d3.rgb(vis.forceRep.colors(d.nodeValue.lang)), vis.forceRep.opt(vis.forceRep.radO(d)));  })
                 .transition()
                 .duration(2500)
                 .ease("elastic")
-                .attr("r", function(d) { return vis.forceRep.radius(d.nodeValue.size); })
+                .attr("r", function(d) { return vis.forceRep.radius(vis.forceRep.rad(d)); })
             g.selectAll("text")
                 .style("fill", function(d) {
                     return d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).brighter();
@@ -489,9 +529,6 @@ var vis = {
             .attr("transform", tr)
 
             .call(vis.forceRep.drag)
-
-            /*.on("mouseover.force", vis.forceRep.meRepo)
-            .on("mouseout.force", vis.forceRep.mlRepo)*/
             .on("mouseover.select", vis.meRepo)
             .on("mouseout.select", vis.mlRepo)
 
@@ -523,7 +560,7 @@ var vis = {
             // Find the largest node for each cluster.
             vis.forceRep.nodes().forEach(function(d, n) {
                 n = vis.forceRep.cenralNodes[d.nodeValue.lang];
-                (!n || d.nodeValue.size > n.nodeValue.size) &&
+                (!n || vis.forceRep.radO(d) > vis.forceRep.radO(n)) &&
                     (vis.forceRep.cenralNodes[d.nodeValue.lang] = d);
             });
 
@@ -539,7 +576,7 @@ var vis = {
                 x = d.x - node.x;
                 y = d.y - node.y;
                 l = Math.sqrt(x * x + y * y);
-                r = vis.forceRep.radius(d.nodeValue.size) + vis.forceRep.radius(node.nodeValue.size);
+                r = vis.forceRep.radius(vis.forceRep.rad(d)) + vis.forceRep.radius(vis.forceRep.rad(node)) * 1.5;
                 if (l != r) {
                     l = (l - r) / (l || 1) * (alpha || 1);
                     x *= l;
@@ -562,7 +599,7 @@ var vis = {
         // Resolves collisions between d and all other circles.
         function collide(alpha, quadtree) {
             return function(d) {
-                var r = vis.forceRep.radius(d.nodeValue.size) /** 1.2 + padding*/ + vis.forceRep.radius.range()[1] + padding,
+                var r = vis.forceRep.radius(vis.forceRep.rad(d)) /** 1.2 + padding*/ + vis.forceRep.radius.range()[1] + padding,
                     nx1 = d.x - r,
                     nx2 = d.x + r,
                     ny1 = d.y - r,
@@ -572,19 +609,12 @@ var vis = {
                         var x = d.x - quad.point.x,
                             y = d.y - quad.point.y,
                             l = Math.sqrt(x * x + y * y),
-                            r = (vis.forceRep.radius(d.nodeValue.size) + vis.forceRep.radius(quad.point.nodeValue.size)) + (d.nodeValue.lang !== quad.point.nodeValue.lang) * padding;
-                            //radius(d.nodeValue.size) + radius(quad.point.nodeValue.size) + (d.lang !== quad.point.lang) * padding;
+                            r = (vis.forceRep.radius(vis.forceRep.rad(d)) + vis.forceRep.radius(vis.forceRep.rad(quad.point))) * 1.02 + (d.nodeValue.lang !== quad.point.nodeValue.lang) * padding;
                         if (l < r) {
                             l = (l - r) / (l || 1) * (alpha || 1);
 
                             x *= l;
                             y *= l;
-
-                            /*d.x -= x;
-                            d.y -= y;
-
-                            quad.point.x += x;
-                            quad.point.y += y;*/
 
                             //if (!d.fixed) {
                             if (true) {
@@ -614,6 +644,10 @@ function initGraphics(svg) {
         repo : svg.append("g").attr("width", w).attr("height", h),
         stat : svg.append("g").attr("width", w).attr("height", h),
         view : svg.append("g").attr("width", w).attr("height", h)
+        //view : d3.select(svg.node().parentNode).append("canvas").attr("width", w).attr("height", h)
+    };
+
+    vis.resources = {
     };
 
     vis.inited = true;

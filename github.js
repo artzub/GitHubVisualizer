@@ -7,7 +7,7 @@
 'use strict';
 
 function makeUrl(url) {
-    var sec = "client_id=c45417c5d6249959a91d&client_secret=4634b3aa7549c3d6306961e819e5ec9b355a6548";
+    var sec = "client_id=c45417c5d6249959a91d&client_secret=4634b3aa7549c3d6306961e819e5ec9b355a6548&per_page=" + ghcs.limits.commits;
     return url ? (url + (url.indexOf('?') === -1 ? '?' : '&') + sec) : url;
 }
 
@@ -17,7 +17,7 @@ function randTrue() {
 
 
 function getDataFromRequest(req) {
-    return req && req.meta && req.meta.status == 200 && req.data ? req.data : null;
+    return req && req.meta && req.meta.status == 200 && req.data ? req.data : (log(req), null);
 }
 
 function parseCommit(org_commit, commit){
@@ -45,14 +45,14 @@ function parseCommit(org_commit, commit){
             commit.stats.changes++;
             commit.stats.additions++;
         }
-        else if(f.status == "deleted") {
+        else if(f.status == "removed") {
             commit.stats.changes -= commit.stats.changes ? 1 : 0;
             commit.stats.additions -= commit.stats.additions ? 1 : 0;
         }
 
         f.status == "modified" && s.f.m++;
         f.status == "added" && s.f.a++;
-        f.status == "deleted" && s.f.d++;
+        f.status == "removed" && s.f.d++;
 
         return {
             name : f.filename,
@@ -68,6 +68,13 @@ function parseCommit(org_commit, commit){
     ghcs.repo.stats.files = d3.max([ghcs.repo.stats.files || 0, commit.files.length]);
 }
 
+function upCommits() {
+    redrawStats();
+    updateStatus(ghcs.states.cur++);
+    ldrTop.show();
+    psBar.show();
+    checkCompleted();
+}
 function parseCommits(commits) {
     ghcs.repo.commits = ghcs.repo.commits || [];
     if (commits && commits.length) {
@@ -95,19 +102,11 @@ function parseCommits(commits) {
                 ghcs.repo.dates.sort(d3.ascending);
                 return function(req) {
                     parseCommit(getDataFromRequest(req), ghcs.repo.commits[c.index]);
-                    redrawStats();
-                    updateStatus(ghcs.states.cur++);
-                    ldrTop.show();
-                    psBar.show();
-                    checkCompleted();
+                    upCommits();
                 };
             })(d), {
                 onerror : function() {
-                    redrawStats();
-                    updateStatus(ghcs.states.cur++);
-                    ldrTop.show();
-                    psBar.show();
-                    checkCompleted();
+                    upCommits();
                 }
             });
 
@@ -116,6 +115,9 @@ function parseCommits(commits) {
                 d.author.avatar.src = d.avatar_url;
             }
         });
+    }
+    else {
+        upCommits();
     }
 }
 
@@ -129,7 +131,7 @@ function parseRepos(data) {
         ghcs.users[ghcs.login] = ghcs.users[ghcs.login] || {};
         ghcs.users[ghcs.login].repos = (ghcs.users[ghcs.login].repos || []).concat(
             data.filter(function (d) {
-                return !d.private && !d.hasOwnProperty("x");
+                return !d.private && !d.hasOwnProperty("nodeValue");
             }).map(function (d) {
                 return {
                     x : (Math.random() * w) || 1,
@@ -138,9 +140,11 @@ function parseRepos(data) {
                         id: d.id,
                         name: d.name,
                         url: d.url,
+                        html_url: d.html_url,
                         commits_url : d.commits_url.replace(/{.*$/, ""),
                         size : d.size,
-                        date : Date.parse(d.updated_at),
+                        date : Date.parse(d.pushed_at || d.updated_at),
+                        cdate : Date.parse(d.created_at),
                         desc : d.description,
                         lang : d.language || "none"
                     }
@@ -189,6 +193,13 @@ function chUser() {
                 showBtn.disable();
                 runBtn.disable();
                 ghcs.login = login;
+                ghcs.repo = null;
+                redrawStats();
+
+                ghcs.states.complete = function() {
+                    stepsBar.secondStep();
+                    ldrTop.hide();
+                };
 
                 if (!ghcs.users.hasOwnProperty(login) || !ghcs.users[login].hasOwnProperty("repos")) {
 
@@ -208,10 +219,6 @@ function chUser() {
 
                         ghcs.states.max = +u.info.public_repos;
                         ghcs.states.cur = 0;
-                        ghcs.states.complete = function() {
-                            stepsBar.secondStep();
-                            ldrTop.hide();
-                        };
 
                         updateStatus(ghcs.states.cur, "loading ...");
                         psBar.show();
@@ -230,8 +237,10 @@ function chUser() {
                         divStat.updateInfo();
                     });
                 }
-                else
+                else {
+                    ghcs.states.max = ghcs.users[login].repos ? ghcs.users[login].repos.length : 0;
                     parseRepos(ghcs.users[login].repos);
+                }
                 divStat.updateInfo();
                 userTxt.enable();
             }

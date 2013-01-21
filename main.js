@@ -6,13 +6,14 @@
 
 'use strict';
 
-var log = (function () {
-    var logCont = d3.select("#console")
-        .append("ul");
-    return function (msg) {
-        logCont.append("li").text(msg);
+var timeFormat = (function() {
+    var fd = d3.time.format("%b %d, %Y");
+    return function(ms) {
+        return fd(new Date(ms));
     }
 })();
+
+var log;
 
 var cs, svg,
     margin = {top: 20, right: 20, bottom: 20, left: 20},
@@ -62,6 +63,14 @@ function redrawRepos() {
 }
 
 function init() {
+    log = (function () {
+        var logCont = d3.select("#console")
+            .append("ul");
+        return function (msg) {
+            logCont.append("li").text(msg instanceof Object ? JSON.stringify(msg) : msg);
+        }
+    })();
+
     cs = d3.select("#canvas");
     svg = cs.append("svg");
     w = svg.property("clientWidth");
@@ -162,11 +171,27 @@ function init() {
         });
 
     curRep.setName = function(r) {
-        this.datum(r).html(
-            !r ? "<span>Select repo...</span>" :
-            "<span class='mega-icon mega-icon-public-repo' style='color:" + d3.rgb(vis.forceRep.colors(r.nodeValue.lang)).brighter() + "'></span>" +
-            "<strong style='text-shadow: 0 0 3px rgba(0, 0, 0, 1);color:" + d3.rgb(vis.forceRep.colors(r.nodeValue.lang)).brighter() + "'>" + (r.nodeValue.name || "") + "</strong>"
-        );
+        this.selectAll("*").remove();
+        this.datum(r);
+        if (!r)
+            this.append("span")
+                .text("Select Repo...");
+        else {
+            this.append("span")
+                .style("color", d3.rgb(vis.forceRep.colors(r.nodeValue.lang)).brighter())
+                .attr("class", "mega-icon mega-icon-public-repo");
+
+            this.append("strong")
+                .style("margin-right", "5px")
+                .style("text-shadow", "0 0 3px rgba(0, 0, 0, 1)")
+                .style("color", d3.rgb(vis.forceRep.colors(r.nodeValue.lang)).brighter())
+                .text((r.nodeValue.name || ""));
+
+            this.append("a")
+                .attr("href", (r.nodeValue.html_url || "#"))
+                .attr("class", "mega-icon mini-icon-link a-icon");
+        }
+
         return this;
     }
 
@@ -178,9 +203,9 @@ function init() {
             user.info.avatar && divStat.node().appendChild(user.info.avatar);
             divStat.append("ul")
                 .call(function(ul) {
-                    user.info.name && ul.append("li").call(function(li) {
+                    (user.info.name || user.info.login) && ul.append("li").call(function(li) {
                         li.append("h1")
-                            .text(user.info.name)
+                            .text((user.info.name || user.info.login))
                             .append("a")
                             .attr("class", "a-icon")
                             .attr("target", "_blank")
@@ -214,7 +239,7 @@ function init() {
                             li.append("span")
                                 .attr("class", "mini-icon mini-icon-time")
                             li.append("strong")
-                                .text(d3.time.format("%b %d, %Y")(new Date(Date.parse(user.info.updated_at))))
+                                .text(timeFormat(Date.parse(user.info.updated_at)))
                         });
                 })
         }
