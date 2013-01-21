@@ -146,7 +146,7 @@ function parseRepos(data) {
                         date : Date.parse(d.pushed_at || d.updated_at),
                         cdate : Date.parse(d.created_at),
                         desc : d.description,
-                        lang : d.language || "none"
+                        lang : d.language || "None"
                     }
                 };
             })
@@ -270,6 +270,7 @@ function analyseCommits() {
         ldrTop.hide();
         vis.redrawStat(ghcs.repo);
     };
+    vis.layers.ordering("stat", 0);
 
     JSONP(makeUrl(ghcs.repo.commits_url), function getAll(req) {
         ghcs.states.max++;

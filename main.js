@@ -58,6 +58,13 @@ function redrawRepos() {
             ? ghcs.users[ghcs.login].repos
             : null
         );
+
+        vis.redrawLangHg(ghcs.users
+            && ghcs.users[ghcs.login]
+            && ghcs.users[ghcs.login].repos
+            ? d3.nest().key(function(d) { return d.nodeValue.lang; }).entries(ghcs.users[ghcs.login].repos)
+            : null);
+
         ghcs.redrawReposTimer = null;
     }, 100);
 }
@@ -113,10 +120,10 @@ function init() {
     showBtn = d3.select("#showBtn");
     userTxt = d3.select("#user").on("change", function() {
         stepsBar.firstStep();
-        if (!this.value)
-            showBtn.disable();
-        else if (this.value != ghcs.login)
+        showBtn.disable();
+        if (this.value && this.value != ghcs.login) {
             showBtn.enable();
+        }
         else
             stepsBar.secondStep();
     });
@@ -188,6 +195,8 @@ function init() {
                 .text((r.nodeValue.name || ""));
 
             this.append("a")
+                .attr("target", "_blank")
+                .attr("title", "Go to Github")
                 .attr("href", (r.nodeValue.html_url || "#"))
                 .attr("class", "mega-icon mini-icon-link a-icon");
         }

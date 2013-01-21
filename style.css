@@ -648,3 +648,41 @@ hr {
 }
 
 /** end stepbar */
+
+.barLang circle,
+.barLang path {
+    box-shadow: 1px 1px 2px 0 rgba(0, 0, 0, .8);
+}
+
+.barLang path {
+    fill: none;
+    stroke-width: 1px;
+}
+
+.barLang text {
+    pointer-events: none;
+    text-shadow : 0 0 3px rgba(0, 0, 0, 1);
+}
+
+.barLang .barSelect {
+    stroke: #000;
+    stroke-opacity: 0;
+    stroke-width: 1px;
+    fill: #f9f9f9;
+    fill-opacity: .01;
+
+    -webkit-transition: all 1.5s;
+    -moz-transition: all 1.5s;
+    -o-transition: all 1.5s;
+    transition: all 1.5s;
+}
+
+.barLang:hover .barSelect {
+    fill-opacity: .6;
+    stroke-opacity: .6;
+
+    -webkit-transition: all .5s;
+    -moz-transition: all .5s;
+    -o-transition: all .5s;
+    transition: all .5s;
+}

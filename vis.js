@@ -19,7 +19,8 @@ var colors = {
     stroked : "#f9f9f9",
     addedFile : "#A5EC6E",
     modifiedFile : "#FFB877",
-    deletedFile : "#FF77B5"
+    deletedFile : "#FF77B5",
+    decolor : "#666666"
 };
 
 function toRgba(color, a) {
@@ -32,14 +33,16 @@ var vis = {
         return d3.ascending(b.date, a.date);
     },
     meArc : function(d) {
+        if (vis.layers.stat.getOrder() != 0)
+            vis.layers.ordering("stat", 0);
         if (!d._g)
             return;
 
         d._g.selectAll("path.bar")
             .style({
-                "fill" : function(d) { return toRgba(d3.select(this).style("fill").replace("a", ""), .6); },
+                "fill-opacity" : .6,
                 "stroke-width" : 1,
-                "stroke" : function(d) { return toRgba("#000000", 1); }
+                "stroke" : function() { return toRgba("#000000", 1); }
             });
 
         this.barDel && this.barDel
@@ -63,7 +66,7 @@ var vis = {
 
         d._g.selectAll("path.bar")
             .style({
-                "fill" : function(d) { return toRgba(d3.select(this).style("fill").replace("a", ""), .3); },
+                "fill-opacity" : .3,
                 "stroke" : null
             });
 
@@ -95,6 +98,10 @@ var vis = {
     mdRepo : function(d) {
     },
     meRepo : function(d) {
+        vis.layers.repo.langHg
+        && vis.layers.repo.langHg.style("pointer-events", "none");
+        if (vis.layers.repo.getOrder() != 0 && ghcs.repos && ghcs.repos.length > 3)
+            vis.layers.ordering("repo", 0);
         d._tg = d._g;
         d._tg.selectAll("circle")
             .style("fill", d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).brighter());
@@ -103,11 +110,29 @@ var vis = {
                 return d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).darker();
             })
             .style("visibility",  "visible");
-        toolTip.html([
-            "<h1>", d.nodeValue.name, "</h1><hr>",
-            "<blockquote>", d.nodeValue.desc, "</blockquote><br />",
-            "<small>Primary language: <strong style='text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);color:", vis.forceRep.colors(d.nodeValue.lang) ,"'>", d.nodeValue.lang, "</strong></small>"
-        ].join(""))
+        toolTip.selectAll("*").remove();
+
+        toolTip.append("h1")
+            .text(d.nodeValue.name);
+        toolTip.append("hr");
+
+        d.nodeValue.desc && toolTip.append("blockquote")
+            .text(d.nodeValue.desc);
+        d.nodeValue.desc && toolTip.append("br");
+
+        toolTip.append("span")
+            .attr("class", "mini-icon mini-icon-time")
+        toolTip.append("strong")
+            .style("margin-left", "5px")
+            .text(timeFormat(d.nodeValue.date));
+        toolTip.append("br");
+
+        toolTip.append("span")
+            .text("Primary language: ")
+            .append("strong")
+            .style("color", vis.forceRep.colors(d.nodeValue.lang))
+            .style("text-shadow", "0 0 3px rgba(0, 0, 0, 0.8)")
+            .text(d.nodeValue.lang);
         toolTip.show();
     },
     mlRepo : function(d, i) {
@@ -125,6 +150,8 @@ var vis = {
                 .style("visibility",  vis.forceRep.visible);
             d._tg = null;
         }
+        vis.layers.repo.langHg
+        && vis.layers.repo.langHg.style("pointer-events", "all");
         toolTip.hide();
     },
     clRepo : function(d) {
@@ -137,6 +164,8 @@ var vis = {
                 vis.forceRep.selected.fixed = 0;
                 vis.mlRepo(vis.forceRep.selected, "deselect");
                 toolTip.show();
+                vis.layers.repo.langHg
+                && vis.layers.repo.langHg.style("pointer-events", "none");
             }
 
             vis.forceRep.selected = d;
@@ -157,18 +186,18 @@ var vis = {
             ;
         }
     },
-    clearStat: function(layout) {
-        if (layout) {
-            layout.selectAll("*").remove();
-            layout.cont && (layout.cont = null);
+    clearStat: function() {
+        if (vis.layers && vis.layers.stat) {
+            vis.layers.stat.selectAll("*").remove();
+            vis.layers.stat.cont && (vis.layers.stat.cont = null);
         }
     },
     redrawStat: function(data, layout) {
 
-        layout = layout || vis.layouts.stat;
+        layout = layout || vis.layers.stat;
 
         if (!ghcs.repo || !ghcs.repo.commits || !ghcs.repo.commits.length) {
-            vis.clearStat(layout);
+            vis.clearStat();
             return;
         }
 
@@ -223,9 +252,12 @@ var vis = {
                 i = 0,
                 n = points.length;
             while (++i < n) {
-                x1 = points[i][0], y1 = points[i][1], x2 = (x0 + x1) / 2;
+                x1 = points[i][0];
+                y1 = points[i][1];
+                x2 = (x0 + x1) / 2;
                 path.push("C", x2, ",", y0, " ", x2, ",", y1, " ", x1, ",", y1);
-                x0 = x1, y0 = y1;
+                x0 = x1;
+                y0 = y1;
             }
             return path.join("");
         }
@@ -256,7 +288,8 @@ var vis = {
             .enter()
             .insert("path", ":first-child")
             .attr("class", "areaFile")
-            .style("fill", function(d) { return toRgba(d.color, .1); })
+            .style("fill-opacity",.1)
+            .style("fill", function(d) { return d.color; })
             .transition()
             .duration(750)
             .attr("d", function(d) { return area(d.values); })
@@ -300,7 +333,7 @@ var vis = {
             g.transition()
                 .duration(1500)
                 .ease("elastic")
-                .attr("transform", "translate(" + [ x(d.date)/* - bandWidth/2*/, 0] + ")");
+                .attr("transform", "translate(" + [ x(d.date), 0] + ")");
 
             this.center = this.center || g.append("circle")
                 .attr("r", 2)
@@ -327,7 +360,8 @@ var vis = {
                     this.barAdd = g.append("path")
                         .attr("class", "bar")
                         .style({
-                            "fill" : toRgba(colors.added, .3)
+                            "fill" : colors.added,
+                            "fill-opacity" : .3
                         })
                         .attr("d", add())
                     ))
@@ -341,7 +375,8 @@ var vis = {
                     this.barDel = g.append("path")
                         .attr("class", "bar")
                         .style({
-                            "fill" : toRgba(colors.deleted, .3)
+                            "fill" : colors.deleted,
+                            "fill-opacity" : .3
                         })
                         .attr("d", del())
                     ))
@@ -426,7 +461,7 @@ var vis = {
             delete vis.forceRep;
         }
 
-        vis.layouts && vis.layouts.repo && vis.layouts.repo.selectAll(".cRepo")
+        vis.layers && vis.layers.repo && vis.layers.repo.selectAll("*")
             .transition()
             .duration(750)
             .ease("elastic")
@@ -434,7 +469,7 @@ var vis = {
     },
     redrawRepos : function(data, layout) {
 
-        layout = layout || vis.layouts.repo;
+        layout = layout || vis.layers.repo;
 
         if (!data) {
             vis.clearRepos();
@@ -448,8 +483,8 @@ var vis = {
         vis.forceRep = vis.forceRep || d3.layout.force()
             .size([w, h])
             .friction(.99)
-            .gravity(.05)
-            .charge(function(d) { return -vis.forceRep.radius(vis.forceRep.rad(d)) * 5; })
+            .gravity(.005)
+            .charge(function(d) { return -vis.forceRep.radius(vis.forceRep.rad(d)) / 2; })
             .on("tick", tick)
         ;
 
@@ -467,7 +502,7 @@ var vis = {
         var kof = (h > w ? h : w) / (4 * ((Math.log(data.length || 1) / Math.log(1.5)) || 1));
 
         var r = [kof / 5, kof];
-        var padding = r[1];
+        var padding = r[1] / 2;
         (vis.forceRep.radius || (vis.forceRep.radius = d3.scale.linear()))
                 .range(r)
                 .domain(d3.extent(data, vis.forceRep.rad));
@@ -500,9 +535,10 @@ var vis = {
         vis.forceRep.upCT = vis.forceRep.upCT || function(g) {
             g.selectAll("circle")
                 .style("stroke-width", 1)
-                .style("stroke", function(d) { return toRgba(d3.rgb(vis.forceRep.colors(d.nodeValue.lang)), 1 - d3.rgb(vis.forceRep.colors(d.nodeValue.lang))); })
+                .style("stroke", function(d) { return d3.rgb(vis.forceRep.colors(d.nodeValue.lang)); })
                 .style("fill", function(d) {  return toRgba(d3.rgb(vis.forceRep.colors(d.nodeValue.lang)), vis.forceRep.opt(vis.forceRep.radO(d)));  })
                 .transition()
+                .delay(500)
                 .duration(2500)
                 .ease("elastic")
                 .attr("r", function(d) { return vis.forceRep.radius(vis.forceRep.rad(d)); })
@@ -539,6 +575,8 @@ var vis = {
             .on("click.select", vis.clRepo)
 
             .call(vis.forceRep.appCT);
+
+        d3.select(document).on("mouseup.select", vis.muRepo);
 
         vis.forceRep.circle.call(vis.forceRep.upCT);
 
@@ -635,16 +673,186 @@ var vis = {
                 });
             };
         }
+    },
+    clearLangHg : function() {
+        vis.layers && vis.layers.repo && vis.layers.repo.langHg && vis.layers.repo.langHg.selectAll("*")
+            .transition()
+            .duration(750)
+            .ease("elastic")
+            .remove();
+    },
+    redrawLangHg : function(data, layout) {
+        layout = layout || vis.layers.repo;
+
+        if (!data) {
+            vis.clearLangHg();
+            return;
+        }
+
+        data = data.sort(function(a, b) {
+            return d3.ascending(a.key, b.key);
+        });
+
+        var w_hg = w / 4,
+            h_hg = h / 6,
+            m = {left : 10, top : 10, right : 10, bottom : 10},
+            pos = {top : h - h_hg - m.bottom - m.top - margin.bottom, left : margin.left};
+
+        var x = d3.scale.ordinal()
+            .rangeRoundBands([0, w_hg], .2)
+            .domain(data.map(function(d) { return d.key; }));
+        var xc = x.rangeBand() / 2;
+
+        var y = d3.scale.linear()
+            .domain([0, d3.max(data, function(d) { return d.values.length; })])
+            .range([h_hg, 0]);
+
+        layout.langHg && layout.langHg.remove();
+
+        layout.langHg = layout.append("g")
+            .attr("class", "langHg")
+            .attr("width", w_hg + m.left + m.right)
+            .attr("height", h_hg + m.top + m.bottom)
+            .attr("transform", "translate(" + pos.left + "," + pos.top + ")");
+
+        function mei(d) {
+            d._g
+            && d._g.selectAll("circle")
+                .style("stroke", d3.rgb(colors.decolor).darker())
+                .style("fill", toRgba(colors.decolor, vis.forceRep.opt(vis.forceRep.radO(d))))
+            && d._g.selectAll("text")
+                .style("fill", d3.rgb(colors.decolor).darker());
+        }
+
+        function moi(d) {
+            d._g
+            && d._g.selectAll("circle")
+                .style("stroke", d3.rgb(vis.forceRep.colors(d.nodeValue.lang)))
+                .style("fill", toRgba(vis.forceRep.colors(d.nodeValue.lang), vis.forceRep.opt(vis.forceRep.radO(d))))
+            && d._g.selectAll("text")
+                .style("fill", d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).brighter());
+        }
+
+        function me(d) {
+            vis.forceRep.nodes().filter(function(k) {
+                return k.nodeValue.lang != d.key;
+            }).forEach(mei);
+        }
+
+        function mo(d) {
+            vis.forceRep.nodes().filter(function(k) {
+                return k.nodeValue.lang != d.key;
+            }).forEach(moi);
+        }
+
+        var bar = layout.langHg.selectAll(".barLang")
+            .data(data, function(d) { return d.key; });
+
+        layout.langHg.append("path")
+            .attr("transform", function(d) { return "translate(" + [x(d.key) , 0] + ")"; })
+            .style("stroke", "rgba(255, 255, 255, .3)")
+            .attr("d", "M0,0 L" + w_hg + ",0");
+
+        bar.enter().append("g")
+            .attr("transform", function(d) { return "translate(" + [x(d.key) , 0] + ")"; })
+            .attr("class", "barLang")
+            .on("mouseover", me)
+            .on("mouseout", mo);
+
+        bar.append("text")
+            .attr("class", "tLang")
+            .style("fill", function(d) { return d3.rgb(vis.forceRep.colors(d.key)); })
+            .attr("y", -xc)
+            .attr("dy", ".33em")
+            .attr("dx", "-6px")
+            .attr("transform", "rotate(90)")
+            .style("text-anchor", "end")
+            .text(function(d) { return d.key; })
+            .each(function(d) {
+                var pr = d3.select(this.parentNode);
+                pr.insert("rect", ":first-child")
+                    .attr("class", "barSelect")
+                    .attr("transform", "translate(" + [-xc * .2 , -(this.clientWidth + 6 + xc * .4) ] + ")")
+                    .attr("fill", "rgba(244, 244, 244, .2)")
+                    .attr("width", xc * 2.4 )
+                    .attr("height", (this.clientWidth + 6 + xc * .4) + h_hg - y(d.values.length) + xc * 2.4);
+            });
+
+        var gg = bar.append("g")
+            .attr("transform", "translate(" + [x.rangeBand() / 2 , 0] + ")");
+
+
+        var line = gg.append("path")
+            .style("stroke", function(d) { return d3.rgb(vis.forceRep.colors(d.key)).darker(); })
+            .attr("d", "M0,0 L0,0");
+
+        gg.append("circle")
+            .style("fill", function(d) { return d3.rgb(vis.forceRep.colors(d.key)).darker(); })
+            .attr("r", 2);
+
+        var dg = gg.append("g")
+            .attr("transform", "translate(" + [0 , 0] + ")");
+
+        dg.append("circle")
+            .attr("r", xc)
+            .style("fill", function(d) { return d3.rgb(vis.forceRep.colors(d.key)); })
+            .style("stoke", function(d) { return d3.rgb(vis.forceRep.colors(d.key)).darker(); });
+        dg.append("text")
+            .attr("text-anchor", "middle")
+            .attr("dy", ".32em")
+            .style("fill", function(d) { return d3.rgb(vis.forceRep.colors(d.key)).brighter(); })
+            .text(function(d) { return d.values.length; });
+
+        dg.transition()
+            .delay(100)
+            .duration(2500)
+            .ease("elastic")
+            .attr("transform", function(d) { return "translate(" + [0 , h_hg - y(d.values.length) + xc] + ")"; });
+
+        line.transition()
+            .duration(2500)
+            .ease("elastic")
+            .attr("d", function(d) { return "M0,0 L0," + (h_hg - y(d.values.length) + xc); });
+
+        bar.exit().remove();
     }
 };
 
 function initGraphics(svg) {
 
-    vis.layouts = {
-        repo : svg.append("g").attr("width", w).attr("height", h),
-        stat : svg.append("g").attr("width", w).attr("height", h),
-        view : svg.append("g").attr("width", w).attr("height", h)
-        //view : d3.select(svg.node().parentNode).append("canvas").attr("width", w).attr("height", h)
+    vis.layers = (function(data) {
+        var ls = { _data : data };
+
+        svg.selectAll("g.layer")
+            .data(data, function(d) {return d.name})
+            .enter()
+            .append("g")
+            .each(function(d) {
+                ls[d.name] = d3.select(this).attr("class", "layer").attr("width", w).attr("height", h);
+                ls[d.name].getOrder = function() {
+                    return (this.datum()).order;
+                }
+            });
+        return ls;
+    })([
+        {name : "repo", order : 2},
+        {name : "stat", order : 1},
+        {name : "view", order : 0}
+    ]);
+
+    vis.layers.ordering = function(layer, order) {
+        function s(a, b) {
+            return d3.ascending(b.order, a.order);
+        }
+        var _d = (layer instanceof Array || layer instanceof Object ? layer : this[layer]);
+        _d = _d ? (_d instanceof Array ? _d.datum() : _d) : null;
+        if (_d) {
+            this._data.forEach(function(d) {
+                _d != d && d.order >= order && d.order++;
+            });
+            _d.order = order;
+            svg.selectAll("g.layer").sort(s);
+        }
     };
 
     vis.resources = {
