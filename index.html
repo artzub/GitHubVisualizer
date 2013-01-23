@@ -3,12 +3,15 @@
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="style.css">
-    <script src="http://d3js.org/d3.v3.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="jsonp.js"></script>
     <script src="ghcs.js"></script>
     <script src="main.js"></script>
     <script src="github.js"></script>
     <script src="vis.js"></script>
+    <script src="stat.js"></script>
+    <script src="repo.js"></script>
+    <script src="langhg.js"></script>
 </head>
 <body onload="init()">
 
@@ -20,11 +23,58 @@
                     <label><strong>1.</strong></label>
                     <input placeholder="User" type="text" id="user">
                     <button id="showBtn" title="Press for loading data about user repositories." class="btn" disabled="disabled">Show</button>
+                    <div class="sub">
+                        <div class="row">
+                            <blockquote>Enter user's login of github.</blockquote>
+                            <div class="row">
+                                <ul class="setting">
+                                    <li class="field"><h1>Display:</h1>
+                                        <ul class="group">
+                                            <li class="field">
+                                                <input id="cb-dllh" type="checkbox" checked="checked">
+                                                <label for="cb-dllh">Layer languages histogram</label>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </li>
                 <li style="z-index: 1" class="second">
                     <label><strong>2.</strong></label>
                     <label id="curRep"><span>Select Repo...</span></label>
                     <button id="runBtn" title="Press for analyse repository." class="btn" disabled="disabled">Analyse</button>
+                    <div class="sub">
+                        <div class="row">
+                            <blockquote>Click to repo in graph of repos.</blockquote>
+                            <div class="row">
+                                <ul class="setting">
+                                    <li class="field"><h1>Display:</h1>
+                                        <ul class="group">
+                                            <li class="field">
+                                                <input id="cb-dlr" type="checkbox" checked="checked">
+                                                <label for="cb-dlr">Layer repos</label>
+                                            </li>
+                                            <li class="field">
+                                                <input id="cb-dlcmrs" type="checkbox" checked="checked">
+                                                <label for="cb-dlcmrs">Layer committers</label>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="field"><h1>Settings:</h1>
+                                        <ul class="group">
+                                            <li class="field">
+                                                <label for="txt-lc">Limit of commits</label>
+                                                <input id="txt-lc" type="number" value="100">
+                                                <blockquote>if value more than 100, <br />then number of commits in request is 100.</blockquote>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </li>
                 <li class="third">
                     <label><strong>3.</strong></label>

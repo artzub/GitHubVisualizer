@@ -25,6 +25,65 @@ function updateStatus(pos, label) {
         .setLabel(label || "Completed " + pos + " of " + ghcs.states.max + " commits ...");
 }
 
+d3.select(window).on("hashchange", applyParams);
+
+function parseParams(hash) {
+    var params = {};
+    hash.replace(/^#/, "").split("&").forEach(function(item) {
+        var values = item.toLowerCase().split("=");
+        var key = values[0];
+        params[key] = values.length > 1 ? values[1] : "";
+    });
+
+    ghcs.params = ghcs.params || {};
+
+    ghcs.params.user = params.user;
+    ghcs.params.rot = params.rot;
+}
+
+function rewriteHash() {
+    if (this == showBtn.node() && ghcs.params) {
+        var hash = [];
+        ghcs.params.user && hash.push("user=" + ghcs.params.user);
+        ghcs.params.rot && hash.push("rot=" + ghcs.params.rot);
+        document.location.hash = "#" + hash.join("&");
+    }
+}
+
+function applyParams() {
+    d3.event && d3.event.preventDefault();
+
+    parseParams(document.location.hash);
+
+    if (ghcs.rot != ghcs.params.rot || ghcs.login != ghcs.params.user) {
+        ghcs.rot = ghcs.params.rot;
+        userTxt.property("value", ghcs.params.user);
+        chUser();
+    }
+}
+
+function chRadio(d) {
+    switch(this.name) {
+        case "participation" : {
+        }
+    }
+}
+
+function chCheckbox(d) {
+    d = d3.select(this);
+    switch(d.attr("id")) {
+        case "cb-dlr":
+            vis.layers.repo
+            && vis.layers.repo.style("display", d.property("checked") ? null : "none");
+            break;
+        case "cb-dllh":
+            vis.layers.repo
+            && vis.layers.repo.langHg
+            && vis.layers.repo.langHg.style("display", d.property("checked") ? null : "none");
+            break;
+    }
+}
+
 function checkCompleted() {
     if (ghcs.states.cur >= ghcs.states.max) {
         psBar.setPos("100%").hide();
@@ -80,8 +139,11 @@ function init() {
 
     cs = d3.select("#canvas");
     svg = cs.append("svg");
-    w = svg.property("clientWidth");
-    h = svg.property("clientHeight");
+    w = svg.property("clientWidth") || document.body.clientWidth;
+    h = svg.property("clientHeight")|| document.body.clientHeight;
+
+    svg.attr("width", w).attr("height", h);
+
 
     psBar = d3.select("#progressBar");
     psBar.pntNode = d3.select(psBar.node().parentNode);
@@ -121,11 +183,14 @@ function init() {
     userTxt = d3.select("#user").on("change", function() {
         stepsBar.firstStep();
         showBtn.disable();
-        if (this.value && this.value != ghcs.login) {
-            showBtn.enable();
+        if (this.value) {
+            if (this.value != ghcs.login)
+                showBtn.enable();
+            else
+                stepsBar.secondStep();
         }
-        else
-            stepsBar.secondStep();
+
+        (ghcs.params || (ghcs.params = {})).user = this.value;
     });
 
     [runBtn, showBtn, userTxt].forEach(function(item) {
@@ -140,7 +205,7 @@ function init() {
     });
 
     runBtn.on("click", analyseCommits);
-    showBtn.on("click", chUser);
+    showBtn.on("click", rewriteHash);
 
     ldrTop = d3.select("#ldrTop");
     ldrTop.pntNode = d3.select(ldrTop.node().parentNode);
@@ -162,6 +227,13 @@ function init() {
         this.style("display", null);
         return this;
     };
+
+    d3.selectAll("input[type=checkbox]").on("change", chCheckbox);
+    d3.select("#txt-lc").on("change", function() {
+        ghcs.limits.commits = +this.value;
+        if (ghcs.limits.commits < 1)
+            ghcs.limits.commits = 1;
+    });
 
     initGraphics(svg);
 
@@ -253,4 +325,6 @@ function init() {
                 })
         }
     }
+
+    applyParams();
 }

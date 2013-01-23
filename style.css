@@ -88,10 +88,8 @@ label {
     z-index: 11;
     padding: 5px;
     vertical-align: middle;
-}
-
-#controls {
     border-radius: 0 0 3px 0;
+    width: 100%;
 }
 
 #controls input,
@@ -495,6 +493,7 @@ hr {
 
 #curRep {
     vertical-align: middle;
+    text-align: left;
 }
 
 #curRep .mega-icon {
@@ -565,34 +564,70 @@ hr {
 
 .steps {
     list-style: none;
-
     margin: 0;
 }
 
-.steps li {
-    display: inline-block;
+.steps > li {
+    display: block;
+    float: left;
     position: relative;
     padding: 4px;
     border: 1px solid white;
+    border-right-style: dotted;
+    border-left-style: dotted;
     margin-right: 1em;
-    border-width: 1px 0;
-    /*background: #536788;*/
     background: #50617F;
     padding-right: 2px;
-    margin-left: -20px;
+    margin-left: -17px;
     padding-left: 24px;
+    text-align: right;
 }
 
-.steps li:first-child {
-    display: inline-block;
+.steps > li .sub {
+    text-align: left;
+    display: block;
+    overflow: hidden;
+    margin-left: -22px;
+}
+
+.steps > li:first-child .sub {
+    margin-left: 0;
+}
+
+.steps > li .sub {
+    max-height: 0;
+    max-width: 0;
+
+    -webkit-transition: max-height .7s ease-in-out .2s, max-width .2s ease-in-out .9s;
+    -moz-transition: max-height .7s ease-in-out .2s, max-width .2s ease-in-out .9s;
+    -o-transition: max-height .7s ease-in-out .2s, max-width .2s ease-in-out .9s;
+    transition: max-height .7s ease-in-out .2s, max-width .2s ease-in-out .9s;
+}
+
+.steps > li:hover .sub {
+    max-height: 960px;
+    max-width: 960px;
+
+    -webkit-transition: max-height .7s ease-in-out .5s, max-width .2s ease-in-out .3s;
+    -moz-transition: max-height .7s ease-in-out .5s, max-width .2s ease-in-out .3s;
+    -o-transition: max-height .7s ease-in-out .5s, max-width .2s ease-in-out .3s;
+    transition: max-height .7s ease-in-out .5s, max-width .2s ease-in-out .3s;
+}
+
+.steps > li:first-child {
     border-radius: 5px 0 0 5px;
-    border-left-width: 1px;
+    border-left: 1px solid #ffffff;
     margin-left: 0;
     padding-left: 4px;
 }
 
-.steps li:after,
-.steps li:before {
+.steps > li:hover {
+    border-right-style: solid;
+    border-left-style: solid;
+}
+
+.steps > li:after,
+.steps > li:before {
     width: 0;
     height: 0;
     content: "";
@@ -600,58 +635,69 @@ hr {
     position: absolute;
 }
 
-.steps li:after {
-    border: 1.245em solid transparent;
+.steps > li:after {
+    border: 1.248em solid transparent;
     border-left-color: #ffffff;
-    top: -.05em;
-    right: -2.35em;
+    top: -0.05em;
+    right: -2.45em;
     z-index: 0;
 }
 
-.steps li:before {
-    border: 1.1em solid transparent;
-    /*border-left-color: #536788;*/
+.steps > li:before {
+    border: 1.13em solid transparent;
     border-left-color: #50617F;
-    top: .05em;
-    right: -2.1em;
+    top: .02em;
+    right: -2.25em;
     z-index: 1;
 }
 
-.steps.sfirst li:not(.first) {
+.steps.sfirst > li:not(.first) {
     border-color: #ccc;
     background: #858689;
 }
 
-.steps.sfirst li:not(.first):after {
+.steps.sfirst > li:not(.first):after {
     border-left-color: #ccc;
 }
 
-.steps.sfirst li:not(.first):before {
+.steps.sfirst > li:not(.first):before {
     border-left-color: #858689;
 }
 
-.steps.ssecond li.third {
+.steps.ssecond > li.third {
     border-color: #ccc;
     background: #858689;
 }
 
-.steps.ssecond li.third:after {
+.steps.ssecond > li.third:after {
     border-left-color: #ccc;
 }
 
-.steps.ssecond li.third:before {
+.steps.ssecond > li.third:before {
     border-left-color: #858689;
 }
 
-.steps li > label {
+.steps > li > label {
     vertical-align: middle;
+}
+
+.sub > div {
+    padding: 5px;
+}
+
+.sub blockquote {
+    padding: 3px;
+    margin: 2px 0;
+    background: rgba(255, 252, 196, .6);
+    border-left: 2px solid rgba(255, 252, 196, 1);
+    font-style: italic;
+    color: rgba(255, 252, 196, 1);
 }
 
 /** end stepbar */
 
 .barLang circle,
 .barLang path {
-    box-shadow: 1px 1px 2px 0 rgba(0, 0, 0, .8);
 }
 
 .barLang path {
@@ -669,7 +715,7 @@ hr {
     stroke-opacity: 0;
     stroke-width: 1px;
     fill: #f9f9f9;
-    fill-opacity: .01;
+    fill-opacity: 0;
 
     -webkit-transition: all 1.5s;
     -moz-transition: all 1.5s;
@@ -685,4 +731,37 @@ hr {
     -moz-transition: all .5s;
     -o-transition: all .5s;
     transition: all .5s;
+}
+
+.field {
+    padding: 3px;
+}
+
+.setting {
+    list-style: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}
+
+.setting input {
+    padding: 0;
+    margin: 0;
+}
+
+.setting h1 {
+    color: rgba(0, 0, 0, .8);
+    text-shadow: 0 1px 1px rgba(255, 255, 255, .5);
+}
+
+.setting > li {
+    border: 1px dotted rgba(255, 255, 255, .5);
+    background: rgba(255, 255, 255, .2);
+}
+
+.setting > li .group {
+    list-style: none;
+    vertical-align: middle;
+}
+
+.group > li {
+    display: inline-block;
 }

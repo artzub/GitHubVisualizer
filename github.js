@@ -6,8 +6,20 @@
 
 'use strict';
 
-function makeUrl(url) {
-    var sec = "client_id=c45417c5d6249959a91d&client_secret=4634b3aa7549c3d6306961e819e5ec9b355a6548&per_page=" + ghcs.limits.commits;
+var TYPE_REQUEST = {
+    repos : 1,
+    commits : 2
+}
+
+
+function makeUrl(url, type) {
+    var sec = "client_id=c45417c5d6249959a91d&client_secret=4634b3aa7549c3d6306961e819e5ec9b355a6548";
+    if (type == TYPE_REQUEST.repos) {
+        sec += (ghcs.rot ? "&per_page=100&type=" + ghcs.rot : "" );
+    }
+    else /*if (type == TYPE_REQUEST.repos)*/{
+        sec += "&per_page=" + (ghcs.limits.commits > 100 ? 100 : ghcs.limits.commits)
+    }
     return url ? (url + (url.indexOf('?') === -1 ? '?' : '&') + sec) : url;
 }
 
@@ -224,7 +236,7 @@ function chUser() {
                         psBar.show();
 
                         if (data.repos_url)
-                            JSONP(makeUrl(data.repos_url), function getAll(req) {
+                            JSONP(makeUrl(data.repos_url, TYPE_REQUEST.repos), function getAll(req) {
                                 parseRepos(getDataFromRequest(req));
                                 getNext(req, function(next) {
                                     ldrTop.show();
