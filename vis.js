@@ -8,7 +8,6 @@
 
 var PIdiv2 = Math.PI / 2,
     smallRad = PIdiv2 * (1 / 15),
-    ONE_DAY = 24 * 60 * 60 * 1000,
     TT_PAD = 8
     ;
 
@@ -58,17 +57,30 @@ function initGraphics(svg) {
                 ls[d.name] = d3.select(this).attr("class", "layer").attr("width", w).attr("height", h);
                 ls[d.name].getOrder = function() {
                     return d.order;
+                    return this;
                 };
                 ls[d.name].toFront = function() {
                     d.order &&
                         vis.layers.ordering(this, 0);
-                }
+                    return this;
+                };
+                ls[d.name].hide = function() {
+                    ls[d.name].visible = false;
+                    this.style("display", "none");
+                    return this;
+                };
+                ls[d.name].show = function() {
+                    ls[d.name].visible = true;
+                    this.style("display", null);
+                    return this;
+                };
+                ls[d.name].visible = true;
             });
         return ls;
     })([
         {name : "repo", order : 2},
         {name : "stat", order : 1},
-        {name : "view", order : 0}
+        {name : "show", order : 0}
     ]);
 
     vis.layers.ordering = function(layer, order) {
@@ -84,6 +96,7 @@ function initGraphics(svg) {
             _d.order = order;
             svg.selectAll("g.layer").sort(s);
         }
+        return this;
     };
 
     vis.resources = {

@@ -132,9 +132,11 @@
         var bar = layout.langHg.selectAll(".barLang")
             .data(data, function(d) { return d.key; });
 
+        bar.exit().remove();
+
         bar.enter()
             .append("g")
-            .attr("transform", function(d) { return "translate(" + [0 , -xc * 2] + ")"; })
+            .attr("transform", "translate(" + [0 , -xc * 2] + ")")
             .attr("class", "barLang")
             .on("mouseover", me)
             .on("mouseout", mo)
@@ -145,6 +147,10 @@
             .ease("elastic")
             .attr("transform", function(d) { return "translate(" + [x(d.key) , -xc * 2] + ")"; })
 
+        bar.each(function(k) {
+            d3.select(this).selectAll("*")
+                .datum(k);
+        });
         bar.selectAll("path.hLine")
             .attr("d", "M0,0 L" + (xc * 2) + ",0");
 
@@ -172,13 +178,13 @@
             .delay(100)
             .duration(3500)
             .ease("elastic")
-            .attr("transform", function(d) { return "translate(" + [0 , h_hg - y(d.values.length) + xc] + ")"; });
+            .attr("transform", function(d) {
+                return "translate(" + [0 , h_hg - y(d.values.length) + xc] + ")";
+            });
 
         gg.selectAll("path.vLine").transition()
             .duration(3500)
             .ease("elastic")
             .attr("d", function(d) { return "M0,0 L0," + (h_hg - y(d.values.length) + xc); });
-
-        bar.exit().remove();
     }
 })(vis || (vis = {}));

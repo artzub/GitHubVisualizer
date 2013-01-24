@@ -18,7 +18,8 @@ var log;
 var cs, svg,
     margin = {top: 20, right: 20, bottom: 20, left: 20},
     w, h,
-    psBar, runBtn, ldrTop, toolTip, showBtn, userTxt, curRep, divStat, stepsBar;
+    psBar, runBtn, ldrTop, toolTip, showBtn, visBtn,
+    userTxt, curRep, divStat, stepsBar, cbDlr;
 
 function updateStatus(pos, label) {
     psBar.setPos((pos * 100 / (ghcs.states.max || 1)) + "%")
@@ -70,11 +71,11 @@ function chRadio(d) {
 }
 
 function chCheckbox(d) {
-    d = d3.select(this);
+    d = d3.select(d instanceof HTMLInputElement ? d : this);
     switch(d.attr("id")) {
         case "cb-dlr":
             vis.layers.repo
-            && vis.layers.repo.style("display", d.property("checked") ? null : "none");
+            && ((d.property("checked") && vis.layers.repo.show()) || vis.layers.repo.hide());
             break;
         case "cb-dllh":
             vis.layers.repo
@@ -97,18 +98,25 @@ function checkCompleted() {
 function redrawStats() {
     if (ghcs.redrawStatsTimer) {
         clearTimeout(ghcs.redrawStatsTimer);
-        ghcs.redrawTimer = null;
+        ghcs.redrawStatsTimer = null;
     }
     ghcs.redrawStatsTimer = setTimeout(function () {
         vis.redrawStat(ghcs.repo);
-        ghcs.redrawTimer = null;
+        ghcs.redrawStatsTimer = null;
     }, 100);
+}
+
+function runShow() {
+    if (ghcs.repo && ghcs.repo.commits) {
+        visBtn.disable();
+        vis.runShow(ghcs.repo);
+    }
 }
 
 function redrawRepos() {
     if (ghcs.redrawReposTimer) {
         clearTimeout(ghcs.redrawReposTimer);
-        ghcs.redrawTimer = null;
+        ghcs.redrawReposTimer = null;
     }
     ghcs.redrawReposTimer = setTimeout(function () {
         vis.redrawRepos(ghcs.users
@@ -180,6 +188,7 @@ function init() {
 
     runBtn = d3.select("#runBtn");
     showBtn = d3.select("#showBtn");
+    visBtn = d3.select("#visBtn");
     userTxt = d3.select("#user").on("change", function() {
         stepsBar.firstStep();
         showBtn.disable();
@@ -193,7 +202,7 @@ function init() {
         (ghcs.params || (ghcs.params = {})).user = this.value;
     });
 
-    [runBtn, showBtn, userTxt].forEach(function(item) {
+    [runBtn, showBtn, userTxt, visBtn].forEach(function(item) {
         item.enable = function () {
             this.attr("disabled", null);
             return this;
@@ -206,6 +215,7 @@ function init() {
 
     runBtn.on("click", analyseCommits);
     showBtn.on("click", rewriteHash);
+    visBtn.on("click", runShow);
 
     ldrTop = d3.select("#ldrTop");
     ldrTop.pntNode = d3.select(ldrTop.node().parentNode);
@@ -229,6 +239,13 @@ function init() {
     };
 
     d3.selectAll("input[type=checkbox]").on("change", chCheckbox);
+
+    cbDlr = d3.select("#cb-dlr");
+    cbDlr.trigger = function() {
+        this.property("checked", !this.property("checked"));
+        chCheckbox(this.node());
+    }
+
     d3.select("#txt-lc").on("change", function() {
         ghcs.limits.commits = +this.value;
         if (ghcs.limits.commits < 1)

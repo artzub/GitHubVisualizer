@@ -101,7 +101,13 @@ function parseCommits(commits) {
                 sha : d.sha,
                 author : {
                     name : d.commit.author.name,
-                    email : d.commit.author.email
+                    email : d.commit.author.email,
+                    login : d.author && d.author.login ? d.author.login : d.commit.author.email
+                },
+                committer : {
+                    name : d.commit.committer.name,
+                    email : d.commit.committer.email,
+                    login : d.committer && d.committer.login ? d.committer.login : d.commit.committer.email
                 },
                 date : Date.parse(d.commit.author.date),
                 avatar_url : (d.author && d.author.avatar_url ? d.author.avatar_url : null),
@@ -213,6 +219,9 @@ function chUser() {
                     ldrTop.hide();
                 };
 
+                !vis.layers.repo.visible &&
+                    cbDlr.trigger();
+
                 if (!ghcs.users.hasOwnProperty(login) || !ghcs.users[login].hasOwnProperty("repos")) {
 
                     ldrTop.show();
@@ -281,6 +290,7 @@ function analyseCommits() {
         runBtn.enable();
         ldrTop.hide();
         vis.redrawStat(ghcs.repo);
+        visBtn.enable();
     };
     vis.layers.ordering("stat", 0);
 
