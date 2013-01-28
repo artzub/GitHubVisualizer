@@ -7,20 +7,41 @@
 'use strict';
 
 var TYPE_REQUEST = {
-    repos : 1,
-    commits : 2
-}
+        repos : 1,
+        commits : 2
+    }
+    , TYPE_STATUS_FILE = {
+        removed : 0,
+        modified : 1,
+        added : 2,
+        renamed : 3
+    }
 
 
-function makeUrl(url, type) {
+
+function makeUrl(url, type, limit) {
     var sec = "client_id=c45417c5d6249959a91d&client_secret=4634b3aa7549c3d6306961e819e5ec9b355a6548";
     if (type == TYPE_REQUEST.repos) {
         sec += (ghcs.rot ? "&per_page=100&type=" + ghcs.rot : "" );
     }
     else /*if (type == TYPE_REQUEST.repos)*/{
-        sec += "&per_page=" + (ghcs.limits.commits > 100 ? 100 : ghcs.limits.commits)
+        limit = limit < 0 ? ghcs.limits.commits : limit;
+        sec += "&per_page=" + (limit > 100 ? 100 : limit)
     }
     return url ? (url + (url.indexOf('?') === -1 ? '?' : '&') + sec) : url;
+}
+
+function crossUrl(url, rt) {
+    //return url;
+    var result = url, arr = /(.*)?\?(.*)/.exec(url);
+    if (arr) {
+        result = "http://artzub.com/cross/?"
+            + ( rt ? "rt=" + rt + "&" : "" )
+            + "u=" + arr[1];
+        if (arr.length > 2)
+            result += "&d=" + encodeURIComponent(arr[2]);
+    }
+    return result;
 }
 
 function randTrue() {
@@ -29,7 +50,7 @@ function randTrue() {
 
 
 function getDataFromRequest(req) {
-    return req && req.meta && req.meta.status == 200 && req.data ? req.data : (log(req), null);
+    return req && req.meta && req.meta.status == 200 && req.data ? req.data : (log(req) && null);
 }
 
 function parseCommit(org_commit, commit){
@@ -48,23 +69,31 @@ function parseCommit(org_commit, commit){
     };
 
     commit.files = org_commit.files.map(function(f) {
+        if (TYPE_STATUS_FILE[f.status] == undefined)
+            console.log(f.status);
+
+        if (TYPE_STATUS_FILE[f.status] == TYPE_STATUS_FILE.renamed)
+            console.log(f);
+
+        f.status = TYPE_STATUS_FILE[f.status];
+
         if (f.changes > 0) {
             s.changes += f.changes;
             s.additions += f.additions;
             s.deletions += f.deletions;
         }
-        else if(f.status == "added" || f.status == "modified") {
+        else if(f.status) {
             commit.stats.changes++;
             commit.stats.additions++;
         }
-        else if(f.status == "removed") {
+        else if(!f.status) {
             commit.stats.changes -= commit.stats.changes ? 1 : 0;
             commit.stats.additions -= commit.stats.additions ? 1 : 0;
         }
 
-        f.status == "modified" && s.f.m++;
-        f.status == "added" && s.f.a++;
-        f.status == "removed" && s.f.d++;
+        f.status == TYPE_STATUS_FILE.modified || f.status == TYPE_STATUS_FILE.renamed && s.f.m++;
+        f.status == TYPE_STATUS_FILE.added && s.f.a++;
+        !f.status && s.f.d++;
 
         return {
             name : f.filename,
@@ -87,6 +116,35 @@ function upCommits() {
     psBar.show();
     checkCompleted();
 }
+
+function preloadImage(url) {
+    var ava, image;
+    image = ghcs.imageHash.get(url);
+    if (!image) {
+        image = new Image();
+        ava = ghcs.storage.get(url);
+        if (!ava) {
+            image.onerror = function () {
+                return console.log(this);
+            };
+            image.onload = (function (url) {
+                return function () {
+                    if (url)
+                        ghcs.storage.setImageData(url, this);
+                    console.log(url + ":");
+                    console.log(this);
+                };
+            })(url);
+            image.src = crossUrl((url || (url = "https://secure.gravatar.com/avatar/" + Date.now() + Date.now() + "?d=identicon&f=y") + "&s=32"), "image");
+        }
+        else {
+            image.src = ava;
+        }
+        ghcs.imageHash.set(url, image);
+    }
+    return image;
+}
+
 function parseCommits(commits) {
     ghcs.repo.commits = ghcs.repo.commits || [];
     if (commits && commits.length) {
@@ -94,8 +152,7 @@ function parseCommits(commits) {
         psBar.show();
         ldrTop.show();
 
-        ghcs.states.max += commits.length - 1;
-        /*ghcs.asyncForEach(*/commits.forEach(function(d) {
+        commits.forEach(function(d) {
             d = {
                 url : d.url,
                 sha : d.sha,
@@ -115,6 +172,9 @@ function parseCommits(commits) {
                 parents : d.parents
             };
             d.index = ghcs.repo.commits.push(d) - 1;
+
+            d.author.avatar = preloadImage(d.avatar_url);
+
             JSONP(makeUrl(d.url), (function(c) {
                 ghcs.repo.dates.push(c.date);
                 ghcs.repo.dates.sort(d3.ascending);
@@ -127,11 +187,6 @@ function parseCommits(commits) {
                     upCommits();
                 }
             });
-
-            if (d.avatar_url) {
-                d.author.avatar = new Image();
-                d.author.avatar.src = d.avatar_url;
-            }
         });
     }
     else {
@@ -219,8 +274,7 @@ function chUser() {
                     ldrTop.hide();
                 };
 
-                !vis.layers.repo.visible &&
-                    cbDlr.trigger();
+                cbDlr.check();
 
                 if (!ghcs.users.hasOwnProperty(login) || !ghcs.users[login].hasOwnProperty("repos")) {
 
@@ -233,7 +287,7 @@ function chUser() {
                         }
 
                         var u = ghcs.users[data.login] = {info: data};
-                        u.info.avatar =  new Image();
+                        u.info.avatar = new Image()//preloadeImage(u.info.avatar_url);
                         u.info.avatar.src = u.info.avatar_url;
 
                         ghcs.login = data.login;
@@ -248,8 +302,10 @@ function chUser() {
                             JSONP(makeUrl(data.repos_url, TYPE_REQUEST.repos), function getAll(req) {
                                 parseRepos(getDataFromRequest(req));
                                 getNext(req, function(next) {
-                                    ldrTop.show();
-                                    JSONP(next, getAll);
+                                    if (next) {
+                                        ldrTop.show();
+                                        JSONP(next, getAll);
+                                    }
                                 });
                                 divStat.updateInfo();
                             });
@@ -270,21 +326,23 @@ function chUser() {
 }
 
 function getNext(req, fn) {
+    var next;
     if (req && req.meta && req.meta.Link) {
-        var next = req.meta.Link.reduce(function (a, b) {
+        next = req.meta.Link.reduce(function (a, b) {
             if (!a && b[1].rel == "next")
                 return b[0];
             return a;
         }, null);
-        next && fn && fn(next);
     }
+    fn && fn(next);
 }
 function analyseCommits() {
     runBtn.disable();
     ldrTop.show();
 
-    ghcs.states.max = 0;
+    ghcs.states.max = ghcs.limits.commits;
     ghcs.states.cur = 0;
+    ghcs.states.loaded = 0;
     ghcs.states.complete = function() {
         stepsBar.thirdStep();
         runBtn.enable();
@@ -292,16 +350,27 @@ function analyseCommits() {
         vis.redrawStat(ghcs.repo);
         visBtn.enable();
     };
-    vis.layers.ordering("stat", 0);
+    vis.layers.stat.toFront();
 
-    JSONP(makeUrl(ghcs.repo.commits_url), function getAll(req) {
-        ghcs.states.max++;
-        parseCommits(getDataFromRequest(req));
-        ghcs.limits.commits > ghcs.states.max && getNext(req, function(next) {
-            updateStatus(ghcs.states.cur);
-            psBar.show();
-            ldrTop.show();
-            JSONP(next, getAll);
+    cbDlsr.check();
+
+    JSONP(makeUrl(ghcs.repo.commits_url, TYPE_REQUEST.commits, ghcs.limits.commits), function getAll(req) {
+        getNext(req, function(next) {
+            var l = req && req.data && req.data instanceof Array ? req.data.length : 0;
+            ghcs.states.loaded += l;
+            l = ghcs.states.max - ghcs.states.loaded;
+
+            if (next && l > 0) {
+                updateStatus(ghcs.states.cur);
+                psBar.show();
+                ldrTop.show();
+                JSONP(next.replace("per_page=100", "per_page=" + (l > 100 ? 100 : l)), getAll);
+            }
+            else {
+                ghcs.states.max =
+                    ghcs.states.loaded;
+            }
         });
+        parseCommits(getDataFromRequest(req));
     });
 }

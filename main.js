@@ -19,7 +19,7 @@ var cs, svg,
     margin = {top: 20, right: 20, bottom: 20, left: 20},
     w, h,
     psBar, runBtn, ldrTop, toolTip, showBtn, visBtn,
-    userTxt, curRep, divStat, stepsBar, cbDlr;
+    userTxt, curRep, divStat, stepsBar, cbDlr, cbDlsr;
 
 function updateStatus(pos, label) {
     psBar.setPos((pos * 100 / (ghcs.states.max || 1)) + "%")
@@ -71,11 +71,14 @@ function chRadio(d) {
 }
 
 function chCheckbox(d) {
-    d = d3.select(d instanceof HTMLInputElement ? d : this);
+    var ln;
+    d = d3.select(this);
     switch(d.attr("id")) {
         case "cb-dlr":
-            vis.layers.repo
-            && ((d.property("checked") && vis.layers.repo.show()) || vis.layers.repo.hide());
+        case "cb-dlsr":
+            ln = d.datum();
+            vis.layers[ln]
+            && ((d.property("checked") && vis.layers[ln].show()) || vis.layers[ln].hide());
             break;
         case "cb-dllh":
             vis.layers.repo
@@ -145,7 +148,7 @@ function init() {
         }
     })();
 
-    cs = d3.select("#canvas");
+    cs = d3.select("#svg");
     svg = cs.append("svg");
     w = svg.property("clientWidth") || document.body.clientWidth;
     h = svg.property("clientHeight")|| document.body.clientHeight;
@@ -240,11 +243,25 @@ function init() {
 
     d3.selectAll("input[type=checkbox]").on("change", chCheckbox);
 
-    cbDlr = d3.select("#cb-dlr");
-    cbDlr.trigger = function() {
-        this.property("checked", !this.property("checked"));
-        chCheckbox(this.node());
-    }
+    cbDlr = d3.select("#cb-dlr").datum("repo");
+    cbDlsr = d3.select("#cb-dlsr").datum("stat");
+
+    [cbDlr, cbDlsr].forEach(function(item) {
+        item.check = function() {
+            this.property("checked", true);
+            chCheckbox.apply(this.node());
+        };
+
+        item.uncheck = function() {
+            this.property("checked", false);
+            chCheckbox.apply(this.node());
+        };
+
+        item.trigger = function() {
+            this.property("checked", !this.property("checked"));
+            chCheckbox.apply(this.node());
+        };
+    })
 
     d3.select("#txt-lc").on("change", function() {
         ghcs.limits.commits = +this.value;

@@ -58,6 +58,12 @@
                                                 <label for="cb-dlr">Layer repos</label>
                                             </li>
                                             <li class="field">
+                                                <input id="cb-dlsr" type="checkbox" checked="checked">
+                                                <label for="cb-dlsr">Layer stat repo</label>
+                                            </li>
+                                        </ul>
+                                        <ul class="group">
+                                            <li class="field">
                                                 <input id="cb-dlcmrs" type="checkbox" checked="checked">
                                                 <label for="cb-dlcmrs">Layer committers</label>
                                             </li>
@@ -68,7 +74,6 @@
                                             <li class="field">
                                                 <label for="txt-lc">Limit of commits</label>
                                                 <input id="txt-lc" type="number" value="100">
-                                                <blockquote>if value more than 100, <br />then number of commits in request is 100.</blockquote>
                                             </li>
                                         </ul>
                                     </li>
@@ -96,7 +101,10 @@
 
 <div id="tooltip" class="popup tooltip"></div>
 
-<div id="canvas"></div>
+<div id="layers">
+    <div id="canvas"></div>
+    <div id="svg"></div>
+</div>
 
 <footer>
     <div id="statusBar" class="popup">

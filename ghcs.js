@@ -34,7 +34,9 @@
 var ONE_SECOND = 1000,
     ONE_MINUTE = 60 * ONE_SECOND,
     ONE_HOUR = 60 * ONE_MINUTE,
-    ONE_DAY = 24 * ONE_HOUR;
+    ONE_DAY = 24 * ONE_HOUR,
+
+    PI_CIRCLE = 2 * Math.PI;
 
 var ghcs = {
     users: {},
@@ -44,6 +46,31 @@ var ghcs = {
         stepShow : 1,
         stepType : ONE_DAY
     },
+    settings : {
+        code_swarm : {
+            fileLife : 0 // number of tacts of life a file
+            , userLife : 2550 // number of tacts of life a user
+            , edgeLife : 2550 // number of tacts of life a edge
+            , showCountExt : true // show table of file's extension
+            , onlyShownExt : true // show only extension which is shown
+            , showHistogram : true // displaying histogram of changed files
+            , showHalo : true // show a file's halo
+            , padding : 25 // padding around a user
+            , speedOpacity : .5 // speed of falling opacity
+            , speedFlash : .5 // speed of falling flash
+            , sizeFile : 2 // size of file
+            , sizeUser : 24 // size of user
+            , showPaddingCircle : false // show circle of padding
+            , useAvatar : true // show user's avatar
+            , showEdge : true // show a edge
+            , showFile : true // show a file
+            , showUser : true // show a user
+            , showLabel : true // show user name
+            , showFilename : true // show file name TODO: надо-ли?
+            , labelPattern : "%n <%e>"
+        }
+    },
+
     asyncForEach: function(items, fn, time) {
         if (!(items instanceof Array))
             return;
@@ -57,5 +84,48 @@ var ghcs = {
                 setTimeout(loop, time || 1);
         }
         loop();
-    }
+    },
+    imageHash : d3.map({})
 };
+
+(function(ghcs) {
+    ghcs.storage = sessionStorage;
+    if (ghcs.storage) {
+        Storage.prototype.set = function(key, value) {
+            this.setItem(key, JSON.stringify(value));
+        };
+
+        Storage.prototype.get = function(key) {
+            var res = this.getItem(key);
+            return res ? JSON.parse(res) : res;
+        };
+        Storage.prototype.setImageData = setImageData;
+    }
+    else {
+        ghcs.storage = d3.map({});
+        ghcs.storage.clear = function() {
+            var ks = ghcs.storage.keys,
+                l = ks.length;
+
+            while(--l > -1)
+                ghcs.storage.remove(ks[l]);
+        };
+        ghcs.storage.setImageData = setImageData;
+    }
+
+    var canvas = document.createElement("canvas"),
+        ctx = canvas.getContext("2d");
+
+    /**
+     * @param url {String}
+     * @param image {Image}
+     */
+    function setImageData(url, image) {
+        canvas.width = image.width;
+        canvas.height = image.height;
+        ctx.drawImage(image, 0, 0);
+        ghcs.storage.set(url, canvas.toDataURL("image/png"));
+        canvas.width = 0;
+        canvas.height = 0;
+    }
+})(ghcs);
