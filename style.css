@@ -54,6 +54,9 @@ html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,abbr,address
 .mini-icon-location:before {
     content: "\f060";
 }
+.mini-icon-history:before {
+    content: "\f07e";
+}
 
 .mega-icon-public-repo:before {
     content: "\f201";
@@ -781,4 +784,11 @@ hr {
 
 .group > li {
     display: inline-block;
+}
+
+.com-mess {
+    font-size: 11pt;
+    font-family: Verdana,serif;
+    fill: #ffffff;
+    fill-opacity: .3;
 }

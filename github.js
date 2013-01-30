@@ -16,15 +16,15 @@ var TYPE_REQUEST = {
         added : 2,
         renamed : 3
     }
-
-
+    ;
 
 function makeUrl(url, type, limit) {
-    var sec = "client_id=c45417c5d6249959a91d&client_secret=4634b3aa7549c3d6306961e819e5ec9b355a6548";
+    limit = limit || 0;
+    var sec = "client_id=" + ghcs.settings.access.client_id + "&client_secret=" + ghcs.settings.access.client_secret;
     if (type == TYPE_REQUEST.repos) {
         sec += (ghcs.rot ? "&per_page=100&type=" + ghcs.rot : "" );
     }
-    else /*if (type == TYPE_REQUEST.repos)*/{
+    else if(type == TYPE_REQUEST.commits) {
         limit = limit < 0 ? ghcs.limits.commits : limit;
         sec += "&per_page=" + (limit > 100 ? 100 : limit)
     }
@@ -219,7 +219,7 @@ function parseRepos(data) {
                         date : Date.parse(d.pushed_at || d.updated_at),
                         cdate : Date.parse(d.created_at),
                         desc : d.description,
-                        lang : d.language || "None"
+                        lang : d.language || "Multi"
                     }
                 };
             })

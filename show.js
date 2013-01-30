@@ -17,7 +17,9 @@
         valid = false,
         particle,
         defImg,
-        setting = ghcs.settings.code_swarm;
+        setting = ghcs.settings.code_swarm,
+        lcom, lleg, lhis,
+        rd3 = d3.random.irwinHall(8);
 
     var extColor = d3.scale.category20(),
         userColor = d3.scale.category20b();
@@ -30,6 +32,8 @@
     function reCalc(d) {
         if (stop)
             return;
+
+        lcom.showCommitMessage(d.message);
 
         var l = d.nodes.length,
             n, a;
@@ -56,11 +60,11 @@
             n.visible = !!n.statuses[d.sha].status;
             if (n.visible) {
                 n.flash = 100;
-                n.alive = setting.fileLife || 1;
+                n.alive = setting.fileLife > 0 ? setting.fileLife : 1;
                 n.opacity = 100;
             }
             else {
-                n.alive = (setting.fileLife || 1) * .2;
+                n.alive = (setting.fileLife > 0 ? setting.fileLife : 1) * .2;
                 n.opacity = 50;
             }
 
@@ -84,7 +88,6 @@
         });
         _force.nodes(works).start();
 
-
         workAuth = nodes.filter(function(d) {
             return d.type == typeNode.author && (d.visible || d.opacity);
         });
@@ -106,15 +109,17 @@
             return d.date >= dl && d.date < dr;
         });
 
-        ghcs.asyncForEach(visTurn, reCalc, 1000 / (visTurn.length > 1 ? visTurn.length : 1000));
+        ghcs.asyncForEach(visTurn, reCalc, ONE_SECOND / (visTurn.length > 1 ? visTurn.length : ONE_SECOND));
+        //visTurn.forEach(reCalc);
 
-        updateStatus(ghcs.states.cur++, timeFormat(new Date(dr)));
 
-        if (dl > dateRange[1]) {
+        updateStatus(ghcs.states.cur += ghcs.limits.stepShow * ghcs.limits.stepType, timeFormat(new Date(dr)));
+
+        if (dl >= dateRange[1]) {
             if (_worker)
                 clearInterval(_worker);
         } else {
-            if (!visTurn.length)
+            if (!visTurn.length && setting.skipEmptyDate)
                 loop();
         }
     }
@@ -140,19 +145,28 @@
         return d.color;
     }
 
+    function randomTrue() {
+        return Math.floor(rd3() * 8) % 2;
+    }
+
     function radius(d) {
         return Math.sqrt(d) * (setting.showHalo ? 8 : 1);
     }
 
     function node(d, type) {
-        var c = type == typeNode.file ? d.name : userColor(d.email), ext;
+        var c = type == typeNode.file ? d.name : userColor(d.email),
+            ext, x, y,
+            w2 = w/2,
+            w5 = w/5,
+            h2 = h/2,
+            h5 = h/5;
         if (type == typeNode.file) {
             c = c && c.match(/.*(\.\w+)$/) ? c.replace(/.*(\.\w+)$/, "$1") : "Mics";
             ext = extHash.get(c);
             if (!ext) {
                 ext = {
                     all : 0,
-                    current : 0,
+                    currents : {},
                     color : extColor(c)
                 };
                 extHash.set(c, ext);
@@ -161,9 +175,31 @@
             c = ext.color;
         }
 
+        x = w * Math.random();
+        y = h * Math.random();
+
+        if (type == typeNode.author) {
+            if (randomTrue()) {
+                x = x > w5 && x < w2
+                    ? x / 5
+                    : x > w2 && x < w - w5
+                    ? w - x / 5
+                    : x
+                ;
+            }
+            else {
+                y = y > h5 && y < h2
+                    ? y / 5
+                    : y > h2 && y < h - h5
+                    ? h - y / 5
+                    : y
+                ;
+            }
+        }
+
         return {
-            x : Math.random() * w,
-            y : Math.random() * h,
+            x : x,
+            y : y,
             id : type + (type == typeNode.file ? d.name : d.email),
             size : type != typeNode.file ? 24 : 2,
             weight : type != typeNode.file ? 24 : 2,
@@ -247,6 +283,7 @@
                     d.nodes.push(n);
                     n.statuses = n.statuses || {};
                     n.statuses[d.sha] = df;
+                    n.ext.currents[d.sha] += 1;
                     !n.inserted && (n.inserted = ns.push(n));
                 }
             }
@@ -254,7 +291,7 @@
         return ns;
     }
 
-    var tempCanvas;
+    var tempCanvas, tempFileCanvas;
     function setOpacity(img, a, f) {
         if (!img || !img.width)
             img = defImg;
@@ -295,14 +332,14 @@
         if (!img)
             return img;
 
-        if (!tempCanvas) {
-            tempCanvas = document.createElement("canvas");
+        if (!tempFileCanvas) {
+            tempFileCanvas = document.createElement("canvas");
+            tempFileCanvas.width = img.width;
+            tempFileCanvas.height = img.height;
         }
 
-        tempCanvas.width = img.width;
-        tempCanvas.height = img.height;
-
-        var imgCtx = tempCanvas.getContext("2d"), imgdata, i, o;
+        var imgCtx = tempFileCanvas.getContext("2d"), imgdata, i;
+        imgCtx.clearRect(0, 0, img.width, img.height);
         imgCtx.save();
         imgCtx.drawImage(img, 0, 0);
 
@@ -318,14 +355,15 @@
 
         imgCtx.putImageData(imgdata, 0, 0);
         imgCtx.restore();
-        return tempCanvas;
+        return tempFileCanvas;
     }
 
     function redrawCanvas() {
 
+        //TODO: optimize this code
+
         bufCtx.save();
         bufCtx.clearRect(0, 0, w, h);
-        bufCtx.globalAlpha=1;
 
         var n = d3.nest()
                 .key(function(d) {
@@ -409,7 +447,8 @@
 
                 d.opacity = !d.alive
                     ? ((d.opacity -= setting.speedOpacity) > 0 ? d.opacity : 0)
-                    : 100;
+                    : d.opacity
+                ;
 
                 d.visible && !d.opacity
                     && (d.visible = false);
@@ -483,16 +522,19 @@
             /*_force.nodes()
                 .forEach(collide(.5, d3.geom.quadtree(_force.nodes())));*/
 
-            _forceAuthor.nodes()
-                .filter(function(d) {
-                    if (d.visible && d.links === 0) {
-                        d.visible = false;
-                        d.flash = 0;
-                        d.alive = 0;
-                    }
-                    return d.links === 0;
-                });
+            _forceAuthor.nodes(
+                _forceAuthor.nodes()
+                    .filter(function(d) {
+                        if (d.visible && d.links === 0) {
+                            d.visible = false;
+                            d.flash = 0;
+                            d.alive = 0;
+                        }
+                        return d.visible;
+                    })
+            );
         }
+
         _forceAuthor.resume();
         _force.resume();
     }
@@ -577,7 +619,15 @@
         };
     }
 
-    vis.runShow = function(data) {
+    function updateExtLegend(sha) {
+        var data = extHash.forEach(function(k, d) {
+            if (d.currents[sha]) {
+
+            }
+        })
+    }
+
+    vis.runShow = function(data, _laeyr) {
         if (_worker)
             clearInterval(_worker);
 
@@ -589,6 +639,7 @@
 
         dateRange = d3.extent(data.dates);
         visTurn = null;
+
 
         layer = d3.select("#canvas");
         layer.select("#mainCanvas").remove();
@@ -610,9 +661,61 @@
         bufCtx.font = "normal normal " + setting.sizeUser / 2 + "px Tahoma";
         bufCtx.textAlign = "center";
 
+        layer = _laeyr || vis.layers.show;
+        layer && layer.show && layer.show();
+
+        lcom = (lcom || layer.append("g")
+            .attr("width", 10)
+            .attr("height", 14))
+            .attr("transform", "translate(" + [w/2, h - 18] + ")")
+            ;
+
+
+        lcom.visible = setting.showCommitMassage;
+
+        lcom.selectAll("text").remove();
+        lcom.showCommitMessage = function(text) {
+            if (setting.showCommitMassage && !lcom.visible) {
+                lcom.visible = true;
+                lcom.style("display", null);
+            }
+            else if (!setting.showCommitMassage && lcom.visible) {
+                lcom.visible = false;
+                lcom.style("display", "none");
+            }
+
+            lcom.append("text")
+                .attr("text-anchor", "middle")
+                .attr("class", "com-mess")
+                .attr("transform", "translate("+ [0, -lcom.node().childElementCount * 14] +")")
+                .text(text.split("\n")[0].substr(0, 100))
+                .transition()
+                .delay(500)
+                .duration(2000)
+                .style("fill-opacity", 1)
+                .duration(200)
+                .style("font-size", "11.2pt")
+                .transition()
+                .duration(1500)
+                .style("fill-opacity", .3)
+                .style("font-size", "11pt")
+                /*.duration(500)
+                .attr("transform", function(d, i) { return "translate("+ [0, -i * 14] +")"; })*/
+                .each("end", function() {
+                    lcom.selectAll("text").each(function(d, i) {
+                        d3.select(this)
+                            .attr("transform", "translate("+ [0, -i * 14] +")");
+                    });
+                })
+                .remove();
+            /*this.transition()
+                .attr("transform", "translate("+ [w/2, h - th] +")");*/
+        };
+
         psBar.show();
         ghcs.states.cur = 0;
-        ghcs.states.max = Math.round((dateRange[1] - dateRange[0]) / (ghcs.limits.stepShow * ghcs.limits.stepType));
+        ghcs.states.max = dateRange[1] - dateRange[0];
+        updateStatus(ghcs.states.cur, timeFormat(new Date(dateRange[0])));
 
 
         links = [];

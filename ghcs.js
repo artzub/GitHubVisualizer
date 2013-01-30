@@ -47,10 +47,14 @@ var ghcs = {
         stepType : ONE_DAY
     },
     settings : {
+        access : {
+            client_id : "c45417c5d6249959a91d",
+            client_secret : "4634b3aa7549c3d6306961e819e5ec9b355a6548"
+        },
         code_swarm : {
-            fileLife : 0 // number of tacts of life a file
-            , userLife : 2550 // number of tacts of life a user
-            , edgeLife : 2550 // number of tacts of life a edge
+            fileLife : 0 // number of steps of life a file
+            , userLife : 2550 // number of steps of life a user
+            , edgeLife : 2550 // number of steps of life a edge
             , showCountExt : true // show table of file's extension
             , onlyShownExt : true // show only extension which is shown
             , showHistogram : true // displaying histogram of changed files
@@ -67,7 +71,9 @@ var ghcs = {
             , showUser : true // show a user
             , showLabel : true // show user name
             , showFilename : true // show file name TODO: надо-ли?
-            , labelPattern : "%n <%e>"
+            , labelPattern : "%n <%e>"  // pattern for label of user
+            , showCommitMassage : true // show commit message
+            , skipEmptyDate : true // skip empty date
         }
     },
 
@@ -75,7 +81,7 @@ var ghcs = {
         if (!(items instanceof Array))
             return;
 
-        var workArr = items.concat();
+        var workArr = items.reverse().concat();
 
         function loop() {
             if (workArr.length > 0)

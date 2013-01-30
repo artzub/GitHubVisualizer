@@ -22,6 +22,7 @@ var cs, svg,
     userTxt, curRep, divStat, stepsBar, cbDlr, cbDlsr;
 
 function updateStatus(pos, label) {
+    pos = pos > ghcs.states.max ? ghcs.states.max : pos;
     psBar.setPos((pos * 100 / (ghcs.states.max || 1)) + "%")
         .setLabel(label || "Completed " + pos + " of " + ghcs.states.max + " commits ...");
 }
