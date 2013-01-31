@@ -86,7 +86,18 @@ function chCheckbox(d) {
             && vis.layers.repo.langHg
             && vis.layers.repo.langHg.style("display", d.property("checked") ? null : "none");
             break;
+        default :
+            (ln = d.datum()) && ln.ns
+                && (ln.ns[ln.key] = d.property("checked"));
+            break;
     }
+}
+
+function chValue(d) {
+    var ln;
+    d = d3.select(this);
+    (ln = d.datum()) && ln.ns
+        && (ln.ns[ln.key] = d.property("value"));
 }
 
 function checkCompleted() {
@@ -156,6 +167,26 @@ function init() {
 
     svg.attr("width", w).attr("height", h);
 
+    d3.selectAll("input").datum(function() {
+        var obj = null;
+        if (this.dataset && this.dataset.ns) {
+            var reg = new RegExp("(cb|n|txt)-" + this.dataset.ns + "-");
+            obj = {
+                ns : ghcs.settings[this.dataset.ns],
+                key : this.id.replace(reg, "")
+            };
+            if (this.type == "checkbox") {
+                this.checked = obj.ns[obj.key];
+            }
+            else {
+                this.value = obj.ns[obj.key];
+            }
+        }
+        return obj;
+    });
+
+    d3.selectAll("input[type=checkbox]").on("change", chCheckbox);
+    d3.selectAll("input[type=number], input[type=text]").on("change", chValue);
 
     psBar = d3.select("#progressBar");
     psBar.pntNode = d3.select(psBar.node().parentNode);
@@ -242,8 +273,6 @@ function init() {
         return this;
     };
 
-    d3.selectAll("input[type=checkbox]").on("change", chCheckbox);
-
     cbDlr = d3.select("#cb-dlr").datum("repo");
     cbDlsr = d3.select("#cb-dlsr").datum("stat");
 
@@ -262,7 +291,7 @@ function init() {
             this.property("checked", !this.property("checked"));
             chCheckbox.apply(this.node());
         };
-    })
+    });
 
     d3.select("#txt-lc").on("change", function() {
         ghcs.limits.commits = +this.value;
@@ -337,7 +366,7 @@ function init() {
                     user.info.blog && ul.append("li")
                         .call(function(li) {
                             li.append("span")
-                                .attr("class", "mini-icon mini-icon-link")
+                                .attr("class", "mini-icon mini-icon-link");
                             li.append("a")
                                 .attr("target", "_blank")
                                 .attr("href", user.info.blog)

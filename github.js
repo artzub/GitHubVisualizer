@@ -131,11 +131,9 @@ function preloadImage(url) {
                 return function () {
                     if (url)
                         ghcs.storage.setImageData(url, this);
-                    console.log(url + ":");
-                    console.log(this);
                 };
             })(url);
-            image.src = crossUrl((url || (url = "https://secure.gravatar.com/avatar/" + Date.now() + Date.now() + "?d=identicon&f=y") + "&s=32"), "image");
+            image.src = crossUrl((url || (url = "https://secure.gravatar.com/avatar/" + Date.now() + Date.now() + "?d=identicon&f=y")) + "&s=32", "image");
         }
         else {
             image.src = ava;
@@ -183,7 +181,8 @@ function parseCommits(commits) {
                     upCommits();
                 };
             })(d), {
-                onerror : function() {
+                onerror : function(err) {
+                    console.log(err);
                     upCommits();
                 }
             });
@@ -287,7 +286,7 @@ function chUser() {
                         }
 
                         var u = ghcs.users[data.login] = {info: data};
-                        u.info.avatar = new Image()//preloadeImage(u.info.avatar_url);
+                        u.info.avatar = new Image();//preloadeImage(u.info.avatar_url);
                         u.info.avatar.src = u.info.avatar_url;
 
                         ghcs.login = data.login;
@@ -308,6 +307,10 @@ function chUser() {
                                     }
                                 });
                                 divStat.updateInfo();
+                            }, {
+                                onerror : function(err) {
+                                    console.log(err);
+                                }
                             });
                         else
                             parseRepos(null);
@@ -364,7 +367,14 @@ function analyseCommits() {
                 updateStatus(ghcs.states.cur);
                 psBar.show();
                 ldrTop.show();
-                JSONP(next.replace("per_page=100", "per_page=" + (l > 100 ? 100 : l)), getAll);
+                JSONP(next.replace("per_page=100", "per_page=" + (l > 100 ? 100 : l)),
+                    getAll, {
+                        onerror : (function(len) {
+                            return function() {
+                                ghcs.states.max -= len;
+                            };
+                        })(l)
+                    });
             }
             else {
                 ghcs.states.max =

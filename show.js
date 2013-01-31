@@ -7,18 +7,35 @@
 "use strict";
 
 (function(vis) {
-    var _worker, _data,
-        authorHash, filesHash, extHash,
-        _force, _forceAuthor, dateRange, nodes,
-        groups,
-        visTurn, layer, pause, stop,
-        works, workAuth, links, lines,
-        canvas, ctx, bufCanvas, bufCtx,
-        valid = false,
+    var _worker,
+        _data,
+        nodes,
+        dateRange,
+
+        authorHash,
+        filesHash,
+        extHash,
+        extMax,
+
+        _force,
+        _forceAuthor,
+
+        links,
+
+        lCom, lLeg, lHis,
+
+        canvas, ctx,
+        bufCanvas, bufCtx,
+        layer,
+
+        valid,
+        pause,
+        stop,
+
         particle,
         defImg,
-        setting = ghcs.settings.code_swarm,
-        lcom, lleg, lhis,
+
+        setting,
         rd3 = d3.random.irwinHall(8);
 
     var extColor = d3.scale.category20(),
@@ -33,7 +50,8 @@
         if (stop)
             return;
 
-        lcom.showCommitMessage(d.message);
+        lCom.showCommitMessage(d.message);
+        appendExtLegend(d.sha);
 
         var l = d.nodes.length,
             n, a;
@@ -44,7 +62,7 @@
         if (!l)
             console.log(d);
         else {
-            a.alive = setting.userLife;
+            a.alive = setting.userLife > 0 ? setting.userLife : 1;
             a.opacity = 100;
             a.flash = 100;
             a.visible = true;
@@ -83,15 +101,14 @@
             });*/
         }
 
-        works = nodes.filter(function(d) {
-            return d.type != typeNode.author && (d.visible || d.opacity);
-        });
-        _force.nodes(works).start();
+        _force.nodes(nodes.filter(function(d) {
+                return d.type != typeNode.author && (d.visible || d.opacity);
+            }).sort(sortBySize)
+        ).start();
 
-        workAuth = nodes.filter(function(d) {
+        _forceAuthor.nodes(nodes.filter(function(d) {
             return d.type == typeNode.author && (d.visible || d.opacity);
-        });
-        _forceAuthor.nodes(workAuth).start();
+        })).start();
     }
 
     function loop() {
@@ -105,7 +122,7 @@
         dr = dl + ghcs.limits.stepShow * ghcs.limits.stepType;
         dateRange[0] = dr;
 
-        visTurn = _data.filter(function (d) {
+        var visTurn = _data.filter(function (d) {
             return d.date >= dl && d.date < dr;
         });
 
@@ -122,6 +139,9 @@
             if (!visTurn.length && setting.skipEmptyDate)
                 loop();
         }
+
+        updateExtHistogram();
+        updateExtHistogram();
     }
 
     function run() {
@@ -150,7 +170,7 @@
     }
 
     function radius(d) {
-        return Math.sqrt(d) * (setting.showHalo ? 8 : 1);
+        return Math.sqrt(d);
     }
 
     function node(d, type) {
@@ -248,6 +268,7 @@
         authorHash = d3.map({});
         filesHash = d3.map({});
         extHash = d3.map({});
+        extMax = 0;
 
         if (data) {
             i = data.length;
@@ -281,11 +302,19 @@
 
                     n = getFile(df);
                     d.nodes.push(n);
+                    n.size = 2;
                     n.statuses = n.statuses || {};
                     n.statuses[d.sha] = df;
-                    n.ext.currents[d.sha] += 1;
+                    n.ext.currents[d.sha] = (n.ext.currents[d.sha] || 0);
+                    n.ext.currents[d.sha]++;
                     !n.inserted && (n.inserted = ns.push(n));
                 }
+
+                j = extHash.values().reduce(function(a, b) {
+                    return a += b.currents[d.sha] || 0;
+                }, null);
+
+                extMax = j > extMax ? j : extMax;
             }
         }
         return ns;
@@ -328,7 +357,7 @@
         return tempCanvas;
     }
 
-    function colorize(img, r, b, g, a) {
+    function colorize(img, r, g, b, a) {
         if (!img)
             return img;
 
@@ -348,9 +377,11 @@
         i = imgdata.data.length;
         while((i -= 4) > -1) {
             imgdata.data[i + 3] = imgdata.data[i] * a;
-            imgdata.data[i] = r;
-            imgdata.data[i + 1] = g;
-            imgdata.data[i + 2] = b;
+            if (imgdata.data[i + 3]) {
+                imgdata.data[i] = r;
+                imgdata.data[i + 1] = g;
+                imgdata.data[i + 2] = b;
+            }
         }
 
         imgCtx.putImageData(imgdata, 0, 0);
@@ -358,137 +389,144 @@
         return tempFileCanvas;
     }
 
-    function redrawCanvas() {
+    function blink(d, aliveCheck, i, l) {
+        d.flash = (d.flash -= setting.rateFlash) > 0 ? d.flash : 0;
 
-        //TODO: optimize this code
+        !d.flash && aliveCheck
+            && (d.alive = (d.alive-- > 0 ? d.alive : 0))
+        ;
+
+        d.opacity = !d.alive
+            ? ((d.opacity -= setting.rateOpacity) > 0 ? d.opacity : 0)
+            : d.opacity
+        ;
+
+        d.visible && !d.opacity
+            && (d.visible = false);
+    }
+
+    function sortBySize(a, b) {
+        return d3.descending(a.size, b.size);
+    }
+
+    function redrawCanvas() {
 
         bufCtx.save();
         bufCtx.clearRect(0, 0, w, h);
 
-        var n = d3.nest()
+        var n, l, i, j,
+            img,
+            d, d1, d2,
+            c, x, y, s;
+
+
+        if (setting.showFile) {
+            n = d3.nest()
                 .key(function(d) {
                     return d.opacity;
                 })
                 .key(function(d) {
                     return d.flash ? ncb(d) : d3.rgb(nc(d));
                 })
-                .entries(_force.nodes())
-                ,
-            l = n.length, i, j,
-            img,
-            d, d1, d2,
-            c, x, y, s;
+                .entries(_force.nodes());
 
-        while(--l > -1) {
-            d1 = n[l];
-            i = d1.values.length;
-            while(--i > -1) {
-                d2 = d1.values[i];
-                j = d2.values.length;
+            l = n.length;
 
-                c = d3.rgb(d2.key);
+            while(--l > -1) {
+                d1 = n[l];
+                i = d1.values.length;
+                while(--i > -1) {
+                    d2 = d1.values[i];
+                    j = d2.values.length;
 
-                if (!setting.showHalo) {
-                    bufCtx.beginPath();
-                    bufCtx.strokeStyle = "none";
-                    bufCtx.fillStyle = toRgba(c, d1.key * .01);
-                }
-                else
-                    img = colorize(particle, c.r, c.g, c.b, d1.key * .01);
+                    c = d3.rgb(d2.key);
 
-                while(--j > -1) {
-                    d = d2.values[j];
-                    if (d.visible || d.alive) {
-                        d.flash = (d.flash -= setting.speedFlash) > 0 ? d.flash : 0;
-
-                        !d.flash && setting.fileLife > 0
-                            && (d.alive = --d.alive > 0 ? d.alive : 0)
-                        ;
-
-                        d.opacity = !d.alive
-                            ? ((d.opacity -= setting.speedOpacity) > 0 ? d.opacity : 0)
-                            : d.opacity
-                        ;
-
-                        d.visible && !d.opacity
-                            && (d.visible = false);
-
-                        x = Math.floor(d.x);
-                        y = Math.floor(d.y);
-
-                        s = radius(nr(d));
-                        setting.showHalo
-                            ? bufCtx.drawImage(img, x - s / 2, y - s / 2, s, s)
-                            : bufCtx.arc(x, y, s, 0, PI_CIRCLE, true)
-                            ;
+                    if (!setting.showHalo) {
+                        bufCtx.beginPath();
+                        bufCtx.strokeStyle = "none";
+                        bufCtx.fillStyle = toRgba(c, d1.key * .01);
                     }
-                }
+                    else
+                        img = colorize(particle, c.r, c.g, c.b, d1.key * .01);
 
-                if (!setting.showHalo) {
-                    bufCtx.fill();
-                    bufCtx.stroke();
+                    while(--j > -1) {
+                        d = d2.values[j];
+                        if (d.visible || d.alive) {
+                            //blink(d, setting.fileLife > 0);
+                            x = Math.floor(d.x);
+                            y = Math.floor(d.y);
+
+                            s = radius(nr(d)) * (setting.showHalo ? 8 : 1);
+                            setting.showHalo
+                                ? bufCtx.drawImage(img, x - s / 2, y - s / 2, s, s)
+                                : bufCtx.arc(x, y, s, 0, PI_CIRCLE, true)
+                                ;
+                        }
+                    }
+
+                    if (!setting.showHalo) {
+                        bufCtx.fill();
+                        bufCtx.stroke();
+                        bufCtx.closePath();
+                    }
                 }
             }
         }
 
-        bufCtx.closePath();
+        if (setting.showUser || setting.showLabel) {
+            n = _forceAuthor.nodes();
+            l = n.length;
 
-        n = _forceAuthor.nodes();
-        l = n.length;
+            while(--l > -1) {
+                d = n[l];
+                if (d.visible || d.opacity) {
+                    //blink(d, !d.links && setting.userLife > 0);
 
-        while(--l > -1) {
-            d = n[l];
-            if (d.visible || d.opacity) {
-                d.flash = (d.flash -= setting.speedFlash) > 0 ? d.flash : 0;
-                c = d.flash ? "white" : "gray";
+                    x = Math.floor(d.x);
+                    y = Math.floor(d.y);
 
-                !d.flash && !d.links
-                    && (d.alive = --d.alive > 0 ? d.alive : 0);
+                    if (setting.showUser) {
+                        c = d.flash ? ncb(d) : d3.rgb(nc(d));
+                        bufCtx.save();
 
-                d.opacity = !d.alive
-                    ? ((d.opacity -= setting.speedOpacity) > 0 ? d.opacity : 0)
-                    : d.opacity
-                ;
+                        if (setting.showPaddingCircle) {
+                            bufCtx.beginPath();
+                            bufCtx.strokeStyle = "none";
+                            bufCtx.fillStyle = toRgba("#ff0000", .1);
+                            bufCtx.arc(x, y, nr(d) + setting.padding, 0, PI_CIRCLE, true);
+                            bufCtx.fill();
+                            bufCtx.stroke();
+                        }
 
-                d.visible && !d.opacity
-                    && (d.visible = false);
+                        bufCtx.beginPath();
+                        bufCtx.strokeStyle = "none";
+                        bufCtx.fillStyle = setting.useAvatar ? "none" : toRgba(c, d.opacity * .01);
+                        bufCtx.arc(x, y, nr(d), 0, PI_CIRCLE, true);
+                        bufCtx.fill();
+                        bufCtx.stroke();
+                        if (setting.useAvatar && d.img) {
+                            bufCtx.clip();
+                            bufCtx.drawImage(setOpacity(d.img, d.opacity * .01, d.flash), x - nr(d), y - nr(d), nr(d) * 2, nr(d) * 2);
+                        }
+                        bufCtx.closePath();
 
-                x = Math.floor(d.x);
-                y = Math.floor(d.y);
+                        bufCtx.restore();
+                    }
 
-                bufCtx.save();
+                    if (setting.showLabel) {
+                        c = d.flash ? "white" : "gray";
 
-                if (setting.showPaddingCircle) {
-                    bufCtx.beginPath();
-                    bufCtx.strokeStyle = "none";
-                    bufCtx.fillStyle = toRgba("#ff0000", .1);
-                    bufCtx.arc(x, y, nr(d) + setting.padding, 0, PI_CIRCLE, true);
-                    bufCtx.fill();
-                    bufCtx.stroke();
+                        bufCtx.save();
+
+                        bufCtx.fillStyle = toRgba(c, d.opacity * .01);
+                        bufCtx.fillText(setting.labelPattern
+                            .replace("%l", d.nodeValue.login)
+                            .replace("%n", d.nodeValue.name != "unknown" ? d.nodeValue.name : d.nodeValue.login)
+                            .replace("%e", d.nodeValue.email), x, y + nr(d) * 1.5);
+
+                        bufCtx.restore();
+                    }
                 }
-
-                bufCtx.beginPath();
-                bufCtx.strokeStyle = "none";
-                bufCtx.fillStyle = setting.useAvatar ? "none" : toRgba(c, d.opacity * .01);
-                bufCtx.arc(x, y, nr(d), 0, PI_CIRCLE, true);
-                bufCtx.fill();
-                bufCtx.stroke();
-                if (setting.useAvatar && d.img) {
-                    bufCtx.clip();
-                    bufCtx.drawImage(setOpacity(d.img, d.opacity * .01, d.flash), x - nr(d), y - nr(d), nr(d) * 2, nr(d) * 2);
-                }
-                bufCtx.closePath();
-
-                bufCtx.restore();
-
-                bufCtx.save();
-
-                bufCtx.fillStyle = toRgba(c, d.opacity * .01);
-                bufCtx.fillText(setting.labelPattern
-                    .replace("%n", d.nodeValue.name != "unknown" ? d.nodeValue.name : d.nodeValue.login)
-                    .replace("%e", d.nodeValue.email), x, y + nr(d) * 1.5);
-
-                bufCtx.restore();
             }
         }
 
@@ -497,6 +535,7 @@
 
     function anim() {
         requestAnimationFrame(anim);
+
         if (valid)
             return;
 
@@ -519,16 +558,13 @@
             _force.nodes()
                 .forEach(cluster(0.025));
 
-            /*_force.nodes()
-                .forEach(collide(.5, d3.geom.quadtree(_force.nodes())));*/
-
             _forceAuthor.nodes(
                 _forceAuthor.nodes()
-                    .filter(function(d) {
-                        if (d.visible && d.links === 0) {
-                            d.visible = false;
+                    .filter(function(d, i) {
+                        blink(d, !d.links && setting.userLife > 0, i, _forceAuthor.nodes().length);
+                        if (d.visible && d.links === 0 && setting.userLife > 0) {
                             d.flash = 0;
-                            d.alive = 0;
+                            d.alive = d.alive * .01;
                         }
                         return d.visible;
                     })
@@ -546,7 +582,8 @@
             d.links = 0;
         });
 
-        return function(d) {
+        return function(d, i) {
+            blink(d, setting.fileLife > 0, i, _force.nodes().length);
             if (!d.author || !d.visible)
                 return;
 
@@ -574,77 +611,100 @@
         };
     }
 
-    // Resolves collisions between d and all other circles.
-    function collide(alpha, quadtree) {
-        return function(d) {
-            if(!d.visible || !d.links || d.type != typeNode.file)
-                return;
+    function appendExtLegend(sha){
+        if (!layer)
+            return;
 
-            var r = radius(nr(d)) + 3 * setting.padding,
-                nx1 = d.x - r,
-                nx2 = d.x + r,
-                ny1 = d.y - r,
-                ny2 = d.y + r;
-            quadtree.visit(function(quad, x1, y1, x2, y2) {
-                if (quad.point
-                    && quad.point.type == typeNode.file
-                    && quad.point.visible
-                    && (quad.point !== d)
-                    && d.author !== quad.point.author) {
-                    var x = d.x - quad.point.x,
-                        y = d.y - quad.point.y,
-                        l = Math.sqrt(x * x + y * y),
-                        r = (radius(nr(d)) + radius(nr(quad.point))) +
-                            /*(d.author !== quad.point.author && d.type == typeNode.file) **/ setting.padding ;
-                    if (l < r) {
-                        l = (l - r) / (l || 1) * (alpha || 1);
+        var data = [],
+            w3 = w / 3,
+            ml = w * .01,
+            mb = 18,
+            h2 = (h / 2) - mb,
+            bw = 2,
+            i, ny
+            ;
 
-                        x *= l;
-                        y *= l;
+        var y = d3.scale.linear()
+            .range([0, h2])
+            .domain([0, extMax]);
 
-                        if(d.type == typeNode.file) {
-                            d.x -= x;
-                            d.y -= y;
-                        }
+        lHis = (lHis || layer.append("g"))
+            .attr("width", w3)
+            .attr("height", h2)
+            .attr("transform", "translate(" + [ ml , h - h2 - mb ] + ")");
 
-                        quad.point.x += x;
-                        quad.point.y += y;
-                    }
-                }
-                return x1 > nx2
-                    || x2 < nx1
-                    || y1 > ny2
-                    || y2 < ny1;
+        if (!sha)
+            return;
+
+        ny = h2;
+        extHash.forEach(function(k, d) {
+            var obj = {
+                key : k,
+                h : y(d.currents[sha] || 0),
+                color : d.color
+            };
+            obj.y = ny -= obj.h;
+            data.push(obj);
+        });
+
+        updateExtHistogram();
+
+        var g = lHis.append("g")
+            .attr("class", "colStack")
+            .datum({ x : w3, w : bw })
+            .style("opacity", 0);
+
+        g.selectAll("rect")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("x", 0)
+            .attr("y", function(d) {  return d.y;  })
+            .attr("width", bw)
+            .attr("height", function(d) { return d.h; })
+            .attr("fill", function(d) { return d.color; })
+        ;
+
+        g.style("opacity", 1)
+            .attr("transform", function(d) {
+                return "translate(" + [ d.x, 0] + ")";
             });
-        };
     }
 
-    function updateExtLegend(sha) {
-        var data = extHash.forEach(function(k, d) {
-            if (d.currents[sha]) {
+    function updateExtHistogram() {
+        if (!lHis || lHis.selectAll(".colStack").empty())
+            return;
 
-            }
-        })
+        lHis.selectAll(".colStack")
+            .attr("transform", function(d) {
+                return "translate(" + [ d.x -= d.w - 1, 0] + ")";
+            })
+            .filter(function(d) {
+                return d.x < 0;
+            })
+            .remove();
     }
 
-    vis.runShow = function(data, _laeyr) {
+
+    vis.runShow = function(data, svg, params) {
         if (_worker)
             clearInterval(_worker);
 
         if (!data || !data.commits)
             return;
 
+        setting = ghcs.settings.cs;
+
         vis.layers.repo && cbDlr.uncheck();
         vis.layers.stat && cbDlsr.uncheck();
 
         dateRange = d3.extent(data.dates);
-        visTurn = null;
-
 
         layer = d3.select("#canvas");
         layer.select("#mainCanvas").remove();
 
         canvas = layer.append("canvas")
+            .text("This browser don't support element type of Canvas.")
             .attr("id", "mainCanvas")
             .attr("width", w)
             .attr("height", h)
@@ -661,33 +721,36 @@
         bufCtx.font = "normal normal " + setting.sizeUser / 2 + "px Tahoma";
         bufCtx.textAlign = "center";
 
-        layer = _laeyr || vis.layers.show;
+        layer = svg || vis.layers.show;
         layer && layer.show && layer.show();
 
-        lcom = (lcom || layer.append("g")
-            .attr("width", 10)
-            .attr("height", 14))
+
+        lHis && lHis.selectAll("*").remove();
+
+        lCom = (
+                lCom || layer.append("g")
+                    .attr("width", 10)
+                    .attr("height", 14)
+            )
             .attr("transform", "translate(" + [w/2, h - 18] + ")")
             ;
+        lCom.visible = !setting.showCommitMessage;
 
-
-        lcom.visible = setting.showCommitMassage;
-
-        lcom.selectAll("text").remove();
-        lcom.showCommitMessage = function(text) {
-            if (setting.showCommitMassage && !lcom.visible) {
-                lcom.visible = true;
-                lcom.style("display", null);
+        lCom.selectAll("text").remove();
+        lCom.showCommitMessage = lCom.showCommitMessage || function(text) {
+            if (setting.showCommitMessage && !lCom.visible) {
+                lCom.visible = true;
+                lCom.style("display", null);
             }
-            else if (!setting.showCommitMassage && lcom.visible) {
-                lcom.visible = false;
-                lcom.style("display", "none");
+            else if (!setting.showCommitMessage && lCom.visible) {
+                lCom.visible = false;
+                lCom.style("display", "none");
             }
 
-            lcom.append("text")
+            lCom.append("text")
                 .attr("text-anchor", "middle")
                 .attr("class", "com-mess")
-                .attr("transform", "translate("+ [0, -lcom.node().childElementCount * 14] +")")
+                .attr("transform", "translate("+ [0, -lCom.node().childElementCount * 14] +")")
                 .text(text.split("\n")[0].substr(0, 100))
                 .transition()
                 .delay(500)
@@ -699,24 +762,19 @@
                 .duration(1500)
                 .style("fill-opacity", .3)
                 .style("font-size", "11pt")
-                /*.duration(500)
-                .attr("transform", function(d, i) { return "translate("+ [0, -i * 14] +")"; })*/
                 .each("end", function() {
-                    lcom.selectAll("text").each(function(d, i) {
+                    lCom.selectAll("text").each(function(d, i) {
                         d3.select(this)
                             .attr("transform", "translate("+ [0, -i * 14] +")");
                     });
                 })
                 .remove();
-            /*this.transition()
-                .attr("transform", "translate("+ [w/2, h - th] +")");*/
         };
 
         psBar.show();
         ghcs.states.cur = 0;
         ghcs.states.max = dateRange[1] - dateRange[0];
         updateStatus(ghcs.states.cur, timeFormat(new Date(dateRange[0])));
-
 
         links = [];
         nodes = initNodes(_data = data.commits.slice(0).sort(vis.sC));
@@ -732,22 +790,18 @@
             .size([w, h])
             .friction(.75)
             .gravity(0)
-            .charge(-2)
+            .charge(function(d) {return -3 * radius(nr(d)); } )
             .on("tick", tick))
-            .nodes(works = [])
-            .start()
-            .stop();
+            .nodes([])
+            ;
 
         _forceAuthor = (_forceAuthor || d3.layout.force()
             .stop()
             .size([w, h])
             .gravity(setting.padding * .001)
             .charge(function(d) { return -(setting.padding + d.size) * 8; }))
-            .nodes(workAuth = [])
-            .start()
-            .stop();
-
-        groups = null;
+            .nodes([])
+            ;
 
         stop = false;
         pause = false;

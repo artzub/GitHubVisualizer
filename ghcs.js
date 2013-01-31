@@ -51,17 +51,17 @@ var ghcs = {
             client_id : "c45417c5d6249959a91d",
             client_secret : "4634b3aa7549c3d6306961e819e5ec9b355a6548"
         },
-        code_swarm : {
-            fileLife : 0 // number of steps of life a file
-            , userLife : 2550 // number of steps of life a user
-            , edgeLife : 2550 // number of steps of life a edge
+        cs : {
+            fileLife : 255 // number of steps of life a file
+            , userLife : 255 // number of steps of life a user
+            , edgeLife : 255 // number of steps of life a edge
             , showCountExt : true // show table of file's extension
             , onlyShownExt : true // show only extension which is shown
             , showHistogram : true // displaying histogram of changed files
             , showHalo : true // show a file's halo
             , padding : 25 // padding around a user
-            , speedOpacity : .5 // speed of falling opacity
-            , speedFlash : .5 // speed of falling flash
+            , rateOpacity : .5 // rate of decrease of opacity
+            , rateFlash : 2.5 // rate of decrease of flash
             , sizeFile : 2 // size of file
             , sizeUser : 24 // size of user
             , showPaddingCircle : false // show circle of padding
@@ -72,7 +72,7 @@ var ghcs = {
             , showLabel : true // show user name
             , showFilename : true // show file name TODO: надо-ли?
             , labelPattern : "%n <%e>"  // pattern for label of user
-            , showCommitMassage : true // show commit message
+            , showCommitMessage : false // show commit message
             , skipEmptyDate : true // skip empty date
         }
     },

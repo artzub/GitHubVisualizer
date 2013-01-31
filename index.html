@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="style.css">
@@ -73,7 +73,7 @@
                                         <ul class="group">
                                             <li class="field">
                                                 <label for="txt-lc">Limit of commits</label>
-                                                <input id="txt-lc" type="number" value="100">
+                                                <input id="txt-lc" type="number" value="100" max="10000000" min="0" step="1">
                                             </li>
                                         </ul>
                                     </li>
@@ -84,41 +84,22 @@
                 </li>
                 <li class="third">
                     <label><strong>3.</strong></label>
-                    <button id="visBtn" title="Press for dynamic visualization." class="btn" disabled="disabled">► Run</button>
+                    <button id="visBtn" title="Press for dynamic visualization." class="btn" disabled="disabled"><span class="mono">►</span> Run</button>
+                    <button id="visBtnPause" title="Pause" class="btn" style="display: none" disabled="disabled"><span class="mono">▌▌</span>Pause</button>
+                    <button id="visBtnStop" title="Stop" class="btn" style="display: none" disabled="disabled"><span class="mono">■</span> Stop</button>
+                    <button id="visBtnResume" title="Restart" class="btn" style="display: none" disabled="disabled"><span class="mini-icon mini-icon-history"></span> Restart</button>
                     <div class="sub">
                         <div class="row">
                             <blockquote>Select type visualization, change setting and press button run.</blockquote>
                             <div class="row">
-                            </div>
-                            <div class="row">
                                 <ul class="setting">
-                                    <li class="field"><h1>Controls</h1>
-                                        <ul class="group">
-                                            <li class="field">
-                                                <button id="visBtnPause" title="Pause." class="btn" disabled="disabled">Pause</button>
-                                            </li>
-                                            <li class="field">
-                                                <button id="visBtnStop" title="Stop." class="btn" disabled="disabled">■ Stop</button>
-                                            </li>
-                                            <li class="field">
-                                                <button id="visBtnResume" title="Restart." class="btn" disabled="disabled"><span class="mini-icon mini-icon-history"></span> Restart</button>
-                                            </li>
-                                        </ul>
-                                    </li>
-
-                                    <li class="field"><h1>Type visualization:</h1>
-                                        <ul class="group">
-                                            <li class="field">
-                                                <input name="typeVis" id="rb_lacs" checked="checked" type="radio">
-                                                <label for="rb_lacs">Like a Code_swarm</label>
-                                            </li>
-                                            <li class="field">
-                                                <input name="typeVis" id="rb_lag" type="radio">
-                                                <label for="rb_lag">Like a Gource</label>
-                                            </li>
-                                        </ul>
-                                    </li>
                                     <li class="field"><h1>Display:</h1>
+                                        <ul class="group">
+                                            <li class="field">
+                                                <input id="cb-dlvml" type="checkbox" checked="checked">
+                                                <label for="cb-dlvml">Layer canvas</label>
+                                            </li>
+                                        </ul>
                                         <ul class="group">
                                             <li class="field">
                                                 <input id="cb-dlvl" type="checkbox" checked="checked">
@@ -136,9 +117,158 @@
                                             </li>
                                         </ul>
                                     </li>
-                                    <li class="field"><h1>Settings:</h1>
+                                    <li class="field"><h1>Type visualization:</h1>
                                         <ul class="group">
                                             <li class="field">
+                                                <input name="typeVis" id="rb_lacs" checked="checked" type="radio">
+                                                <label for="rb_lacs">Code_swarm</label>
+                                            </li>
+                                            <li class="field">
+                                                <input name="typeVis" id="rb_lag" type="radio">
+                                                <label for="rb_lag">Gource</label>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="field"><h1>Settings:</h1>
+                                        <ul class="setting" id="st-cs">
+                                            <li class="field"><h1>Code_swarm:</h1>
+                                                <ul class="setting">
+                                                    <li class="field"><h1>The number of cycles of life element:</h1>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <label for="n-cs-userLife">User</label>
+                                                                <input data-ns="cs" id="n-cs-userLife" type="number" step="1" min="0" max="1000000">
+                                                            </li>
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showUser" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showUser">visible</label>
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <label for="n-cs-fileLife">&nbsp;&nbsp;File</label>
+                                                                <input data-ns="cs" id="n-cs-fileLife" type="number" step="1" min="0" max="1000000">
+                                                            </li>
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showFile" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showFile">visible</label>
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <label for="n-cs-edgeLife">Edge</label>
+                                                                <input data-ns="cs" id="n-cs-edgeLife" type="number" step="1" min="0" max="1000000">
+                                                            </li>
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showEdge" type="checkbox">
+                                                                <label for="cb-cs-showEdge">visible</label>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                                <ul class="setting">
+                                                    <li class="field"><h1>Display:</h1>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showCountExt" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showCountExt">Count extension</label>
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-onlyShownExt" type="checkbox">
+                                                                <label for="cb-cs-onlyShownExt">Only current commit extensions</label>
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showHistogram" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showHistogram">Histogram</label>
+                                                            </li>
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showHalo" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showHalo">Halo</label>
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showLabel" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showLabel">User's name</label>
+                                                            </li>
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showCommitMessage" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showCommitMessage">Message of commit</label>
+                                                            </li>
+                                                            <!--<li class="field">
+                                                                <input id="cb-cs-showFilename" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showFilename">Show file's name</label>
+                                                            </li>-->
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showPaddingCircle" type="checkbox">
+                                                                <label for="cb-cs-showPaddingCircle">Circle of padding</label>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                                <ul class="setting">
+                                                    <li class="field"><h1>Rate of decrease of:</h1>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <label for="n-cs-rateFlash">Flash</label>
+                                                                <input data-ns="cs" id="n-cs-rateFlash" type="number" step="0.5" min="0" max="100">
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <label for="n-cs-rateOpacity">Opacity</label>
+                                                                <input data-ns="cs" id="n-cs-rateOpacity" type="number" step="0.5" min="0" max="100">
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                                <ul class="setting">
+                                                    <li class="field"><h1>Size of:</h1>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <label for="n-cs-sizeUser">User</label>
+                                                                <input data-ns="cs" id="n-cs-sizeUser" type="number" step="0.1" min="0.1" max="100">
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <label for="n-cs-sizeFile">File (initial)</label>
+                                                                <input data-ns="cs" id="n-cs-sizeFile" type="number" step="0.1" min="0.1" max="100">
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                                <ul class="group">
+                                                    <li class="field">
+                                                        <label for="n-cs-padding">Padding around a user</label>
+                                                        <input data-ns="cs" id="n-cs-padding" type="number" step="0.1" min="0" max="100">
+                                                    </li>
+                                                </ul>
+                                                <ul class="group">
+                                                    <li class="field">
+                                                        <label for="txt-cs-labelPattern">Pattern for label of user</label>
+                                                        <input data-ns="cs" id="txt-cs-labelPattern" type="text" value="%n <%e>">
+                                                        <blockquote>%n - name; %e - email; %l - login</blockquote>
+                                                    </li>
+                                                </ul>
+                                                <ul class="group">
+                                                    <li class="field">
+                                                        <input data-ns="cs" id="cb-cs-useAvatar" type="checkbox" checked="checked">
+                                                        <label for="cb-cs-useAvatar">Use user's avatar</label>
+                                                    </li>
+                                                </ul>
+                                                <ul class="group">
+                                                    <li class="field">
+                                                        <input data-ns="cs" id="cb-cs-skipEmptyDate" type="checkbox" checked="checked">
+                                                        <label for="cb-cs-skipEmptyDate">Skip empty date</label>
+                                                    </li>
+                                                </ul>
                                             </li>
                                         </ul>
                                     </li>
