@@ -462,7 +462,8 @@ svg {
     max-width: 100%;
 }
 
-#divStat img {
+#divStat img,
+.statInfo img {
     float: left;
     margin: 0 0 0 0;
 
@@ -471,13 +472,15 @@ svg {
     box-shadow: 0 1px 2px rgba(0,0,0,0.15);
 }
 
-#divStat ul {
+#divStat ul,
+.statInfo ul {
     overflow: hidden;
     padding: 0;
     list-style: none;
 }
 
-#divStat li {
+#divStat li,
+.statInfo li {
     color: #ccc;
 }
 
@@ -486,27 +489,36 @@ hr {
 }
 
 #divStat li strong,
-#divStat li a {
+#divStat li a,
+.statInfo li strong,
+.statInfo li a {
     margin-left: 5px;
 }
 
-#divStat li strong, #divStat h1 {
+#divStat li strong,
+#divStat h1,
+.statInfo li strong,
+.statInfo h1 {
     color: #f9f9f9;
 }
 
 #curRep .a-icon,
-#divStat .a-icon {
+#divStat .a-icon,
+.statInfo .a-icon {
     text-decoration: none;
     color: rgba(172, 213, 229, 1);
 }
 
-#divStat a {
+#divStat a,
+.statInfo a {
     color: rgba(172, 213, 229, 1);
 }
 
 #curRep .a-icon:hover,
 #divStat .a-icon:hover,
-#divStat a:hover {
+#divStat a:hover,
+.statInfo .a-icon:hover,
+.statInfo a:hover {
     color: rgba(221, 246, 255, 1);
 }
 
@@ -528,14 +540,16 @@ hr {
     top: -16px;
 }
 
-#userInfo {
+#userInfo,
+.userInfo {
     right: -2px;
     top: -2px;
     padding: 7px 7px 5px 5px;
     z-index: 52;
 }
 
-#userInfo ul {
+#userInfo ul,
+.userInfo ul {
     white-space: nowrap;
 
     -webkit-transition: all .4s;
@@ -547,7 +561,8 @@ hr {
     max-height: 0;
 }
 
-#userInfo img {
+#userInfo img,
+.userInfo img {
     -webkit-transition: all .5s ease-in-out .4s;
     -moz-transition: all .5s ease-in-out .4s;
     -o-transition: all .5s ease-in-out .4s;
@@ -558,7 +573,9 @@ hr {
 }
 
 #userInfo.open img,
-#userInfo:hover img {
+#userInfo:hover img,
+.userInfo.open img,
+.userInfo:hover img {
     -webkit-transition: all .5s;
     -moz-transition: all .5s;
     -o-transition: all .5s;
@@ -570,7 +587,9 @@ hr {
 }
 
 #userInfo.open ul,
-#userInfo:hover ul {
+#userInfo:hover ul,
+.userInfo.open ul,
+.userInfo:hover ul {
     -webkit-transition: all .5s ease-in-out .5s;
     -moz-transition: all .5s ease-in-out .5s;
     -o-transition: all .5s ease-in-out .5s;

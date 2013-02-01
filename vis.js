@@ -12,8 +12,9 @@ var PIdiv2 = Math.PI / 2,
     ;
 
 var colors = {
-    added : "#ddffdd",
-    deleted : "#ffdddd",
+    additions : "#ddffdd",
+    deletions : "#ffdddd",
+    changes : "#FFF1DD",
     center : "#FF6600",
     stroked : "#f9f9f9",
     addedFile : "#A5EC6E",

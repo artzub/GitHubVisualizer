@@ -72,9 +72,6 @@ function parseCommit(org_commit, commit){
         if (TYPE_STATUS_FILE[f.status] == undefined)
             console.log(f.status);
 
-        if (TYPE_STATUS_FILE[f.status] == TYPE_STATUS_FILE.renamed)
-            console.log(f);
-
         f.status = TYPE_STATUS_FILE[f.status];
 
         if (f.changes > 0) {
@@ -133,7 +130,7 @@ function preloadImage(url) {
                         ghcs.storage.setImageData(url, this);
                 };
             })(url);
-            image.src = crossUrl((url || (url = "https://secure.gravatar.com/avatar/" + Date.now() + Date.now() + "?d=identicon&f=y")) + "&s=32", "image");
+            image.src = crossUrl((url || (url = "https://secure.gravatar.com/avatar/" + Date.now() + Date.now() + "?d=identicon&f=y")) + "&s=48", "image");
         }
         else {
             image.src = ava;

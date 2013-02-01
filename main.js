@@ -353,7 +353,7 @@ function init() {
         }
 
         return this;
-    }
+    };
 
     divStat = d3.select("#divStat");
     divStat.updateInfo = function() {
@@ -397,13 +397,13 @@ function init() {
                     user.info.updated_at && ul.append("li")
                         .call(function(li) {
                             li.append("span")
-                                .attr("class", "mini-icon mini-icon-time")
+                                .attr("class", "mini-icon mini-icon-time");
                             li.append("strong")
                                 .text(timeFormat(Date.parse(user.info.updated_at)))
                         });
                 })
         }
-    }
+    };
 
     applyParams();
 }

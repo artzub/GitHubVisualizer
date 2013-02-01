@@ -30,9 +30,11 @@
             .text(d.nodeValue.name);
         toolTip.append("hr");
 
-        d.nodeValue.desc && toolTip.append("blockquote")
-            .text(d.nodeValue.desc);
-        d.nodeValue.desc && toolTip.append("br");
+        d.nodeValue.desc
+            && toolTip.append("blockquote")
+                .text(d.nodeValue.desc)
+            && toolTip.append("br")
+        ;
 
         toolTip.append("span")
             .attr("class", "mini-icon mini-icon-time")

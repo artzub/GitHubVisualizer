@@ -7,6 +7,8 @@
 'use strict';
 
 (function (vis) {
+    var textFormat = d3.format(",");
+
     vis.meArc = function(d) {
         vis.layers.stat.toFront();
         if (!d._g)
@@ -34,6 +36,86 @@
 
         d._g.selectAll("text.del, text.add")
             .style("visibility", "visible");
+
+        toolTip.selectAll("*").remove();
+
+        toolTip.append("div").attr("class", "row")
+            .append("blockquote")
+            .text(d.message.split("\n")[0]);
+
+        toolTip.append("div").attr("class", "row userInfo open").call(function(div) {
+            div = div.append("div").attr("class", "statInfo");
+
+            div.node().appendChild(d.author.avatar);
+            div.append("ul").call(function(ul) {
+                (d.author.name || d.author.login) && ul.append("li").call(function(li) {
+                    li.append("h1")
+                        .text((d.author.name || d.author.login))
+                    ;
+                    li.append("hr");
+                });
+                ul.append("li").call(function(li) {
+                    li.append("span")
+                        .attr("class", "mini-icon mini-icon-time");
+                    li.append("strong")
+                        .text(timeFormat(d.date))
+                });
+                d.files.length && ul.append("li")
+                    .call(function(li) {
+                        var stat = d.files.reduce(function(a, b) {
+                            for(var key in TYPE_STATUS_FILE) {
+                                if (TYPE_STATUS_FILE.hasOwnProperty(key)
+                                    && b.status == TYPE_STATUS_FILE[key]) {
+                                    a[key] = (a[key] || 0);
+                                    a[key]++;
+                                    break;
+                                }
+                            }
+                            return a;
+                        }, {});
+                        li = li.append("ul")
+                            .attr("class", "setting");
+                        li = li.append("li").attr("class", "field");
+                        li.append("h1")
+                            .text("Changed files:");
+                        for(var key in stat) {
+                            stat.hasOwnProperty(key)
+                            && li.append("ul")
+                                .attr("class", "group")
+                                .append("li")
+                                .attr("class", "field")
+                                .append("span")
+                                .text(key + ": ")
+                                .append("strong")
+                                .text(stat[key]);
+                        }
+                    });
+                ul.append("li")
+                    .call(function(li) {
+                        li = li.append("ul")
+                            .attr("class", "setting");
+                        li = li.append("li").attr("class", "field");
+                        li.append("h1")
+                            .text("Changed lines:");
+                        var stat = {changes : "", additions : " + ", deletions : " - "};
+                        for(var key in stat) {
+                            d.stats.hasOwnProperty(key)
+                                && li.append("ul")
+                                    .attr("class", "group")
+                                    .append("li")
+                                    .attr("class", "field")
+                                    .append("span")
+                                    .text(key + ": ")
+                                    .append("strong")
+                                    .style("color", d3.rgb(colors[key]).darker(.2))
+                                    .text(stat[key] + textFormat(d.stats[key]));
+                        }
+                    });
+
+            });
+        });
+
+        toolTip.show();
     };
 
     vis.mlArc = function(d) {
@@ -71,6 +153,8 @@
 
         d._g.selectAll("text.add")
             .style("visibility", d.stats && d.stats.addTextVis ? d.stats.addTextVis : "hidden");
+
+        toolTip.hide();
     };
 
     vis.mmArc = function(d) {
@@ -92,8 +176,6 @@
             vis.clearStat();
             return;
         }
-
-        var textFormat = d3.format(",");
 
         var bd = d3.extent(data.dates);
         var delta = (bd[1] - bd[0]) * 0.1;
@@ -252,7 +334,7 @@
                 this.barAdd = g.append("path")
                     .attr("class", "bar")
                     .style({
-                        "fill" : colors.added,
+                        "fill" : colors.additions,
                         "fill-opacity" : .3
                     })
                     .attr("d", add())
@@ -267,7 +349,7 @@
                 this.barDel = g.append("path")
                     .attr("class", "bar")
                     .style({
-                        "fill" : colors.deleted,
+                        "fill" : colors.deletions,
                         "fill-opacity" : .3
                     })
                     .attr("d", del())
@@ -297,14 +379,14 @@
 
             (this.barAddTop || (
                 this.barAddTop = g.append("path")
-                    .style("fill", toRgba(colors.added))
+                    .style("fill", toRgba(colors.additions))
                 ))
                 .attr("d", addTop())
             ;
 
             (this.barDelTop || (
                 this.barDelTop = g.append("path")
-                    .style("fill", toRgba(colors.deleted))
+                    .style("fill", toRgba(colors.deletions))
                 ))
                 .attr("d", delTop())
             ;
@@ -316,7 +398,7 @@
                         .attr("class", "add")
                         .attr("dy", "-.31em")
                         .attr("text-anchor", "middle")
-                        .style("fill", colors.added)
+                        .style("fill", colors.additions)
                         .text(" + " + textFormat(d.stats.additions))
                     ))
                     .attr("transform", "translate(" + [0, -sized(y(d.stats.additions), .027)] + ")")
@@ -331,7 +413,7 @@
                         .attr("class", "del")
                         .attr("dy", ".93em")
                         .attr("text-anchor", "middle")
-                        .style("fill", colors.deleted)
+                        .style("fill", colors.deletions)
                         .text(" - " + textFormat(d.stats.deletions))
                     ))
                     .attr("transform", "translate(" + [0, sized(y(d.stats.deletions), .027)] + ")")
