@@ -15,7 +15,7 @@ var timeFormat = (function() {
 
 var log;
 
-var cs, svg,
+var cs, svg_cs, svg,
     margin = {top: 20, right: 20, bottom: 20, left: 20},
     w, h,
     psBar, runBtn, ldrTop, toolTip, showBtn, visBtn,
@@ -85,6 +85,9 @@ function chCheckbox(d) {
             vis.layers.repo
             && vis.layers.repo.langHg
             && vis.layers.repo.langHg.style("display", d.property("checked") ? null : "none");
+            break;
+        case "cb-dlvml":
+            d.property("checked") ? cs.show() : cs.hide();
             break;
         default :
             (ln = d.datum()) && ln.ns
@@ -160,8 +163,20 @@ function init() {
         }
     })();
 
-    cs = d3.select("#svg");
-    svg = cs.append("svg");
+    cs = d3.select("#canvas");
+    cs.hide = function() {
+        this.style("display", "none");
+        vis.inited && vis.layers.show.hide();
+        return this;
+    };
+    cs.show = function() {
+        this.style("display", null);
+        vis.inited && vis.layers.show.show();
+        return this;
+    };
+
+    svg_cs = d3.select("#svg");
+    svg = svg_cs.append("svg");
     w = svg.property("clientWidth") || document.body.clientWidth;
     h = svg.property("clientHeight")|| document.body.clientHeight;
 

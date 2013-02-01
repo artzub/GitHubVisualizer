@@ -33,7 +33,7 @@
                                         <ul class="group">
                                             <li class="field">
                                                 <input id="cb-dllh" type="checkbox" checked="checked">
-                                                <label for="cb-dllh">Layer languages histogram</label>
+                                                <label for="cb-dllh">Layer histogram languages</label>
                                             </li>
                                         </ul>
                                     </li>
@@ -100,22 +100,6 @@
                                                 <label for="cb-dlvml">Layer canvas</label>
                                             </li>
                                         </ul>
-                                        <ul class="group">
-                                            <li class="field">
-                                                <input id="cb-dlvl" type="checkbox" checked="checked">
-                                                <label for="cb-dlvl">Legend</label>
-                                            </li>
-                                            <li class="field">
-                                                <input id="cb-dlvh" type="checkbox" checked="checked">
-                                                <label for="cb-dlvh">Changes histogram</label>
-                                            </li>
-                                        </ul>
-                                        <ul class="group">
-                                            <li class="field">
-                                                <input id="cb-dlvcm" type="checkbox" checked="checked">
-                                                <label for="cb-dlvcm">Commit message</label>
-                                            </li>
-                                        </ul>
                                     </li>
                                     <li class="field"><h1>Type visualization:</h1>
                                         <ul class="group">
@@ -171,7 +155,19 @@
                                                         <ul class="group">
                                                             <li class="field">
                                                                 <input data-ns="cs" id="cb-cs-showCountExt" type="checkbox" checked="checked">
-                                                                <label for="cb-cs-showCountExt">Count extension</label>
+                                                                <label for="cb-cs-showCountExt">Legend extension</label>
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showHistogram" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showHistogram">Changes Histogram</label>
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showCommitMessage" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showCommitMessage">Commit Messages</label>
                                                             </li>
                                                         </ul>
                                                         <ul class="group">
@@ -182,8 +178,8 @@
                                                         </ul>
                                                         <ul class="group">
                                                             <li class="field">
-                                                                <input data-ns="cs" id="cb-cs-showHistogram" type="checkbox" checked="checked">
-                                                                <label for="cb-cs-showHistogram">Histogram</label>
+                                                                <input data-ns="cs" id="cb-cs-showLabel" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showLabel">User's name</label>
                                                             </li>
                                                             <li class="field">
                                                                 <input data-ns="cs" id="cb-cs-showHalo" type="checkbox" checked="checked">
@@ -191,14 +187,6 @@
                                                             </li>
                                                         </ul>
                                                         <ul class="group">
-                                                            <li class="field">
-                                                                <input data-ns="cs" id="cb-cs-showLabel" type="checkbox" checked="checked">
-                                                                <label for="cb-cs-showLabel">User's name</label>
-                                                            </li>
-                                                            <li class="field">
-                                                                <input data-ns="cs" id="cb-cs-showCommitMessage" type="checkbox" checked="checked">
-                                                                <label for="cb-cs-showCommitMessage">Message of commit</label>
-                                                            </li>
                                                             <!--<li class="field">
                                                                 <input id="cb-cs-showFilename" type="checkbox" checked="checked">
                                                                 <label for="cb-cs-showFilename">Show file's name</label>

@@ -54,7 +54,7 @@
         appendExtLegend(d.sha);
 
         var l = d.nodes.length,
-            n, a;
+            n, a, fn;
 
         a = d.cuserNode ? d.cuserNode : d.userNode;
         a.fixed = false;
@@ -76,12 +76,20 @@
             n.author =  a.nodeValue.email;
 
             n.visible = !!n.statuses[d.sha].status;
+            fn = n.nodeValue.name.toLowerCase();
+
             if (n.visible) {
+                n.ext.now.indexOf(fn) < 0
+                    && n.ext.now.push(fn);
+
                 n.flash = 100;
                 n.alive = setting.fileLife > 0 ? setting.fileLife : 1;
                 n.opacity = 100;
             }
             else {
+                (fn = n.ext.now.indexOf(fn)) > -1
+                    && n.ext.now.splice(fn, 1);
+
                 n.alive = (setting.fileLife > 0 ? setting.fileLife : 1) * .2;
                 n.opacity = 50;
             }
@@ -100,6 +108,8 @@
                 target : d.userNode
             });*/
         }
+
+        updateLegend(d.sha);
 
         _force.nodes(nodes.filter(function(d) {
                 return d.type != typeNode.author && (d.visible || d.opacity);
@@ -141,7 +151,6 @@
         }
 
         updateExtHistogram();
-        updateExtHistogram();
     }
 
     function run() {
@@ -181,13 +190,14 @@
             h2 = h/2,
             h5 = h/5;
         if (type == typeNode.file) {
-            c = c && c.match(/.*(\.\w+)$/) ? c.replace(/.*(\.\w+)$/, "$1") : "Mics";
+            c = c && c.match(/.*(\.\w+)$/) ? c.replace(/.*(\.\w+)$/, "$1").toLowerCase() : "Mics";
             ext = extHash.get(c);
             if (!ext) {
                 ext = {
                     all : 0,
                     currents : {},
-                    color : extColor(c)
+                    color : extColor(c),
+                    now : []
                 };
                 extHash.set(c, ext);
             }
@@ -326,35 +336,6 @@
             img = defImg;
 
         return img;
-
-        if (!tempCanvas) {
-            tempCanvas = document.createElement("canvas");
-        }
-
-        tempCanvas.width = img.width;
-        tempCanvas.height = img.height;
-
-        var imgCtx = tempCanvas.getContext("2d"), imgdata, i, r;
-        imgCtx.save();
-        imgCtx.drawImage(img, 0, 0);
-
-        imgdata = imgCtx.getImageData(0, 0, img.width, img.height);
-
-        i = (f || a < 1) ? imgdata.data.length : 0;
-        while((i -= 4) > -1) {
-            if (false && f) {
-                r = d3.rgb(imgdata.data[i], imgdata.data[i + 1], imgdata.data[i + 2]).brighter();
-                imgdata.data[i] = r.r;
-                imgdata.data[i + 1] = r.g;
-                imgdata.data[i + 2] = r.b;
-            }
-            if (a < 1)
-                imgdata.data[i + 3] *= a;
-        }
-
-        imgCtx.putImageData(imgdata, 0, 0);
-        imgCtx.restore();
-        return tempCanvas;
     }
 
     function colorize(img, r, g, b, a) {
@@ -536,6 +517,9 @@
     function anim() {
         requestAnimationFrame(anim);
 
+        lHis && lHis.style("display", setting.showHistogram ? null : "none");
+        lLeg && lLeg.style("display", setting.showCountExt ? null : "none");
+
         if (valid)
             return;
 
@@ -564,7 +548,7 @@
                         blink(d, !d.links && setting.userLife > 0, i, _forceAuthor.nodes().length);
                         if (d.visible && d.links === 0 && setting.userLife > 0) {
                             d.flash = 0;
-                            d.alive = d.alive * .01;
+                            d.alive = d.alive / 10;
                         }
                         return d.visible;
                     })
@@ -685,6 +669,95 @@
             .remove();
     }
 
+    function initLegend() {
+        if (!layer)
+            return;
+
+        var mt = 48,
+            ml = w * .01,
+            h2 = h / 2 - mt,
+            w3 = w / 3
+            ;
+
+        lLeg = (lLeg || layer.append("g"))
+            .attr("width", w3)
+            .attr("height", h2)
+            .attr("transform", "translate(" + [ml, mt] + ")");
+
+        lLeg.selectAll("*").remove();
+
+        var g = lLeg.selectAll(".gLeg")
+            .data(extHash.entries(), function(d) { return d.key; });
+
+        g.exit().remove();
+
+        g.enter().append("g")
+            .attr("class", "gLeg")
+            .attr("transform", function(d, i) {
+                return "translate(" + [0, i * 18] + ")";
+            })
+            .style("visibility", "hidden")
+        ;
+        g.append("rect")
+            .attr("height", 16)
+            .style("fill", function(d) { return d.value.color; })
+        ;
+        g.append("text")
+            .attr("class", "gttLeg")
+            .style("font-size", "13px")
+            .text(function(d) { return d.key.substr(1); })
+            .style("fill", function(d) { return d.value.color; })
+        ;
+
+        g.append("text")
+            .attr("class", "gtLeg")
+            .style("font-size", "11px")
+            .attr("transform", "translate(" + [2, 12] + ")")
+        ;
+    }
+
+    function sortLeg(b, a) {
+        return d3.ascending(a.value.now.length, b.value.now.length);
+    }
+
+    function updateLegend(sha) {
+        if (!lLeg || lLeg.empty())
+            return;
+
+        var g = lLeg.selectAll(".gLeg");
+
+        function wl(d) {
+            return d.value.now.length;
+        }
+
+        var wb = 9 * d3.max(g.data(), function(d) {
+            return ((wl(d) || "") + "").length;
+        });
+
+        g.selectAll("rect")
+            .attr("width", wb)
+        ;
+
+        g.selectAll(".gttLeg")
+            .attr("transform", "translate(" + [wb + 2, 12] + ")")
+        ;
+
+        g.selectAll(".gtLeg")
+            .text(wl)
+        ;
+
+        g.sort(sortLeg)
+            .transition()
+            .duration(500)
+            .attr("transform", function(d, i) {
+                return "translate(" + [0, i * 18] + ")";
+            })
+            .style("visibility", function(d, i) {
+                return !wl(d) || i * 18 > lLeg.attr("height") ? "hidden" : "visible";
+            })
+        ;
+
+    }
 
     vis.runShow = function(data, svg, params) {
         if (_worker)
@@ -802,6 +875,8 @@
             .charge(function(d) { return -(setting.padding + d.size) * 8; }))
             .nodes([])
             ;
+
+        initLegend();
 
         stop = false;
         pause = false;

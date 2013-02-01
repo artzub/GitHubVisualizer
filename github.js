@@ -96,7 +96,7 @@ function parseCommit(org_commit, commit){
         !f.status && s.f.d++;
 
         return {
-            name : f.filename,
+            name : f.filename.toLowerCase(),
             changes : f.changes || 0,
             additions : f.additions || 0,
             deletions : f.deletions || 0,
