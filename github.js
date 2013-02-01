@@ -268,6 +268,7 @@ function chUser() {
                 ghcs.states.complete = function() {
                     stepsBar.secondStep();
                     ldrTop.hide();
+                    setTimeout(nextStepApplyParams, 500);
                 };
 
                 cbDlr.check();
@@ -349,10 +350,17 @@ function analyseCommits() {
         ldrTop.hide();
         vis.redrawStat(ghcs.repo);
         visBtn.enable();
+        setTimeout(nextStepApplyParams, 500);
     };
     vis.layers.stat.toFront();
 
     cbDlsr.check();
+
+    if (!ghcs.repo || !ghcs.repo.commits_url) {
+        updateStatus(ghcs.states.cur = ghcs.states.max);
+        checkCompleted();
+        return;
+    }
 
     JSONP(makeUrl(ghcs.repo.commits_url, TYPE_REQUEST.commits, ghcs.limits.commits), function getAll(req) {
         getNext(req, function(next) {

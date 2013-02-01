@@ -80,7 +80,7 @@
     vis.clRepo = function(d) {
         if (vis.forceRep.selected && vis.forceRep.selected == d) {
             vis.forceRep.selected = null;
-            d.fixed = 4;
+            d && (d.fixed = 4);
         }
         else {
             if (vis.forceRep.selected) {
@@ -92,7 +92,7 @@
             }
 
             vis.forceRep.selected = d;
-            d.fixed = true;
+            d && (d.fixed = true);
         }
         chSelect(vis.forceRep.selected);
     };

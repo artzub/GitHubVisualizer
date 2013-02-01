@@ -17,7 +17,7 @@ var log;
 
 var cs, svg_cs, svg,
     margin = {top: 20, right: 20, bottom: 20, left: 20},
-    w, h,
+    w, h, stackLoad = 0,
     psBar, runBtn, ldrTop, toolTip, showBtn, visBtn,
     userTxt, curRep, divStat, stepsBar, cbDlr, cbDlsr;
 
@@ -37,19 +37,32 @@ function parseParams(hash) {
         params[key] = values.length > 1 ? values[1] : "";
     });
 
-    ghcs.params = ghcs.params || {};
+    ghcs.params = params;
 
-    ghcs.params.user = params.user;
-    ghcs.params.rot = params.rot;
+    ghcs.params.climit = params.climit || ghcs.limits.commits;
 }
 
 function rewriteHash() {
+    var step,
+        hash = [];
     if (this == showBtn.node() && ghcs.params) {
-        var hash = [];
-        ghcs.params.user && hash.push("user=" + ghcs.params.user);
-        ghcs.params.rot && hash.push("rot=" + ghcs.params.rot);
-        document.location.hash = "#" + hash.join("&");
+        step = 0;
     }
+    else if (this == runBtn.node() && ghcs.params) {
+        step = 1;
+    }
+
+    switch (step) {
+        case 1:
+            ghcs.params.repo = ghcs.repo ? ghcs.repo.name : null;
+            ghcs.params.repo && hash.push("r=" + ghcs.params.repo);
+            ghcs.params.climit > 0 && hash.push("climit=" + ghcs.params.climit);
+        case 0:
+            ghcs.params.user && hash.push("user=" + ghcs.params.user);
+            ghcs.params.rot && hash.push("rot=" + ghcs.params.rot);
+            break;
+    }
+    document.location.hash = "#" + hash.join("&");
 }
 
 function applyParams() {
@@ -57,11 +70,51 @@ function applyParams() {
 
     parseParams(document.location.hash);
 
+    stackLoad = stackLoad-- < 1 ? 0 : stackLoad;
+
     if (ghcs.rot != ghcs.params.rot || ghcs.login != ghcs.params.user) {
         ghcs.rot = ghcs.params.rot;
         userTxt.property("value", ghcs.params.user);
+
+        ghcs.user = null;
+
+        if (!ghcs.repo || ghcs.repo.name != ghcs.params.repo || ghcs.limits.commits != ghcs.params.climit)
+            stackLoad++;
+
         chUser();
     }
+    else if (ghcs.user && ghcs.user.repos && (!ghcs.repo || ghcs.repo.name != ghcs.params.repo || (ghcs.params.climit > 0 && ghcs.limits.commits != ghcs.params.climit))) {
+        var r = ghcs.user.repos.length;
+
+        if (!ghcs.repo || ghcs.repo.name != ghcs.params.repo) {
+            while (--r > -1) {
+                if(ghcs.user.repos[r].nodeValue.name == ghcs.params.repo) {
+                    break;
+                }
+            }
+        }
+        else {
+            r = -1;
+        }
+        ghcs.limits.commits = ghcs.params.climit || ghcs.limits.commits;
+        d3.select("#txt-lc").property("value", ghcs.limits.commits);
+
+        if (r > -1) {
+            r = ghcs.user.repos[r];
+            vis.meRepo(r);
+            vis.clRepo(r);
+            vis.mlRepo(r);
+        }
+        else {
+            vis.clRepo(ghcs.repo);
+        }
+        analyseCommits();
+    }
+}
+
+function nextStepApplyParams() {
+    if (stackLoad)
+        applyParams();
 }
 
 function chRadio(d) {
@@ -263,7 +316,7 @@ function init() {
         };
     });
 
-    runBtn.on("click", analyseCommits);
+    runBtn.on("click", rewriteHash);
     showBtn.on("click", rewriteHash);
     visBtn.on("click", runShow);
 
@@ -309,9 +362,9 @@ function init() {
     });
 
     d3.select("#txt-lc").on("change", function() {
-        ghcs.limits.commits = +this.value;
-        if (ghcs.limits.commits < 1)
-            ghcs.limits.commits = 1;
+        (ghcs.params || (ghcs.params = {})).climit = +this.value;
+        if (ghcs.params.climit < 1)
+            ghcs.params.climit = ghcs.limits.commits;
     });
 
     initGraphics(svg);
@@ -358,7 +411,7 @@ function init() {
     divStat = d3.select("#divStat");
     divStat.updateInfo = function() {
         var user;
-        if (ghcs.login && (user = ghcs.users[ghcs.login]) && user.info) {
+        if (ghcs.login && (user = ghcs.user = ghcs.users[ghcs.login]) && user.info) {
             divStat.selectAll("*").remove();
             user.info.avatar && divStat.node().appendChild(user.info.avatar);
             divStat.append("ul")
