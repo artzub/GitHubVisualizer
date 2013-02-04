@@ -32,8 +32,8 @@ d3.select(window).on("hashchange", applyParams);
 function parseParams(hash) {
     var params = {};
     hash.replace(/^#/, "").split("&").forEach(function(item) {
-        var values = item.toLowerCase().split("=");
-        var key = values[0];
+        var values = item.split("=");
+        var key = values[0].toLowerCase();
         params[key] = values.length > 1 ? values[1] : "";
     });
 
@@ -55,7 +55,7 @@ function rewriteHash() {
     switch (step) {
         case 1:
             ghcs.params.repo = ghcs.repo ? ghcs.repo.name : null;
-            ghcs.params.repo && hash.push("r=" + ghcs.params.repo);
+            ghcs.params.repo && hash.push("repo=" + ghcs.params.repo);
             ghcs.params.climit > 0 && hash.push("climit=" + ghcs.params.climit);
         case 0:
             ghcs.params.user && hash.push("user=" + ghcs.params.user);
@@ -78,35 +78,39 @@ function applyParams() {
 
         ghcs.user = null;
 
-        if (!ghcs.repo || ghcs.repo.name != ghcs.params.repo || ghcs.limits.commits != ghcs.params.climit)
+        if (ghcs.params.repo)
             stackLoad++;
 
         chUser();
     }
-    else if (ghcs.user && ghcs.user.repos && (!ghcs.repo || ghcs.repo.name != ghcs.params.repo || (ghcs.params.climit > 0 && ghcs.limits.commits != ghcs.params.climit))) {
-        var r = ghcs.user.repos.length;
+    else if (ghcs.user && ghcs.user.repos) {
+        // && (!ghcs.repo || ghcs.repo.name != ghcs.params.repo || (ghcs.params.climit > 0 && ghcs.limits.commits != ghcs.params.climit))
+        var r;
 
-        if (!ghcs.repo || ghcs.repo.name != ghcs.params.repo) {
-            while (--r > -1) {
-                if(ghcs.user.repos[r].nodeValue.name == ghcs.params.repo) {
-                    break;
-                }
-            }
-        }
-        else {
-            r = -1;
-        }
         ghcs.limits.commits = ghcs.params.climit || ghcs.limits.commits;
         d3.select("#txt-lc").property("value", ghcs.limits.commits);
 
-        if (r > -1) {
-            r = ghcs.user.repos[r];
-            vis.meRepo(r);
-            vis.clRepo(r);
-            vis.mlRepo(r);
+        if (!ghcs.repo
+            || ghcs.repo.name != ghcs.params.repo
+            || !ghcs.repo.commits
+            || (!ghcs.repo.loadedAll && ghcs.repo.commitsCount < ghcs.limits.commits)) {
+            if (ghcs.repo && ghcs.repo.name == ghcs.params.repo)
+                r = ghcs.repo;
+            else
+                r = ghcs.user.repos.reduce(function(a, b) {
+                        if (!a && b.nodeValue.name == ghcs.params.repo)
+                            a = b;
+                        return a;
+                    }, null)
+                ;
         }
-        else {
-            vis.clRepo(ghcs.repo);
+
+        if (r) {
+            if (ghcs.repo != r) {
+                vis.meRepo(r);
+                vis.clRepo(r);
+                vis.mlRepo(r);
+            }
         }
         analyseCommits();
     }

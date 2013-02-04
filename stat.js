@@ -172,7 +172,9 @@
 
         layout = layout || vis.layers.stat;
 
-        if (!ghcs.repo || !ghcs.repo.commits || !ghcs.repo.commits.length) {
+        var _commits = data && data.commits ? data.commits.values() : null;
+
+        if (!_commits || !_commits.length) {
             vis.clearStat();
             return;
         }
@@ -193,9 +195,9 @@
 
         var y = d3.scale.linear()
             .range([2, h6 * 2])
-            .domain([0, ghcs.repo.stats.changes || 1]);
+            .domain([0, data.stats.changes || 1]);
 
-        var sorted = data.commits.slice(0).concat([
+        var sorted = _commits.slice(0).concat([
             { date : bd[0] + delta / 2, f : { d : 0, a : 0, m : 0 } },
             { date : bd[1] - delta / 2, f : { d : 0, a : 0, m : 0 } }
         ]).sort(vis.sC);
@@ -206,17 +208,20 @@
                         color: colors.deletedFile,
                         values: sorted.map(function (d) {
                             return {t : 1, x: d.date, y0 : 0, y: (d.stats ? -d.stats.f.d : 0)}
-                        })},
+                        })
+                    },
                     {
                         color: colors.modifiedFile,
                         values: sorted.map(function (d) {
                             return {x: d.date, y0 : 0, y: (d.stats ? d.stats.f.m : 0)}
-                        })},
+                        })
+                    },
                     {
                         color: colors.addedFile,
                         values: sorted.map(function (d) {
                             return {x: d.date, y0: (d.stats ? d.stats.f.m : 0), y : (d.stats ? d.stats.f.a : 0)}
-                        })}
+                        })
+                    }
                 ]
             ;
 
@@ -238,7 +243,7 @@
 
         var y1 = d3.scale.linear()
                 .range([h6 * 4.5, h6 * 3, h6 * 1.5])
-                .domain([-ghcs.repo.stats.files, 0, ghcs.repo.stats.files]),
+                .domain([-data.stats.files, 0, data.stats.files]),
             area = d3.svg.area()
                 .interpolate(interpolateSankey /*true ? "linear" : "basis"*/)
                 .x(function(d) { return x(d.x); })
@@ -293,7 +298,7 @@
         ;
 
         var cData = layout.cont.points.selectAll("g.com")
-            .data(data.commits, function(d) { return d.sha; });
+            .data(_commits, function(d) { return d.sha; });
         cData.enter()
             .append("g")
             .attr("class", "com")

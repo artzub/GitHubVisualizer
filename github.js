@@ -32,8 +32,8 @@ function makeUrl(url, type, limit) {
 }
 
 function crossUrl(url, rt) {
-    //return url;
-    var result = url, arr = /(.*)?\?(.*)/.exec(url);
+    return url;
+    /*var result = url, arr = /(.*)?\?(.*)/.exec(url);
     if (arr) {
         result = "http://artzub.com/cross/?"
             + ( rt ? "rt=" + rt + "&" : "" )
@@ -41,7 +41,7 @@ function crossUrl(url, rt) {
         if (arr.length > 2)
             result += "&d=" + encodeURIComponent(arr[2]);
     }
-    return result;
+    return result;*/
 }
 
 function randTrue() {
@@ -88,7 +88,7 @@ function parseCommit(org_commit, commit){
             commit.stats.additions -= commit.stats.additions ? 1 : 0;
         }
 
-        f.status == TYPE_STATUS_FILE.modified || f.status == TYPE_STATUS_FILE.renamed && s.f.m++;
+        (f.status == TYPE_STATUS_FILE.modified || f.status == TYPE_STATUS_FILE.renamed) && s.f.m++;
         f.status == TYPE_STATUS_FILE.added && s.f.a++;
         !f.status && s.f.d++;
 
@@ -103,7 +103,7 @@ function parseCommit(org_commit, commit){
 
     ghcs.repo.stats = ghcs.repo.stats || {};
     ghcs.repo.stats.changes = d3.max([ghcs.repo.stats.changes || 0, commit.stats.deletions, commit.stats.additions]);
-    ghcs.repo.stats.files = d3.max([ghcs.repo.stats.files || 0, commit.files.length]);
+    ghcs.repo.stats.files = d3.max([ghcs.repo.stats.files || 0, s.f.a + s.f.m, s.f.d]);
 }
 
 function upCommits() {
@@ -119,70 +119,79 @@ function preloadImage(url) {
     image = ghcs.imageHash.get(url);
     if (!image) {
         image = new Image();
-        ava = ghcs.storage.get(url);
-        if (!ava) {
+        //ava = ghcs.storage.get(url);
+        //if (!ava) {
             image.onerror = function () {
                 return console.log(this);
             };
-            image.onload = (function (url) {
+            /*image.onload = (function (url) {
                 return function () {
                     if (url)
                         ghcs.storage.setImageData(url, this);
                 };
-            })(url);
+            })(url);*/
             image.src = crossUrl((url || (url = "https://secure.gravatar.com/avatar/" + Date.now() + Date.now() + "?d=identicon&f=y")) + "&s=48", "image");
-        }
+        /*}
         else {
             image.src = ava;
-        }
+        }*/
         ghcs.imageHash.set(url, image);
     }
     return image;
 }
 
 function parseCommits(commits) {
-    ghcs.repo.commits = ghcs.repo.commits || [];
+    ghcs.repo.commits = ghcs.repo.commits || d3.map({});
     if (commits && commits.length) {
         updateStatus(ghcs.states.cur);
         psBar.show();
         ldrTop.show();
 
-        commits.forEach(function(d) {
-            d = {
-                url : d.url,
-                sha : d.sha,
-                author : {
-                    name : d.commit.author.name,
-                    email : d.commit.author.email,
-                    login : d.author && d.author.login ? d.author.login : d.commit.author.email
-                },
-                committer : {
-                    name : d.commit.committer.name,
-                    email : d.commit.committer.email,
-                    login : d.committer && d.committer.login ? d.committer.login : d.commit.committer.email
-                },
-                date : Date.parse(d.commit.author.date),
-                avatar_url : (d.author && d.author.avatar_url ? d.author.avatar_url : null),
-                message : d.commit.message,
-                parents : d.parents
-            };
-            d.index = ghcs.repo.commits.push(d) - 1;
+        commits.forEach(function(d, i) {
+            var obj = ghcs.repo.commits.get(d.sha);
 
-            d.author.avatar = preloadImage(d.avatar_url);
-
-            JSONP(makeUrl(d.url), (function(c) {
-                ghcs.repo.dates.push(c.date);
-                ghcs.repo.dates.sort(d3.ascending);
-                return function(req) {
-                    parseCommit(getDataFromRequest(req), ghcs.repo.commits[c.index]);
-                    upCommits();
+            if (!obj) {
+                obj = {
+                    url : d.url,
+                    sha : d.sha,
+                    author : {
+                        name : d.commit.author.name,
+                        email : d.commit.author.email,
+                        login : d.author && d.author.login ? d.author.login : d.commit.author.email
+                    },
+                    committer : {
+                        name : d.commit.committer.name,
+                        email : d.commit.committer.email,
+                        login : d.committer && d.committer.login ? d.committer.login : d.commit.committer.email
+                    },
+                    date : Date.parse(d.commit.author.date),
+                    avatar_url : (d.author && d.author.avatar_url ? d.author.avatar_url : null),
+                    message : d.commit.message,
+                    parents : d.parents
                 };
-            })(d), {
-                onerror : function(err) {
-                    console.log(err);
-                    upCommits();
-                }
-            });
+                ghcs.repo.commits.set(obj.sha, obj);
+
+                obj.author.avatar = preloadImage(obj.avatar_url);
+            }
+
+            if (!obj.files) {
+                JSONP(makeUrl(obj.url), (function(c) {
+                    ghcs.repo.dates.push(c.date);
+                    ghcs.repo.dates.sort(d3.ascending);
+                    return function(req) {
+                        parseCommit(getDataFromRequest(req), ghcs.repo.commits.get(c.sha));
+                        upCommits();
+                    };
+                })(obj), {
+                    onerror : function(err) {
+                        console.log(err);
+                        upCommits();
+                    }
+                });
+            }
+            else {
+                upCommits();
+            }
         });
     }
     else {
@@ -348,15 +357,19 @@ function analyseCommits() {
         stepsBar.thirdStep();
         runBtn.enable();
         ldrTop.hide();
-        vis.redrawStat(ghcs.repo);
         visBtn.enable();
+        if (ghcs.repo && ghcs.repo.commits)
+            ghcs.repo.commitsCount = ghcs.repo.commits.values().filter(function(d) {
+                return !!d.files;
+            }).length;
+        vis.redrawStat(ghcs.repo);
         setTimeout(nextStepApplyParams, 500);
     };
     vis.layers.stat.toFront();
 
     cbDlsr.check();
 
-    if (!ghcs.repo || !ghcs.repo.commits_url) {
+    if (!ghcs.repo || !ghcs.repo.commits_url || ghcs.repo.loadedAll) {
         updateStatus(ghcs.states.cur = ghcs.states.max);
         checkCompleted();
         return;
@@ -382,6 +395,9 @@ function analyseCommits() {
                     });
             }
             else {
+                if (!next)
+                    ghcs.repo.loadedAll = true;
+
                 ghcs.states.max =
                     ghcs.states.loaded;
             }

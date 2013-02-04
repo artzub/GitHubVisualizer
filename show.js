@@ -35,6 +35,11 @@
         particle,
         defImg,
 
+        lastEvent,
+        zoomScale,
+        xW,
+        yH,
+
         setting,
         rd3 = d3.random.irwinHall(8);
 
@@ -70,6 +75,12 @@
 
         while(--l > -1) {
             n = d.nodes[l];
+
+            if (n.fixed) {
+                n.x = xW(n.x);
+                n.y = yH(n.y);
+            }
+
             n.size += 2;
             n.fixed = false;
 
@@ -387,13 +398,36 @@
     }
 
     function sortBySize(a, b) {
-        return d3.descending(a.size, b.size);
+        return d3.descending(b.size, a.size);
+    }
+
+    function checkVisible(d, offsetx, offsety) {
+        var tx = lastEvent.translate[0]/lastEvent.scale,
+            ty = lastEvent.translate[1]/lastEvent.scale
+            ;
+
+        offsetx = offsetx || 0;
+        if (!(offsetx instanceof Array))
+            offsetx = [offsetx, offsetx];
+        offsety = offsety || 0;
+        if (!(offsety instanceof Array))
+            offsety = [offsety, offsety];
+
+        return (
+            d.x + d.size > -tx + offsetx[0]
+                && d.x - d.size < -tx + offsetx[1] + w/lastEvent.scale
+                && d.y + d.size > -ty + offsety[0]
+                && d.y - d.size < -ty + offsety[1] + h/lastEvent.scale
+            );
     }
 
     function redrawCanvas() {
 
         bufCtx.save();
         bufCtx.clearRect(0, 0, w, h);
+
+        bufCtx.translate(lastEvent.translate[0], lastEvent.translate[1]);
+        bufCtx.scale(lastEvent.scale, lastEvent.scale);
 
         var n, l, i, j,
             img,
@@ -409,7 +443,7 @@
                 .key(function(d) {
                     return d.flash ? ncb(d) : d3.rgb(nc(d));
                 })
-                .entries(_force.nodes());
+                .entries(_force.nodes().filter(function(d) { return checkVisible(d) && (d.visible || d.alive); }));
 
             l = n.length;
 
@@ -460,7 +494,7 @@
 
             while(--l > -1) {
                 d = n[l];
-                if (d.visible || d.opacity) {
+                if (checkVisible(d) && (d.visible || d.opacity)) {
                     //blink(d, !d.links && setting.userLife > 0);
 
                     x = Math.floor(d.x);
@@ -706,7 +740,7 @@
             .attr("class", "gttLeg")
             .style("font-size", "13px")
             .text(function(d) { return d.key.substr(1); })
-            .style("fill", function(d) { return d.value.color; })
+            .style("fill", function(d) { return d3.rgb(d.value.color).brighter().brighter(); })
         ;
 
         g.append("text")
@@ -718,6 +752,10 @@
 
     function sortLeg(b, a) {
         return d3.ascending(a.value.now.length, b.value.now.length);
+    }
+
+    function sortLegK(b, a) {
+        return d3.ascending(a.key, b.key);
     }
 
     function updateLegend(sha) {
@@ -746,14 +784,14 @@
             .text(wl)
         ;
 
-        g.sort(sortLeg)
+        g.sort(sortLegK).sort(sortLeg)
+            .style("visibility", function(d, i) {
+                return !wl(d) || i * 18 > lLeg.attr("height") ? "hidden" : "visible";
+            })
             .transition()
             .duration(500)
             .attr("transform", function(d, i) {
                 return "translate(" + [0, i * 18] + ")";
-            })
-            .style("visibility", function(d, i) {
-                return !wl(d) || i * 18 > lLeg.attr("height") ? "hidden" : "visible";
             })
         ;
 
@@ -763,7 +801,9 @@
         if (_worker)
             clearInterval(_worker);
 
-        if (!data || !data.commits)
+        _data = data && data.commits ? data.commits.values().sort(vis.sC) : null;
+
+        if (!_data || !_data.length)
             return;
 
         setting = ghcs.settings.cs;
@@ -776,11 +816,44 @@
         layer = d3.select("#canvas");
         layer.select("#mainCanvas").remove();
 
+        lastEvent = {
+            translate: [0, 0],
+            scale : 1
+        };
+
+        xW = d3.scale.linear()
+            .range([0, w])
+            .domain([0, w]);
+
+        yH = d3.scale.linear()
+            .range([0, h])
+            .domain([0, h]);
+
+        var zoom = d3.behavior.zoom()
+            .scaleExtent([.1, 8])
+            .scale(1)
+            .translate([0, 0])
+            .on("zoom", function() {
+                lastEvent.translate = d3.event.translate.slice(0);
+                lastEvent.scale = d3.event.scale;
+
+                var tl = lastEvent.translate[0] / lastEvent.scale,
+                    tt = lastEvent.translate[1] / lastEvent.scale;
+
+                xW.range([-tl, -tl + w / lastEvent.scale])
+                    .domain([0, w]);
+                yH.range([-tt, -tt + h / lastEvent.scale])
+                    .domain([0, h]);
+
+                valid = false;
+            });
+
         canvas = layer.append("canvas")
             .text("This browser don't support element type of Canvas.")
             .attr("id", "mainCanvas")
             .attr("width", w)
             .attr("height", h)
+            .call(zoom)
             .node();
 
         ctx = canvas.getContext("2d");
@@ -797,6 +870,15 @@
         layer = svg || vis.layers.show;
         layer && layer.show && layer.show();
 
+        layer.append("g")
+            .call(zoom)
+            .append("rect")
+            .attr("width", w)
+            .attr("height", h)
+            .attr("x", 0)
+            .attr("y", 0)
+            .style("fill", "#ffffff")
+            .style("fill-opacity", 0);
 
         lHis && lHis.selectAll("*").remove();
 
@@ -850,7 +932,7 @@
         updateStatus(ghcs.states.cur, timeFormat(new Date(dateRange[0])));
 
         links = [];
-        nodes = initNodes(_data = data.commits.slice(0).sort(vis.sC));
+        nodes = initNodes(_data);
 
         defImg = new Image();
         defImg.src = "default.png";
@@ -868,11 +950,18 @@
             .nodes([])
             ;
 
+        zoomScale = d3.scale.linear()
+            .range([5, 1])
+            .domain([.1, 1]);
+
         _forceAuthor = (_forceAuthor || d3.layout.force()
             .stop()
             .size([w, h])
             .gravity(setting.padding * .001)
-            .charge(function(d) { return -(setting.padding + d.size) * 8; }))
+            .charge(function(d) { return -(setting.padding + d.size) * 8
+                * (Math.sqrt(d.links / lastEvent.scale) || 1)
+                ;
+            }))
             .nodes([])
             ;
 
