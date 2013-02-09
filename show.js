@@ -84,25 +84,26 @@
             n.size += 2;
             n.fixed = false;
 
-            n.author =  a.nodeValue.email;
+            n.author = a;
 
             n.visible = !!n.statuses[d.sha].status;
             fn = n.nodeValue.name.toLowerCase();
 
+            n.flash = 100;
+            n.opacity = 100;
+            n.alive = setting.fileLife > 0 ? setting.fileLife : 1;
+
             if (n.visible) {
                 n.ext.now.indexOf(fn) < 0
                     && n.ext.now.push(fn);
-
-                n.flash = 100;
-                n.alive = setting.fileLife > 0 ? setting.fileLife : 1;
-                n.opacity = 100;
             }
             else {
                 (fn = n.ext.now.indexOf(fn)) > -1
-                    && n.ext.now.splice(fn, 1);
+                    && n.ext.now.splice(parseInt(fn), 1);
 
-                n.alive = (setting.fileLife > 0 ? setting.fileLife : 1) * .2;
-                n.opacity = 50;
+                n.flash *= .5;
+                n.alive *= .2;
+                n.opacity *= .5;
             }
 
             /*data.push(n);
@@ -120,11 +121,11 @@
             });*/
         }
 
-        updateLegend(d.sha);
+        updateLegend(/*d.sha*/);
 
         _force.nodes(nodes.filter(function(d) {
                 return d.type != typeNode.author && (d.visible || d.opacity);
-            }).sort(sortBySize)
+            })//.sort(sortBySize)
         ).start();
 
         _forceAuthor.nodes(nodes.filter(function(d) {
@@ -168,7 +169,7 @@
         if (_worker)
             clearInterval(_worker);
 
-        anim();
+        render();
 
         _worker = setInterval(loop, ONE_SECOND);
     }
@@ -177,12 +178,8 @@
         return d.size > 0 ? d.size : 0;
     }
 
-    function ncb(d) {
-        return d3.rgb(d.color).brighter().brighter();
-    }
-
-    function nc(d) {
-        return d.color;
+    function curColor(d) {
+        return d.flash ? d.flashColor : d.d3color;
     }
 
     function randomTrue() {
@@ -207,7 +204,7 @@
                 ext = {
                     all : 0,
                     currents : {},
-                    color : extColor(c),
+                    color : d3.rgb(extColor(c)),
                     now : []
                 };
                 extHash.set(c, ext);
@@ -248,7 +245,9 @@
             visible : false,
             links : 0,
             type : type,
-            color : c,
+            color : c.toString(),
+            d3color : c,
+            flashColor: type == typeNode.author ? c : c.brighter().brighter(),
             ext : ext,
             author : type == typeNode.author ? d.email : null,
             img : type == typeNode.author ? d.avatar : null,
@@ -331,9 +330,9 @@
                     !n.inserted && (n.inserted = ns.push(n));
                 }
 
-                j = extHash.values().reduce(function(a, b) {
-                    return a += b.currents[d.sha] || 0;
-                }, null);
+                j = extHash.values().reduce((function(sha) { return function(a, b) {
+                    return (a || 0) + (b.currents[sha] || 0);
+                }})(d.sha), null);
 
                 extMax = j > extMax ? j : extMax;
             }
@@ -341,47 +340,41 @@
         return ns;
     }
 
-    var tempCanvas, tempFileCanvas;
-    function setOpacity(img, a, f) {
-        if (!img || !img.width)
-            img = defImg;
-
-        return img;
-    }
-
+    var tempFileCanvas;
     function colorize(img, r, g, b, a) {
         if (!img)
             return img;
 
-        if (!tempFileCanvas) {
+        if (!tempFileCanvas)
             tempFileCanvas = document.createElement("canvas");
-            tempFileCanvas.width = img.width;
-            tempFileCanvas.height = img.height;
-        }
 
-        var imgCtx = tempFileCanvas.getContext("2d"), imgdata, i;
-        imgCtx.clearRect(0, 0, img.width, img.height);
-        imgCtx.save();
+        if (tempFileCanvas.width != img.width)
+            tempFileCanvas.width = img.width;
+
+        if (tempFileCanvas.height != img.height)
+            tempFileCanvas.height = img.height;
+
+        var imgCtx = tempFileCanvas.getContext("2d"),
+            imgData, i;
         imgCtx.drawImage(img, 0, 0);
 
-        imgdata = imgCtx.getImageData(0, 0, img.width, img.height);
+        imgData = imgCtx.getImageData(0, 0, img.width, img.height);
 
-        i = imgdata.data.length;
+        i = imgData.data.length;
         while((i -= 4) > -1) {
-            imgdata.data[i + 3] = imgdata.data[i] * a;
-            if (imgdata.data[i + 3]) {
-                imgdata.data[i] = r;
-                imgdata.data[i + 1] = g;
-                imgdata.data[i + 2] = b;
+            imgData.data[i + 3] = imgData.data[i] * a;
+            if (imgData.data[i + 3]) {
+                imgData.data[i] = r;
+                imgData.data[i + 1] = g;
+                imgData.data[i + 2] = b;
             }
         }
 
-        imgCtx.putImageData(imgdata, 0, 0);
-        imgCtx.restore();
+        imgCtx.putImageData(imgData, 0, 0);
         return tempFileCanvas;
     }
 
-    function blink(d, aliveCheck, i, l) {
+    function blink(d, aliveCheck) {
         d.flash = (d.flash -= setting.rateFlash) > 0 ? d.flash : 0;
 
         !d.flash && aliveCheck
@@ -398,7 +391,7 @@
     }
 
     function sortBySize(a, b) {
-        return d3.descending(b.size, a.size);
+        return d3.ascending(a.size, b.size);
     }
 
     function checkVisible(d, offsetx, offsety) {
@@ -421,135 +414,184 @@
             );
     }
 
+    function sortByColor(a, b) {
+        return d3.ascending(b.color + !b.flash, a.color + !a.flash);
+    }
+
+    function sortByOpacity(a, b) {
+        return d3.ascending(b.opacity, a.opacity);
+    }
+
+    function compereColor(a, b) {
+        return a.r != b.r || a.g != b.g || a.b != b.b;
+    }
+
+    function filterVisible(d) {
+        return checkVisible(d) && (d.visible || d.alive);
+    }
+
     function redrawCanvas() {
 
         bufCtx.save();
         bufCtx.clearRect(0, 0, w, h);
+
+        if (setting.blendingLighter && bufCtx.globalCompositeOperation == 'source-over') {
+            bufCtx.globalCompositeOperation = 'lighter';
+            //darker
+        }
+        else if (bufCtx.globalCompositeOperation == 'lighter') {
+            bufCtx.globalCompositeOperation = 'source-over';
+        }
 
         bufCtx.translate(lastEvent.translate[0], lastEvent.translate[1]);
         bufCtx.scale(lastEvent.scale, lastEvent.scale);
 
         var n, l, i, j,
             img,
-            d, d1, d2,
+            d, d1,
             c, x, y, s;
 
-
         if (setting.showFile) {
-            n = d3.nest()
-                .key(function(d) {
-                    return d.opacity;
-                })
-                .key(function(d) {
-                    return d.flash ? ncb(d) : d3.rgb(nc(d));
-                })
-                .entries(_force.nodes().filter(function(d) { return checkVisible(d) && (d.visible || d.alive); }));
+            n = _force.nodes()
+                .filter(filterVisible)
+                .sort(sortBySize)
+                .sort(sortByOpacity)
+                .sort(sortByColor)
+            ;
 
             l = n.length;
 
-            while(--l > -1) {
-                d1 = n[l];
-                i = d1.values.length;
-                while(--i > -1) {
-                    d2 = d1.values[i];
-                    j = d2.values.length;
+            c = null;
+            i = 100;
+            j = true;
+            d1 = false;
 
-                    c = d3.rgb(d2.key);
-
-                    if (!setting.showHalo) {
-                        bufCtx.beginPath();
-                        bufCtx.strokeStyle = "none";
-                        bufCtx.fillStyle = toRgba(c, d1.key * .01);
-                    }
-                    else
-                        img = colorize(particle, c.r, c.g, c.b, d1.key * .01);
-
-                    while(--j > -1) {
-                        d = d2.values[j];
-                        if (d.visible || d.alive) {
-                            //blink(d, setting.fileLife > 0);
-                            x = Math.floor(d.x);
-                            y = Math.floor(d.y);
-
-                            s = radius(nr(d)) * (setting.showHalo ? 8 : 1);
-                            setting.showHalo
-                                ? bufCtx.drawImage(img, x - s / 2, y - s / 2, s, s)
-                                : bufCtx.arc(x, y, s, 0, PI_CIRCLE, true)
-                                ;
-                        }
-                    }
-
-                    if (!setting.showHalo) {
-                        bufCtx.fill();
-                        bufCtx.stroke();
-                        bufCtx.closePath();
-                    }
-                }
-            }
-        }
-
-        if (setting.showUser || setting.showLabel) {
-            n = _forceAuthor.nodes();
-            l = n.length;
+            //bufCtx.save();
+            bufCtx.globalAlpha = i * .01;
 
             while(--l > -1) {
                 d = n[l];
-                if (checkVisible(d) && (d.visible || d.opacity)) {
-                    //blink(d, !d.links && setting.userLife > 0);
 
-                    x = Math.floor(d.x);
-                    y = Math.floor(d.y);
+                if (i != d.opacity) {
+                    i = d.opacity;
+                    //bufCtx.restore();
+                    bufCtx.globalAlpha = i * .01;
+                    //bufCtx.save();
+                    //j = false;
+                }
 
-                    if (setting.showUser) {
-                        c = d.flash ? ncb(d) : d3.rgb(nc(d));
-                        bufCtx.save();
+                if (!c || compereColor(c, curColor(d))) {
+                    c = curColor(d);
+                    j = false;
+                }
 
-                        if (setting.showPaddingCircle) {
-                            bufCtx.beginPath();
-                            bufCtx.strokeStyle = "none";
-                            bufCtx.fillStyle = toRgba("#ff0000", .1);
-                            bufCtx.arc(x, y, nr(d) + setting.padding, 0, PI_CIRCLE, true);
+                if (!j) {
+                    if (!setting.showHalo) {
+                        if (!d1) {
+                            bufCtx.closePath();
                             bufCtx.fill();
                             bufCtx.stroke();
+                            d1 = true;
                         }
 
                         bufCtx.beginPath();
                         bufCtx.strokeStyle = "none";
-                        bufCtx.fillStyle = setting.useAvatar ? "none" : toRgba(c, d.opacity * .01);
-                        bufCtx.arc(x, y, nr(d), 0, PI_CIRCLE, true);
-                        bufCtx.fill();
-                        bufCtx.stroke();
-                        if (setting.useAvatar && d.img) {
-                            bufCtx.clip();
-                            bufCtx.drawImage(setOpacity(d.img, d.opacity * .01, d.flash), x - nr(d), y - nr(d), nr(d) * 2, nr(d) * 2);
-                        }
-                        bufCtx.closePath();
-
-                        bufCtx.restore();
+                        bufCtx.fillStyle = c.toString();
                     }
-
-                    if (setting.showLabel) {
-                        c = d.flash ? "white" : "gray";
-
-                        bufCtx.save();
-
-                        bufCtx.fillStyle = toRgba(c, d.opacity * .01);
-                        bufCtx.fillText(setting.labelPattern
-                            .replace("%l", d.nodeValue.login)
-                            .replace("%n", d.nodeValue.name != "unknown" ? d.nodeValue.name : d.nodeValue.login)
-                            .replace("%e", d.nodeValue.email), x, y + nr(d) * 1.5);
-
-                        bufCtx.restore();
-                    }
+                    else
+                        img = colorize(particle, c.r, c.g, c.b, 1);
+                    j = true;
                 }
+
+                x = Math.floor(d.x);
+                y = Math.floor(d.y);
+
+                s = radius(nr(d)) * (setting.showHalo ? 8 : 1);
+                setting.showHalo
+                    ? bufCtx.drawImage(img, x - s / 2, y - s / 2, s, s)
+                    : bufCtx.arc(x, y, s, 0, PI_CIRCLE, true)
+                ;
             }
+            if (!setting.showHalo) {
+                bufCtx.closePath();
+                bufCtx.fill();
+                bufCtx.stroke();
+            }
+            //bufCtx.restore();
         }
 
+        if (setting.showUser || setting.showLabel) {
+            n = _forceAuthor.nodes().filter(filterVisible).sort(sortByOpacity);
+            l = n.length;
+
+            i = 100;
+
+            //bufCtx.save();
+            bufCtx.globalAlpha = i * .01;
+
+            while(--l > -1) {
+                d = n[l];
+
+                if (i != d.opacity) {
+                    i = d.opacity;
+                    //bufCtx.restore();
+                    bufCtx.globalAlpha = i * .01;
+                    //bufCtx.save();
+                }
+
+                x = Math.floor(d.x);
+                y = Math.floor(d.y);
+
+                if (setting.showUser) {
+                    c = curColor(d);
+                    bufCtx.save();
+
+                    if (setting.showPaddingCircle) {
+                        bufCtx.beginPath();
+                        bufCtx.strokeStyle = "none";
+                        bufCtx.fillStyle = "#ff0000";
+                        bufCtx.arc(x, y, nr(d) + setting.padding, 0, PI_CIRCLE, true);
+                        bufCtx.closePath();
+                        bufCtx.fill();
+                        bufCtx.stroke();
+                    }
+
+                    bufCtx.beginPath();
+                    bufCtx.strokeStyle = "transparent";
+                    bufCtx.fillStyle = setting.useAvatar ? "transparent" : c;
+                    bufCtx.arc(x, y, nr(d), 0, PI_CIRCLE, true);
+                    bufCtx.closePath();
+                    bufCtx.fill();
+                    bufCtx.stroke();
+                    if (setting.useAvatar && d.img) {
+                        bufCtx.clip();
+                        bufCtx.drawImage(d.img, x - nr(d), y - nr(d), nr(d) * 2, nr(d) * 2);
+                    }
+
+                    bufCtx.restore();
+                }
+
+                if (setting.showLabel) {
+                    c = d.flash ? "white" : "gray";
+
+                    //bufCtx.save();
+
+                    bufCtx.fillStyle = c;
+                    bufCtx.fillText(setting.labelPattern
+                        .replace("%l", d.nodeValue.login)
+                        .replace("%n", d.nodeValue.name != "unknown" ? d.nodeValue.name : d.nodeValue.login)
+                        .replace("%e", d.nodeValue.email), x, y + nr(d) * 1.5);
+
+                    //bufCtx.restore();
+                }
+            }
+            //bufCtx.restore();
+        }
         bufCtx.restore();
     }
 
-    function anim() {
-        requestAnimationFrame(anim);
+    function render() {
+        requestAnimationFrame(render);
 
         lHis && lHis.style("display", setting.showHistogram ? null : "none");
         lLeg && lLeg.style("display", setting.showCountExt ? null : "none");
@@ -578,8 +620,8 @@
 
             _forceAuthor.nodes(
                 _forceAuthor.nodes()
-                    .filter(function(d, i) {
-                        blink(d, !d.links && setting.userLife > 0, i, _forceAuthor.nodes().length);
+                    .filter(function(d/*, i*/) {
+                        blink(d, !d.links && setting.userLife > 0/*, i, _forceAuthor.nodes().length*/);
                         if (d.visible && d.links === 0 && setting.userLife > 0) {
                             d.flash = 0;
                             d.alive = d.alive / 10;
@@ -600,12 +642,12 @@
             d.links = 0;
         });
 
-        return function(d, i) {
-            blink(d, setting.fileLife > 0, i, _force.nodes().length);
+        return function(d/*, i*/) {
+            blink(d, setting.fileLife > 0/*, i, _force.nodes().length*/);
             if (!d.author || !d.visible)
                 return;
 
-            var node = authorHash.get(d.author),
+            var node = d.author,
                 l,
                 r,
                 x,
@@ -639,7 +681,7 @@
             mb = 18,
             h2 = (h / 2) - mb,
             bw = 2,
-            i, ny
+            ny
             ;
 
         var y = d3.scale.linear()
@@ -695,7 +737,7 @@
 
         lHis.selectAll(".colStack")
             .attr("transform", function(d) {
-                return "translate(" + [ d.x -= d.w - 1, 0] + ")";
+                return "translate(" + [ d.x -= d.w/2, 0] + ")";
             })
             .filter(function(d) {
                 return d.x < 0;
@@ -758,7 +800,7 @@
         return d3.ascending(a.key, b.key);
     }
 
-    function updateLegend(sha) {
+    function updateLegend() {
         if (!lLeg || lLeg.empty())
             return;
 
@@ -768,9 +810,13 @@
             return d.value.now.length;
         }
 
-        var wb = 9 * d3.max(g.data(), function(d) {
-            return ((wl(d) || "") + "").length;
-        });
+        g.selectAll(".gtLeg")
+            .text(wl)
+        ;
+
+        var wb = d3.max(g.selectAll(".gtLeg"), function(d) {
+            return d[0].clientWidth || d[0].getComputedTextLength();
+        }) * 1.3;
 
         g.selectAll("rect")
             .attr("width", wb)
@@ -778,10 +824,6 @@
 
         g.selectAll(".gttLeg")
             .attr("transform", "translate(" + [wb + 2, 12] + ")")
-        ;
-
-        g.selectAll(".gtLeg")
-            .text(wl)
         ;
 
         g.sort(sortLegK).sort(sortLeg)
@@ -797,7 +839,7 @@
 
     }
 
-    vis.runShow = function(data, svg, params) {
+    vis.runShow = function(data, svg/*, params*/) {
         if (_worker)
             clearInterval(_worker);
 
@@ -863,6 +905,7 @@
         bufCanvas.height = h;
 
         bufCtx = bufCanvas.getContext("2d");
+        bufCtx.globalCompositeOperation = 'lighter';
 
         bufCtx.font = "normal normal " + setting.sizeUser / 2 + "px Tahoma";
         bufCtx.textAlign = "center";
@@ -945,7 +988,7 @@
             .size([w, h])
             .friction(.75)
             .gravity(0)
-            .charge(function(d) {return -3 * radius(nr(d)); } )
+            .charge(function(d) {return -1 * radius(nr(d)); } )
             .on("tick", tick))
             .nodes([])
             ;
@@ -959,7 +1002,7 @@
             .size([w, h])
             .gravity(setting.padding * .001)
             .charge(function(d) { return -(setting.padding + d.size) * 8
-                * (Math.sqrt(d.links / lastEvent.scale) || 1)
+                //* (Math.sqrt(d.links / lastEvent.scale) || 1)
                 ;
             }))
             .nodes([])

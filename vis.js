@@ -42,6 +42,9 @@ var vis = {
                 .style("left", e.pageX > w / 2 ? (e.pageX - toolTip.node().clientWidth - TT_PAD) + "px" : (e.pageX + TT_PAD) + "px")
             ;
         }
+    },
+    visualLenght : function(txt) {
+        return txt.clientWidth || txt.getComputedTextLength();
     }
 };
 
@@ -66,12 +69,16 @@ function initGraphics(svg) {
                     return this;
                 };
                 ls[d.name].hide = function() {
-                    ls[d.name].visible = false;
+                    this.visible = false;
+                    if (this.datum().name == "repo" && vis.forceRep)
+                        vis.forceRep.stop();
                     this.style("display", "none");
                     return this;
                 };
                 ls[d.name].show = function() {
-                    ls[d.name].visible = true;
+                    this.visible = true;
+                    if (this.datum().name == "repo" && vis.forceRep)
+                        vis.forceRep.resume();
                     this.style("display", null);
                     return this;
                 };

@@ -35,6 +35,7 @@ var ONE_SECOND = 1000,
     ONE_MINUTE = 60 * ONE_SECOND,
     ONE_HOUR = 60 * ONE_MINUTE,
     ONE_DAY = 24 * ONE_HOUR,
+    TIME_ZONE = (new Date(Date.now())).getTimezoneOffset() * -ONE_MINUTE,
 
     PI_CIRCLE = 2 * Math.PI;
 
@@ -74,6 +75,7 @@ var ghcs = {
             , labelPattern : "%n <%e>"  // pattern for label of user
             , showCommitMessage : false // show commit message
             , skipEmptyDate : true // skip empty date
+            , blendingLighter : true
         }
     },
 

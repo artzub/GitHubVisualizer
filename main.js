@@ -7,9 +7,9 @@
 'use strict';
 
 var timeFormat = (function() {
-    var fd = d3.time.format("%b %d, %Y");
+    var fd = d3.time.format("%b %d, %Y %X");
     return function(ms) {
-        return fd(new Date(ms));
+        return fd(new Date(ms - TIME_ZONE));
     }
 })();
 

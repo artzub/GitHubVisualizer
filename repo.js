@@ -37,7 +37,7 @@
         ;
 
         toolTip.append("span")
-            .attr("class", "mini-icon mini-icon-time")
+            .attr("class", "mini-icon mini-icon-time");
         toolTip.append("strong")
             .style("margin-left", "5px")
             .text(timeFormat(d.nodeValue.date));
@@ -112,6 +112,7 @@
             .remove();
         vis.layers.repo.langHg = null;
     };
+
     vis.redrawRepos = function(data, layout) {
 
         layout = layout || vis.layers.repo;
@@ -162,7 +163,7 @@
         vis.forceRep.colors = vis.reposColors || (vis.reposColors = d3.scale.category20());
 
         vis.forceRep.visible = vis.forceRep.visible || function(d) {
-            return this.clientWidth < vis.forceRep.radius(vis.forceRep.rad(d)) * 2.1 ? null : "hidden";
+            return vis.visualLenght(this) < vis.forceRep.radius(vis.forceRep.rad(d)) * 2.1 ? null : "hidden";
         };
 
         vis.forceRep.appCT = vis.forceRep.appCT || function(g) {

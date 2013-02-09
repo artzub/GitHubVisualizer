@@ -107,11 +107,12 @@
 
             gg.append("path")
                 .attr("class", "vLine")
-                .style("stroke", function(d) { return d3.rgb(vis.forceRep.colors(d.key)).darker(); })
-                .attr("d", "M0,0 L0,0");
+                .style("stroke", function(d) { return d3.rgb(vis.forceRep.colors(d.key)).darker().darker(); })
+                .attr("transform", "translate(" + [-.5 , 0] + ")")
+                .attr("d", "M0.5,0 L0.5,0");
 
             gg.append("circle")
-                .style("fill", function(d) { return d3.rgb(vis.forceRep.colors(d.key)).darker(); })
+                .style("fill", function(d) { return d3.rgb(vis.forceRep.colors(d.key)).darker().darker(); })
                 .attr("r", 2);
 
             var dg = gg.append("g")
@@ -119,9 +120,16 @@
                 .attr("transform", "translate(" + [0 , 0] + ")");
 
             dg.append("circle")
+                .attr("class", "bSubCircle")
                 .style("fill", function(d) { return d3.rgb(vis.forceRep.colors(d.key)); })
                 .style("stoke", function(d) { return d3.rgb(vis.forceRep.colors(d.key)).darker(); })
             ;
+
+            dg.append("circle")
+                .style("fill", function(d) { return d3.rgb(vis.forceRep.colors(d.key)).darker().darker(); })
+                .attr("r", 2)
+            ;
+
             dg.append("text")
                 .attr("text-anchor", "middle")
                 .attr("dy", ".32em")
@@ -169,7 +177,7 @@
 
         var dg = gg.selectAll("g.dCircle");
 
-        dg.selectAll("circle")
+        dg.selectAll("circle.bSubCircle")
             .attr("r", xc);
         dg.selectAll("text")
             .text(function(d) { return d.values.length; });
@@ -185,6 +193,6 @@
         gg.selectAll("path.vLine").transition()
             .duration(3500)
             .ease("elastic")
-            .attr("d", function(d) { return "M0,0 L0," + (h_hg - y(d.values.length) + xc); });
+            .attr("d", function(d) { return "M0.5,0 L0.5," + (h_hg - y(d.values.length) + xc); });
     }
 })(vis || (vis = {}));

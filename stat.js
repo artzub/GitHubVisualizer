@@ -60,10 +60,16 @@
                     li.append("strong")
                         .text(timeFormat(d.date))
                 });
+                ul.append("li").call(function(li) {
+                    li.text("sha: ");
+                    li.append("strong")
+                        .text(d.sha.substr(0, 10));
+                });
                 d.files.length && ul.append("li")
                     .call(function(li) {
-                        var stat = d.files.reduce(function(a, b) {
-                            for(var key in TYPE_STATUS_FILE) {
+                        var key,
+                            stat = d.files.reduce(function(a, b) {
+                            for(key in TYPE_STATUS_FILE) {
                                 if (TYPE_STATUS_FILE.hasOwnProperty(key)
                                     && b.status == TYPE_STATUS_FILE[key]) {
                                     a[key] = (a[key] || 0);
@@ -78,16 +84,16 @@
                         li = li.append("li").attr("class", "field");
                         li.append("h1")
                             .text("Changed files:");
-                        for(var key in stat) {
-                            stat.hasOwnProperty(key)
-                            && li.append("ul")
-                                .attr("class", "group")
-                                .append("li")
-                                .attr("class", "field")
-                                .append("span")
-                                .text(key + ": ")
-                                .append("strong")
-                                .text(stat[key]);
+                        for(key in stat) {
+                            if (stat.hasOwnProperty(key))
+                                li.append("ul")
+                                    .attr("class", "group")
+                                    .append("li")
+                                    .attr("class", "field")
+                                    .append("span")
+                                    .text(key + ": ")
+                                    .append("strong")
+                                    .text(stat[key]);
                         }
                     });
                 ul.append("li")
@@ -267,6 +273,8 @@
             .enter()
             .insert("path", ":first-child")
             .attr("class", "areaFile")
+            .style("stroke", function(d) { return d.color; })
+            .style("stroke-opacity",.5)
             .style("fill-opacity",.1)
             .style("fill", function(d) { return d.color; })
             .transition()

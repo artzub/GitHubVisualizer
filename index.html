@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <script src="http://d3js.org/d3.v3.js"></script>
     <script src="jsonp.js"></script>
@@ -77,6 +78,14 @@
                                             </li>
                                         </ul>
                                     </li>
+                                    <li class="field convolve"><h1>Repositories:</h1>
+                                        <ul class="group">
+                                            <li class="field">
+                                                <ul class="repo-list">
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -115,7 +124,7 @@
                                     </li>
                                     <li class="field"><h1>Settings:</h1>
                                         <ul class="setting" id="st-cs">
-                                            <li class="field"><h1>Code_swarm:</h1>
+                                            <li class="field convolve"><h1>Code_swarm:</h1>
                                                 <ul class="setting">
                                                     <li class="field"><h1>The number of cycles of life element:</h1>
                                                         <ul class="group">
@@ -184,6 +193,10 @@
                                                             <li class="field">
                                                                 <input data-ns="cs" id="cb-cs-showHalo" type="checkbox" checked="checked">
                                                                 <label for="cb-cs-showHalo">Halo</label>
+                                                            </li>
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-blendingLighter" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-blendingLighter">Blending: lighter</label>
                                                             </li>
                                                         </ul>
                                                         <ul class="group">
