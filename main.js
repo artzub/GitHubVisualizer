@@ -13,12 +13,20 @@ var timeFormat = (function() {
     }
 })();
 
+var shortTimeFormat = (function() {
+    var fd = d3.time.format("%d.%b.%y");
+    return function(ms) {
+        return fd(new Date(ms - TIME_ZONE));
+    }
+})();
+
 var log;
 
 var cs, svg_cs, svg,
     margin = {top: 20, right: 20, bottom: 20, left: 20},
     w, h, stackLoad = 0,
     psBar, runBtn, ldrTop, toolTip, showBtn, visBtn,
+    repoList,
     userTxt, curRep, divStat, stepsBar, cbDlr, cbDlsr;
 
 function updateStatus(pos, label) {
@@ -194,21 +202,137 @@ function redrawRepos() {
         ghcs.redrawReposTimer = null;
     }
     ghcs.redrawReposTimer = setTimeout(function () {
-        vis.redrawRepos(ghcs.users
+        var repos = ghcs.users
             && ghcs.users[ghcs.login]
             && ghcs.users[ghcs.login].repos
             ? ghcs.users[ghcs.login].repos
-            : null
-        );
+            : null;
 
-        vis.redrawLangHg(ghcs.users
-            && ghcs.users[ghcs.login]
-            && ghcs.users[ghcs.login].repos
+        vis.redrawRepos(repos);
+
+        vis.redrawLangHg(repos
             ? d3.nest().key(function(d) { return d.nodeValue.lang; }).entries(ghcs.users[ghcs.login].repos)
             : null);
 
+        refreshRepoList(repos);
+
         ghcs.redrawReposTimer = null;
     }, 100);
+}
+
+function refreshRepoList(data) {
+    var now = Date.now(),
+        lenYear = 365 * ONE_DAY,
+        format = d3.format(".2f"),
+        x = d3.scale.linear().range([3, 50]);
+
+
+    function name(d) {
+        return d.nodeValue.name;
+    }
+
+    function size(d) {
+        return d ? (now - d.nodeValue.cdate)/lenYear : 0;
+    }
+
+    function age(d) {
+        return format((now - d.nodeValue.cdate)/lenYear);
+    }
+
+    function color(d) {
+        return vis.forceRep.colors(d.nodeValue.lang);
+    }
+
+    function darker(d) {
+        return d3.rgb(color(d)).darker().darker();
+    }
+
+    function sort(a,b) {
+        return d3.ascending(a.nodeValue.name.toLowerCase(), b.nodeValue.name.toLowerCase());
+    }
+
+    function width(d) {
+        return x(size(d)) + "px";
+    }
+
+    function star(d) {
+        return d.nodeValue.watchers;
+    }
+
+    function fork(d) {
+        return d.nodeValue.forks;
+    }
+
+    function append(span) {
+        span.append("span")
+            .attr("class", "sRepoAge")
+            .text(age)
+            .style("background", color)
+            .style("border-color", darker);
+        span.append("span")
+            .text(name);
+        span.append("span").attr("class", "sRepoRating").call(appendStat);
+    }
+
+    function appendStat(span) {
+        span.append("span")
+            .attr("class", "mini-icon mini-icon-star");
+        span.append("span")
+            .attr("class", "stars")
+            .text(star);
+
+        span.append("span")
+            .attr("class", "forks")
+            .text(fork);
+        span.append("span")
+            .attr("class", "mini-icon mini-icon-public-fork");
+    }
+
+    var opts = repoList.selectAll("li")
+        .data(data, function(d) {
+            return d.nodeValue.id;
+        });
+
+    opts.enter()
+        .append("li")
+        .on("click", repoItemClick)
+        .on("mouseover", repoItemOver)
+        .on("mouseout", repoItemOut)
+        .append("span")
+        .attr("class", "rItemBase")
+        .call(append)
+    ;
+
+    opts.exit().remove();
+
+    opts = repoList.selectAll("li");
+
+    x.domain(d3.extent(opts.data(), size));
+    opts.selectAll(".sRepoAge")
+        .style("padding-left", width);
+
+    var m = 0;
+    opts.selectAll(".sRepoRating").each(function(d) {
+        m = d3.max([m, this.innerText.length]);
+    });
+    opts.selectAll(".rItemBase").style("padding-right", (m * 2) + 62 + "px");
+}
+
+function repoItemOver(d) {
+    if (d) {
+        vis.meRepo(d);
+        vis.mtt(d, null, null, {pageX : d.x, pageY : d.y});
+    }
+}
+
+function repoItemOut(d) {
+    if (d)
+        vis.mlRepo(d);
+}
+
+function repoItemClick(d) {
+    if (d)
+        vis.clRepo(d);
 }
 
 function init() {
@@ -259,6 +383,8 @@ function init() {
 
     d3.selectAll("input[type=checkbox]").on("change", chCheckbox);
     d3.selectAll("input[type=number], input[type=text]").on("change", chValue);
+
+    repoList = d3.select("#repo-list");
 
     psBar = d3.select("#progressBar");
     psBar.pntNode = d3.select(psBar.node().parentNode);
@@ -374,16 +500,8 @@ function init() {
     initGraphics(svg);
 
     curRep = d3.select("#curRep")
-        .on("mouseover", function(d) {
-            if (d) {
-                vis.meRepo(d);
-                vis.mtt(d, null, null, {pageX : d.x, pageY : d.y});
-            }
-        })
-        .on("mouseout", function(d) {
-            if (d)
-                vis.mlRepo(d);
-        });
+        .on("mouseover", repoItemOver)
+        .on("mouseout", repoItemOut);
 
     curRep.setName = function(r) {
         this.selectAll("*").remove();
@@ -447,7 +565,7 @@ function init() {
                     ul.append("li")
                         .call(function(li) {
                             li.append("span")
-                                .attr("class", "mini-icon mini-icon-public-repo")
+                                .attr("class", "mini-icon mini-icon-public-repo");
                             li.append("strong")
                                 .text(user.info.public_repos)
                         });

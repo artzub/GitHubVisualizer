@@ -153,7 +153,7 @@
         bar.transition()
             .duration(3500)
             .ease("elastic")
-            .attr("transform", function(d) { return "translate(" + [x(d.key) , -xc * 2] + ")"; })
+            .attr("transform", function(d) { return "translate(" + [x(d.key) , -xc * 2] + ")"; });
 
         bar.each(function(k) {
             d3.select(this).selectAll("*")
@@ -167,9 +167,9 @@
             .each(function(d) {
                 var pr = d3.select(this.parentNode);
                 pr.selectAll("rect.barSelect")
-                    .attr("transform", "translate(" + [-xc * .2 , -(this.clientWidth + 6 + xc * .4) ] + ")")
+                    .attr("transform", "translate(" + [-xc * .2 , -(vis.visualLenght(this) + 6 + xc * .4) ] + ")")
                     .attr("width", xc * 2.4 )
-                    .attr("height", (this.clientWidth + 6 + xc * .4) + h_hg - y(d.values.length) + xc * 2.4);
+                    .attr("height", (vis.visualLenght(this) + 6 + xc * .4) + h_hg - y(d.values.length) + xc * 2.4);
             });
 
         var gg = bar.selectAll("g.barChain")

@@ -61,6 +61,12 @@ html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,abbr,address
 .mega-icon-public-repo:before {
     content: "\f201";
 }
+.mini-icon-public-fork:before {
+    content: "\f020";
+}
+.mini-icon-star:before {
+    content: "\f02a";
+}
 /** end */
 
 html,
@@ -859,4 +865,100 @@ blockquote.green {
 .convolve:hover > h1:before {
     color: #b0ffb3;
     content: "▼";
+}
+
+.repo-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, .5);
+    position: relative;
+    list-style: none;
+    width: auto;
+}
+
+.repo-list li {
+    overflow: hidden;
+    position: relative;
+    width: auto;
+    cursor: pointer;
+}
+
+.repo-list li:hover {
+    background: rgba(255, 255, 255, .8);
+}
+
+.rItemBase {
+    padding: 1px 24px 1px 2px;
+    display: block;
+    overflow: hidden;
+    border: 0;
+    width: auto;
+    margin: 0;
+    white-space: nowrap;
+
+    color: #C2CAD9;
+    font-weight: bold;
+    border-bottom: 1px dotted #C2CAD9;
+    text-decoration: none;
+
+    font-size: 12px;
+}
+
+.rItemBase:hover {
+    color: #50617F;
+    border-bottom-color: #50617F;
+}
+
+.rItemBase:hover > span:not(.sRepoAge) {
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 1);
+}
+
+.rItemBase span {
+    display: inline-block;
+}
+
+.sRepoAge {
+    padding: 2px 3px;
+    border: 1px solid #000000;
+    overflow: hidden;
+    margin-right: 5px;
+    color: #f9f9f9;
+    font-size: 10px;
+    font-weight: normal;
+    text-align: right;
+}
+
+.sRepoRating {
+    font-size: 10px;
+    position: absolute;
+    top: 4px;
+    right: 0;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.sRepoRating .mini-icon {
+    font-size: 10px;
+    width: auto;
+    height: auto;
+}
+
+.sRepoRating .mini-icon-star {
+    margin-left: 3px;
+    color: rgba(255, 127, 14, .7);
+}
+
+.sRepoRating .stars {
+    margin-left : 5px;
+    padding-right: 3px;
+    border-right : 1px dotted #f9f9f9;
+}
+
+.sRepoRating .forks {
+    margin-left: 3px;
+}
+
+.sRepoRating .mini-icon-public-fork {
+    color: rgba(68, 68, 136, .7);
+    margin-left: 4px;
 }

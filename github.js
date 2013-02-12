@@ -224,7 +224,10 @@ function parseRepos(data) {
                         date : Date.parse(d.pushed_at || d.updated_at),
                         cdate : Date.parse(d.created_at),
                         desc : d.description,
-                        lang : d.language || "Multi"
+                        lang : d.language || "Multi",
+                        forks : d.forks,
+                        watchers : d.watchers
+
                     }
                 };
             })
@@ -322,6 +325,10 @@ function chUser() {
                         else
                             parseRepos(null);
                         divStat.updateInfo();
+                    }, {
+                        onerror : function(err) {
+                            console.log(err);
+                        }
                     });
                 }
                 else {

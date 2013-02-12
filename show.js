@@ -816,7 +816,7 @@
 
         var wb = d3.max(g.selectAll(".gtLeg"), function(d) {
             return d[0].clientWidth || d[0].getComputedTextLength();
-        }) * 1.3;
+        }) + 4;
 
         g.selectAll("rect")
             .attr("width", wb)

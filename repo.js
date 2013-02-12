@@ -40,7 +40,27 @@
             .attr("class", "mini-icon mini-icon-time");
         toolTip.append("strong")
             .style("margin-left", "5px")
-            .text(timeFormat(d.nodeValue.date));
+            .text(timeFormat(d.nodeValue.date) + " (" + shortTimeFormat(d.nodeValue.cdate) + ")");
+        toolTip.append("br");
+
+        toolTip.append("span")
+            .style("color", "#ccc")
+            .attr("class", "mini-icon mini-icon-star");
+        toolTip.append("strong")
+            .style({
+                "margin-left" : "5px",
+                "padding-right": "3px",
+                "border-right" : "1px dotted #f9f9f9"
+            })
+            .text(d.nodeValue.watchers);
+
+        toolTip.append("strong")
+            .style("margin-left", "3px")
+            .text(d.nodeValue.forks);
+        toolTip.append("span")
+            .style("color", "#ccc")
+            .style("margin-left", "4px")
+            .attr("class", "mini-icon mini-icon-public-fork");
         toolTip.append("br");
 
         toolTip.append("span")
