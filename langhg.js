@@ -52,34 +52,16 @@
             .attr("height", h_hg + m.top + m.bottom)
             .attr("transform", "translate(" + pos.left + "," + pos.top + ")");
 
-        function mei(d) {
-            d._g
-                && d._g.selectAll("circle")
-                .style("stroke", d3.rgb(colors.decolor).darker())
-                .style("fill", toRgba(colors.decolor, vis.forceRep.opt(vis.forceRep.radO(d))))
-            && d._g.selectAll("text")
-                .style("fill", d3.rgb(colors.decolor).darker());
-        }
-
-        function moi(d) {
-            d._g
-                && d._g.selectAll("circle")
-                .style("stroke", d3.rgb(vis.forceRep.colors(d.nodeValue.lang)))
-                .style("fill", toRgba(vis.forceRep.colors(d.nodeValue.lang), vis.forceRep.opt(vis.forceRep.radO(d))))
-            && d._g.selectAll("text")
-                .style("fill", d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).brighter());
-        }
-
         function me(d) {
             vis.forceRep.nodes().filter(function(k) {
                 return k.nodeValue.lang != d.key;
-            }).forEach(mei);
+            }).forEach(meiRepo);
         }
 
         function mo(d) {
             vis.forceRep.nodes().filter(function(k) {
                 return k.nodeValue.lang != d.key;
-            }).forEach(moi);
+            }).forEach(moiRepo);
         }
 
         function appendItems(g) {

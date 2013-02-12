@@ -45,6 +45,9 @@ html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,abbr,address
 .mini-icon-public-repo:before {
     content: "\f001";
 }
+.mini-icon-repo-forked:before {
+    content: "\f002";
+}
 .mini-icon-time:before {
     content: "\f046";
 }
@@ -57,15 +60,19 @@ html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,abbr,address
 .mini-icon-history:before {
     content: "\f07e";
 }
-
-.mega-icon-public-repo:before {
-    content: "\f201";
-}
 .mini-icon-public-fork:before {
     content: "\f020";
 }
 .mini-icon-star:before {
     content: "\f02a";
+}
+
+
+.mega-icon-public-repo:before {
+    content: "\f201";
+}
+.mega-icon-repo-forked:before {
+    content: "\f202";
 }
 /** end */
 
@@ -541,7 +548,8 @@ hr {
 }
 
 #curRep .mini-icon-link:before,
-#curRep .mega-icon-public-repo:before {
+#curRep .mega-icon-public-repo:before,
+#curRep .mega-icon-repo-forked:before {
     position: absolute;
     top: -16px;
 }
@@ -588,7 +596,7 @@ hr {
     transition: all .5s;
 
     margin-right: 10px;
-    width : 96px;
+    width : 112px;
     height : auto;
 }
 
@@ -800,6 +808,11 @@ blockquote.green {
 .setting input {
     padding: 0;
     margin: 0;
+}
+
+.setting input[type=checkbox],
+.setting input[type=radio] {
+    margin-top: -0.33em;
 }
 
 .setting h1 {

@@ -26,6 +26,14 @@
 
         toolTip.selectAll("*").remove();
 
+        toolTip.append("span")
+            .style({
+                "float": "left",
+                "margin-top": "5px",
+                "margin-bottom": "-5px",
+                "margin-right": "10px"
+            })
+            .attr("class", "mega-icon mega-icon-" +  (!d.nodeValue.forked ? "public-repo" : "repo-forked"));
         toolTip.append("h1")
             .text(d.nodeValue.name);
         toolTip.append("hr");

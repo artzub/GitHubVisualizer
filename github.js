@@ -226,8 +226,8 @@ function parseRepos(data) {
                         desc : d.description,
                         lang : d.language || "Multi",
                         forks : d.forks,
-                        watchers : d.watchers
-
+                        watchers : d.watchers,
+                        forked : d.fork
                     }
                 };
             })
@@ -316,7 +316,6 @@ function chUser() {
                                         JSONP(next, getAll);
                                     }
                                 });
-                                divStat.updateInfo();
                             }, {
                                 onerror : function(err) {
                                     console.log(err);

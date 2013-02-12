@@ -214,11 +214,53 @@ function redrawRepos() {
             ? d3.nest().key(function(d) { return d.nodeValue.lang; }).entries(ghcs.users[ghcs.login].repos)
             : null);
 
+        divStat.updateInfo();
+
         refreshRepoList(repos);
 
         ghcs.redrawReposTimer = null;
     }, 100);
 }
+
+function meiRepo(d) {
+    d._g
+        && d._g.selectAll("circle")
+        .style("stroke", d3.rgb(colors.decolor).darker())
+        .style("fill", toRgba(colors.decolor, vis.forceRep.opt(vis.forceRep.radO(d))))
+    && d._g.selectAll("text")
+        .style("fill", d3.rgb(colors.decolor).darker());
+}
+
+function moiRepo(d) {
+    d._g
+        && d._g.selectAll("circle")
+        .style("stroke", d3.rgb(vis.forceRep.colors(d.nodeValue.lang)))
+        .style("fill", toRgba(vis.forceRep.colors(d.nodeValue.lang), vis.forceRep.opt(vis.forceRep.radO(d))))
+    && d._g.selectAll("text")
+        .style("fill", d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).brighter());
+}
+
+function meForks(d) {
+    vis.forceRep && vis.forceRep.nodes()
+        .filter(function(d) {
+            return !d.nodeValue.forked;
+        })
+        .forEach(meiRepo);
+}
+
+function meSources(d) {
+    vis.forceRep && vis.forceRep.nodes()
+        .filter(function(d) {
+            return d.nodeValue.forked;
+        })
+        .forEach(meiRepo);
+}
+
+function meFS() {
+    vis.forceRep.nodes().forEach(moiRepo);
+}
+
+
 
 function refreshRepoList(data) {
     var now = Date.now(),
@@ -287,6 +329,58 @@ function refreshRepoList(data) {
         span.append("span")
             .attr("class", "mini-icon mini-icon-public-fork");
     }
+
+    d3.select(repoList.node().parentNode.parentNode.parentNode).call(function(ul) {
+        var user = ghcs.users[ghcs.login];
+        if (!user || !user.info.forks)
+            return;
+
+        ul.selectAll(".statForked").remove();
+
+        ul = ul.insert("ul", ".group")
+            .attr("class", "group statForked");
+
+        ul.append("li")
+            .on("mouseover", meSources)
+            .on("mouseout", meFS)
+            .attr("class", "field")
+            .call(function(li) {
+                li.append("input")
+                    .attr({
+                        "type" : "checkbox",
+                        "checked" : "checked",
+                        "id" : "cb-for-self-repo"
+                    });
+                li = li.append("label")
+                    .attr("for", "cb-for-self-repo");
+                li.append("span")
+                    .attr("class", "mini-icon mini-icon-public-repo");
+                li.append("span")
+                    .text("Sources: ");
+                li.append("strong")
+                    .text(user.info.public_repos - user.info.forks);
+            });
+        ul.append("li")
+            .on("mouseover", meForks)
+            .on("mouseout", meFS)
+            .attr("class", "field")
+            .call(function(li) {
+                li.append("input")
+                    .attr({
+                        "type" : "checkbox",
+                        "checked" : "checked",
+                        "id" : "cb-for-fork-repo"
+                    });
+                li = li.append("label")
+                    .attr("for", "cb-for-fork-repo");
+                li.append("span")
+                    .attr("class", "mini-icon mini-icon-repo-forked");
+                li.append("span")
+                    .text("Forks: ");
+                li.append("strong")
+                    .text(user.info.forks);
+            });
+    });
 
     var opts = repoList.selectAll("li")
         .data(data, function(d) {
@@ -512,7 +606,7 @@ function init() {
         else {
             this.append("span")
                 .style("color", d3.rgb(vis.forceRep.colors(r.nodeValue.lang)).brighter())
-                .attr("class", "mega-icon mega-icon-public-repo");
+                .attr("class", "mega-icon mega-icon-" + (!r.nodeValue.forked ? "public-repo" : "repo-forked"));
 
             this.append("strong")
                 .style("margin-right", "5px")
@@ -534,6 +628,12 @@ function init() {
     divStat.updateInfo = function() {
         var user;
         if (ghcs.login && (user = ghcs.user = ghcs.users[ghcs.login]) && user.info) {
+            if (user.repos) {
+                user.info.forks = user.repos.reduce(function(a, b) {
+                    return b.nodeValue.forked ? ++a : a;
+                }, 0);
+            }
+
             divStat.selectAll("*").remove();
             user.info.avatar && divStat.node().appendChild(user.info.avatar);
             divStat.append("ul")
@@ -563,11 +663,22 @@ function init() {
                                 .text(user.info.blog)
                         });
                     ul.append("li")
+                        .on("mouseover", meSources)
+                        .on("mouseout", meFS)
                         .call(function(li) {
                             li.append("span")
                                 .attr("class", "mini-icon mini-icon-public-repo");
                             li.append("strong")
-                                .text(user.info.public_repos)
+                                .text(user.info.public_repos - user.info.forks);
+                        });
+                    user.info.forks && ul.append("li")
+                        .on("mouseover", meForks)
+                        .on("mouseout", meFS)
+                        .call(function(li) {
+                            li.append("span")
+                                .attr("class", "mini-icon mini-icon-repo-forked");
+                            li.append("strong")
+                                .text(user.info.forks);
                         });
                     user.info.updated_at && ul.append("li")
                         .call(function(li) {
