@@ -32,7 +32,7 @@
         var w_hg = w / 4,
             h_hg = h / 6,
             m = {left : 10, top : 10, right : 10, bottom : 10},
-            pos = {top : h - h_hg - m.bottom - m.top - margin.bottom, left : margin.left};
+            pos = {top : h - h_hg - m.bottom - m.top, left : m.left};
 
         var x = d3.scale.ordinal()
             .rangeRoundBands([0, 28 * data.length], .2)
@@ -50,7 +50,7 @@
             .attr("class", "langHg")
             .attr("width", w_hg + m.left + m.right)
             .attr("height", h_hg + m.top + m.bottom)
-            .attr("transform", "translate(" + pos.left + "," + pos.top + ")");
+            .attr("transform", "translate(" + [pos.left , pos.top] + ")");
 
         function me(d) {
             vis.forceRep.nodes().filter(function(k) {

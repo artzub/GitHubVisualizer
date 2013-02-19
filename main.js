@@ -13,6 +13,8 @@ var timeFormat = (function() {
     }
 })();
 
+var textFormat = d3.format(",");
+
 var shortTimeFormat = (function() {
     var fd = d3.time.format("%d.%b.%y");
     return function(ms) {
@@ -151,6 +153,11 @@ function chCheckbox(d) {
             && vis.layers.repo.langHg
             && vis.layers.repo.langHg.style("display", d.property("checked") ? null : "none");
             break;
+        case "cb-dlucdg":
+            vis.layers.stat
+            && vis.layers.stat.ucDg
+            && vis.layers.stat.ucDg.style("display", d.property("checked") ? null : "none");
+            break;
         case "cb-dlvml":
             d.property("checked") ? cs.show() : cs.hide();
             break;
@@ -185,6 +192,7 @@ function redrawStats() {
     }
     ghcs.redrawStatsTimer = setTimeout(function () {
         vis.redrawStat(ghcs.repo);
+        vis.redrawUserCommitDg(ghcs.repo && ghcs.repo.commits ? ghcs.repo.commits.values() : null);
         ghcs.redrawStatsTimer = null;
     }, 100);
 }
@@ -232,12 +240,20 @@ function meiRepo(d) {
 }
 
 function moiRepo(d) {
+    var sel = vis.forceRep.selected == d;
+
     d._g
         && d._g.selectAll("circle")
         .style("stroke", d3.rgb(vis.forceRep.colors(d.nodeValue.lang)))
-        .style("fill", toRgba(vis.forceRep.colors(d.nodeValue.lang), vis.forceRep.opt(vis.forceRep.radO(d))))
+        .style("fill",
+            sel
+            ? d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).brighter()
+            : toRgba(vis.forceRep.colors(d.nodeValue.lang), vis.forceRep.opt(vis.forceRep.radO(d))))
     && d._g.selectAll("text")
-        .style("fill", d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).brighter());
+        .style("fill",
+            sel
+            ? d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).darker()
+            : d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).brighter());
 }
 
 function meForks(d) {
@@ -260,7 +276,13 @@ function meFS() {
     vis.forceRep.nodes().forEach(moiRepo);
 }
 
+function fSource(d) {
+    return !d.nodeValue.forked;
+}
 
+function fFork(d) {
+    return d.nodeValue.forked;
+}
 
 function refreshRepoList(data) {
     var now = Date.now(),
@@ -303,6 +325,19 @@ function refreshRepoList(data) {
 
     function fork(d) {
         return d.nodeValue.forks;
+    }
+
+    function chCheck(d) {
+        if (this.id.lastIndexOf("self-repo") > -1) {
+            repoList.selectAll("li").filter(fSource)
+                .style("display", this.checked ? null : "none");
+            vis.hideShowSourceRepos(!this.checked);
+        }
+        else {
+            repoList.selectAll("li").filter(fFork)
+                .style("display", this.checked ? null : "none");
+            vis.hideShowForkRepos(!this.checked);
+        }
     }
 
     function append(span) {
@@ -350,7 +385,8 @@ function refreshRepoList(data) {
                         "type" : "checkbox",
                         "checked" : "checked",
                         "id" : "cb-for-self-repo"
-                    });
+                    })
+                    .on("change", chCheck);
                 li = li.append("label")
                     .attr("for", "cb-for-self-repo");
                 li.append("span")
@@ -370,7 +406,8 @@ function refreshRepoList(data) {
                         "type" : "checkbox",
                         "checked" : "checked",
                         "id" : "cb-for-fork-repo"
-                    });
+                    })
+                    .on("change", chCheck);
                 li = li.append("label")
                     .attr("for", "cb-for-fork-repo");
                 li.append("span")
@@ -399,6 +436,8 @@ function refreshRepoList(data) {
 
     opts.exit().remove();
 
+    opts.sort(sort);
+
     opts = repoList.selectAll("li");
 
     x.domain(d3.extent(opts.data(), size));
@@ -414,17 +453,25 @@ function refreshRepoList(data) {
 
 function repoItemOver(d) {
     if (d) {
+        d.fixed = true;
         vis.meRepo(d);
         vis.mtt(d, null, null, {pageX : d.x, pageY : d.y});
     }
 }
 
 function repoItemOut(d) {
-    if (d)
+    if (d) {
         vis.mlRepo(d);
+        if (vis.forceRep.selected != d)
+            d.fixed = 0;
+    }
 }
 
 function repoItemClick(d) {
+    var item = d3.select(this),
+        sel = item.classed("selected");
+    repoList.selectAll("li.selected").classed("selected", false);
+    !sel && item.classed("selected", true);
     if (d)
         vis.clRepo(d);
 }

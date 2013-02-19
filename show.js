@@ -61,7 +61,7 @@
         var l = d.nodes.length,
             n, a, fn;
 
-        a = d.cuserNode ? d.cuserNode : d.userNode;
+        a = /*d.cuserNode ? d.cuserNode : */ d.userNode;
         a.fixed = false;
 
         if (!l)
@@ -439,7 +439,7 @@
             bufCtx.globalCompositeOperation = 'lighter';
             //darker
         }
-        else if (bufCtx.globalCompositeOperation == 'lighter') {
+        else if (!setting.blendingLighter && bufCtx.globalCompositeOperation == 'lighter') {
             bufCtx.globalCompositeOperation = 'source-over';
         }
 
@@ -448,7 +448,7 @@
 
         var n, l, i, j,
             img,
-            d, d1,
+            d, beg,
             c, x, y, s;
 
         if (setting.showFile) {
@@ -464,9 +464,8 @@
             c = null;
             i = 100;
             j = true;
-            d1 = false;
+            beg = false;
 
-            //bufCtx.save();
             bufCtx.globalAlpha = i * .01;
 
             while(--l > -1) {
@@ -474,10 +473,7 @@
 
                 if (i != d.opacity) {
                     i = d.opacity;
-                    //bufCtx.restore();
                     bufCtx.globalAlpha = i * .01;
-                    //bufCtx.save();
-                    //j = false;
                 }
 
                 if (!c || compereColor(c, curColor(d))) {
@@ -487,14 +483,14 @@
 
                 if (!j) {
                     if (!setting.showHalo) {
-                        if (!d1) {
+                        if (beg) {
                             bufCtx.closePath();
                             bufCtx.fill();
                             bufCtx.stroke();
-                            d1 = true;
                         }
 
                         bufCtx.beginPath();
+                        beg = true;
                         bufCtx.strokeStyle = "none";
                         bufCtx.fillStyle = c.toString();
                     }
@@ -512,12 +508,11 @@
                     : bufCtx.arc(x, y, s, 0, PI_CIRCLE, true)
                 ;
             }
-            if (!setting.showHalo) {
+            if (!setting.showHalo && beg) {
                 bufCtx.closePath();
                 bufCtx.fill();
                 bufCtx.stroke();
             }
-            //bufCtx.restore();
         }
 
         if (setting.showUser || setting.showLabel) {
@@ -526,7 +521,6 @@
 
             i = 100;
 
-            //bufCtx.save();
             bufCtx.globalAlpha = i * .01;
 
             while(--l > -1) {
@@ -534,9 +528,7 @@
 
                 if (i != d.opacity) {
                     i = d.opacity;
-                    //bufCtx.restore();
                     bufCtx.globalAlpha = i * .01;
-                    //bufCtx.save();
                 }
 
                 x = Math.floor(d.x);
@@ -574,18 +566,13 @@
                 if (setting.showLabel) {
                     c = d.flash ? "white" : "gray";
 
-                    //bufCtx.save();
-
                     bufCtx.fillStyle = c;
                     bufCtx.fillText(setting.labelPattern
                         .replace("%l", d.nodeValue.login)
                         .replace("%n", d.nodeValue.name != "unknown" ? d.nodeValue.name : d.nodeValue.login)
                         .replace("%e", d.nodeValue.email), x, y + nr(d) * 1.5);
-
-                    //bufCtx.restore();
                 }
             }
-            //bufCtx.restore();
         }
         bufCtx.restore();
     }
@@ -620,8 +607,8 @@
 
             _forceAuthor.nodes(
                 _forceAuthor.nodes()
-                    .filter(function(d/*, i*/) {
-                        blink(d, !d.links && setting.userLife > 0/*, i, _forceAuthor.nodes().length*/);
+                    .filter(function(d) {
+                        blink(d, !d.links && setting.userLife > 0);
                         if (d.visible && d.links === 0 && setting.userLife > 0) {
                             d.flash = 0;
                             d.alive = d.alive / 10;
@@ -642,8 +629,8 @@
             d.links = 0;
         });
 
-        return function(d/*, i*/) {
-            blink(d, setting.fileLife > 0/*, i, _force.nodes().length*/);
+        return function(d) {
+            blink(d, setting.fileLife > 0);
             if (!d.author || !d.visible)
                 return;
 

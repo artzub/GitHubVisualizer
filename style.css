@@ -887,6 +887,7 @@ blockquote.green {
     position: relative;
     list-style: none;
     width: auto;
+    box-shadow: inset 0px 0px 15px rgba(0, 0, 0, .5);
 }
 
 .repo-list li {
@@ -894,10 +895,22 @@ blockquote.green {
     position: relative;
     width: auto;
     cursor: pointer;
+    background: rgba(0, 0, 0, .2);
+
+    -webkit-transition: all 1s;
+    -moz-transition: all 1s;
+    -o-transition: all 1s;
+    transition: all 1s;
 }
 
+.repo-list .selected,
 .repo-list li:hover {
     background: rgba(255, 255, 255, .8);
+
+    -webkit-transition: all .3s;
+    -moz-transition: all .3s;
+    -o-transition: all .3s;
+    transition: all .3s;
 }
 
 .rItemBase {
@@ -917,11 +930,13 @@ blockquote.green {
     font-size: 12px;
 }
 
+.selected .rItemBase,
 .rItemBase:hover {
     color: #50617F;
     border-bottom-color: #50617F;
 }
 
+.selected .rItemBase > span:not(.sRepoAge),
 .rItemBase:hover > span:not(.sRepoAge) {
     text-shadow: 0 1px 2px rgba(255, 255, 255, 1);
 }
@@ -972,6 +987,23 @@ blockquote.green {
 }
 
 .sRepoRating .mini-icon-public-fork {
-    color: rgba(68, 68, 136, .7);
+    color: rgba(0, 207, 0, .7);
     margin-left: 4px;
+}
+
+.sorttype {
+    font-size: 16px;
+    fill: rgba(244, 244, 244, .5);
+    text-shadow: 0 -1px 1px rgba(0, 0, 0, .8);
+}
+
+text.citem,
+text.sitem {
+    cursor: pointer;
+}
+
+text.citem:hover,
+text.sitem:hover {
+    fill: rgba(244, 244, 244, 1);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, .5);
 }

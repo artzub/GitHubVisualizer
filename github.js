@@ -108,10 +108,15 @@ function parseCommit(org_commit, commit){
 
 function upCommits() {
     redrawStats();
+
     updateStatus(ghcs.states.cur++);
     ldrTop.show();
     psBar.show();
     checkCompleted();
+}
+
+function makeGravatar(email) {
+    return email ? "https://secure.gravatar.com/avatar/" + md5(email) + "?d=identicon&f=y&s=96" : email;
 }
 
 function preloadImage(url) {
@@ -119,22 +124,11 @@ function preloadImage(url) {
     image = ghcs.imageHash.get(url);
     if (!image) {
         image = new Image();
-        //ava = ghcs.storage.get(url);
-        //if (!ava) {
-            image.onerror = function () {
-                return console.log(this);
-            };
-            /*image.onload = (function (url) {
-                return function () {
-                    if (url)
-                        ghcs.storage.setImageData(url, this);
-                };
-            })(url);*/
-            image.src = crossUrl((url || (url = "https://secure.gravatar.com/avatar/" + Date.now() + Date.now() + "?d=identicon&f=y")) + "&s=48", "image");
-        /*}
-        else {
-            image.src = ava;
-        }*/
+        image.onerror = function () {
+            return console.log(this);
+        };
+        image.src = crossUrl((url || (url = "https://secure.gravatar.com/avatar/" + Date.now() + Date.now() + "?d=identicon&f=y&s=96")), "image");
+
         ghcs.imageHash.set(url, image);
     }
     return image;
@@ -155,23 +149,31 @@ function parseCommits(commits) {
                     url : d.url,
                     sha : d.sha,
                     author : {
-                        name : d.commit.author.name,
+                        name :
+                            !d.commit.author.name || d.commit.author.name == "unknown"
+                                ? d.commit.author.email.replace(/@.*/, "")
+                                : d.commit.author.name,
                         email : d.commit.author.email,
+                        avatar_url : (d.author && d.author.avatar_url ? d.author.avatar_url + "&s=96" : null),
                         login : d.author && d.author.login ? d.author.login : d.commit.author.email
                     },
                     committer : {
-                        name : d.commit.committer.name,
+                        name :
+                            !d.commit.committer.name || d.commit.committer.name == "unknown"
+                                ? d.commit.committer.email.replace(/@.*/, "")
+                                : d.commit.committer.name,
                         email : d.commit.committer.email,
+                        avatar_url : (d.committer && d.committer.avatar_url ? d.committer.avatar_url + "&s=96" : null),
                         login : d.committer && d.committer.login ? d.committer.login : d.commit.committer.email
                     },
                     date : Date.parse(d.commit.author.date),
-                    avatar_url : (d.author && d.author.avatar_url ? d.author.avatar_url : null),
                     message : d.commit.message,
                     parents : d.parents
                 };
                 ghcs.repo.commits.set(obj.sha, obj);
 
-                obj.author.avatar = preloadImage(obj.avatar_url);
+                obj.committer.avatar = preloadImage(obj.committer.avatar_url || (obj.committer.avatar_url = makeGravatar(obj.committer.email)));
+                obj.author.avatar = preloadImage(obj.author.avatar_url || (obj.author.avatar_url = makeGravatar(obj.author.email)));
             }
 
             if (!obj.files) {
@@ -211,9 +213,10 @@ function parseRepos(data) {
             data.filter(function (d) {
                 return !d.private && !d.hasOwnProperty("nodeValue");
             }).map(function (d) {
-                return {
+                d = {
                     x : (Math.random() * w) || 1,
                     y : (Math.random() * h) || 1,
+                    visible : true,
                     nodeValue : {
                         id: d.id,
                         name: d.name,
@@ -230,6 +233,7 @@ function parseRepos(data) {
                         forked : d.fork
                     }
                 };
+                return d;
             })
         );
         ghcs.states.cur = ghcs.users[ghcs.login].repos.length;

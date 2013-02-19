@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <script src="http://d3js.org/d3.v3.js"></script>
+    <script src="md5.js"></script>
     <script src="jsonp.js"></script>
     <script src="ghcs.js"></script>
     <script src="main.js"></script>
     <script src="github.js"></script>
     <script src="vis.js"></script>
     <script src="stat.js"></script>
+    <script src="usercommit.js"></script>
     <script src="repo.js"></script>
     <script src="langhg.js"></script>
     <script src="show.js"></script>
@@ -22,7 +24,7 @@
         <div class="row">
             <ul class="steps sfirst">
                 <li style="z-index: 2" class="first">
-                    <label><strong>1.</strong></label>
+                    <label for="user"><strong>1.</strong></label>
                     <input placeholder="User" type="text" id="user">
                     <button id="showBtn" title="Press for loading data about user repositories." class="btn" disabled="disabled">Show</button>
                     <div class="sub">
@@ -31,6 +33,12 @@
                             <div class="row">
                                 <ul class="setting">
                                     <li class="field"><h1>Display:</h1>
+                                        <ul class="group">
+                                            <li class="field">
+                                                <input id="cb-dlr" type="checkbox" checked="checked">
+                                                <label for="cb-dlr">Layer repos</label>
+                                            </li>
+                                        </ul>
                                         <ul class="group">
                                             <li class="field">
                                                 <input id="cb-dllh" type="checkbox" checked="checked">
@@ -55,18 +63,14 @@
                                     <li class="field"><h1>Display:</h1>
                                         <ul class="group">
                                             <li class="field">
-                                                <input id="cb-dlr" type="checkbox" checked="checked">
-                                                <label for="cb-dlr">Layer repos</label>
-                                            </li>
-                                            <li class="field">
                                                 <input id="cb-dlsr" type="checkbox" checked="checked">
                                                 <label for="cb-dlsr">Layer stat repo</label>
                                             </li>
                                         </ul>
                                         <ul class="group">
                                             <li class="field">
-                                                <input id="cb-dlcmrs" type="checkbox" checked="checked">
-                                                <label for="cb-dlcmrs">Layer committers</label>
+                                                <input id="cb-dlucdg" type="checkbox" checked="checked">
+                                                <label for="cb-dlucdg">Layer committers diagram</label>
                                             </li>
                                         </ul>
                                     </li>

@@ -19,9 +19,7 @@
         d._tg.selectAll("circle")
             .style("fill", d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).brighter());
         d._tg.selectAll("text")
-            .style("fill", function(d) {
-                return d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).darker();
-            })
+            .style("fill", d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).darker())
             .style("visibility",  "visible");
 
         toolTip.selectAll("*").remove();
@@ -93,9 +91,7 @@
             g.selectAll("circle")
                 .style("fill", toRgba(vis.forceRep.colors(d.nodeValue.lang), vis.forceRep.opt(vis.forceRep.radO(d))));
             g.selectAll("text")
-                .style("fill", function(d) {
-                    return d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).brighter();
-                })
+                .style("fill", d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).brighter())
                 .style("visibility",  vis.forceRep.visible);
             d._tg = null;
         }
@@ -126,6 +122,26 @@
     };
     vis.muRepo = function(d){
     };
+
+    function hideShowRepos(type, hidden) {
+        vis.forceRep.circle
+            .filter(type)
+            .transition()
+            .duration(750)
+            .style("opacity", hidden ? 0 : 1)
+            .each(function(d) {
+                d.visible = !hidden;
+            });
+    }
+
+    vis.hideShowSourceRepos = function(hidden) {
+        hideShowRepos(fSource, hidden);
+    };
+
+    vis.hideShowForkRepos = function(hidden) {
+        hideShowRepos(fFork, hidden);
+    };
+
 
     vis.clearRepos = function() {
         if (vis.forceRep) {
@@ -206,6 +222,20 @@
                 .attr("text-anchor", "middle")
                 .attr("dy", ".31em")
                 .text(function(d) { return d.nodeValue.name; });
+
+            g.append("line")
+                .attr("class", "lA")
+                .attr("x", 0)
+                .attr("y", 0)
+                .style("stroke-width", 1)
+                .style("stroke", "white");
+
+            g.append("line")
+                .attr("class", "lB")
+                .attr("x", 0)
+                .attr("y", 0)
+                .style("stroke-width", 1)
+                .style("stroke", "red");
         };
 
         vis.forceRep.upCT = vis.forceRep.upCT || function(g) {
@@ -216,7 +246,7 @@
                 .transition()
                 .duration(2500)
                 .ease("elastic")
-                .attr("r", function(d) { return vis.forceRep.radius(vis.forceRep.rad(d)); })
+                .attr("r", function(d) { return vis.forceRep.radius(vis.forceRep.rad(d)); });
             g.selectAll("text")
                 .style("fill", function(d) {
                     return d3.rgb(vis.forceRep.colors(d.nodeValue.lang)).brighter();
@@ -271,7 +301,7 @@
             // Find the largest node for each cluster.
             vis.forceRep.nodes().forEach(function(d, n) {
                 n = vis.forceRep.cenralNodes[d.nodeValue.lang];
-                (!n || vis.forceRep.radO(d) > vis.forceRep.radO(n)) &&
+                (!n || !n.visible || vis.forceRep.radO(d) > vis.forceRep.radO(n)) && d.visible &&
                 (vis.forceRep.cenralNodes[d.nodeValue.lang] = d);
             });
 
@@ -282,7 +312,7 @@
                     x,
                     y;
 
-                if (node == d) return;
+                if (node == d || !d.visible) return;
 
                 x = d.x - node.x;
                 y = d.y - node.y;
@@ -293,16 +323,11 @@
                     x *= l;
                     y *= l;
 
-                    //if (!d.fixed) {
-                    if (true) {
-                        d.x -= x;
-                        d.y -= y;
-                    }
-                    //if (!node.fixed) {
-                    if (true) {
-                        node.x += x;
-                        node.y += y;
-                    }
+                    d.x -= x;
+                    d.y -= y;
+
+                    node.x += x;
+                    node.y += y;
                 }
             };
         }
@@ -317,7 +342,7 @@
                     ny1 = d.y - r,
                     ny2 = d.y + r;
                 quadtree.visit(function(quad, x1, y1, x2, y2) {
-                    if (quad.point && (quad.point !== d)) {
+                    if (quad.point && (quad.point !== d) && d.visible && quad.point.visible) {
                         var x = d.x - quad.point.x,
                             y = d.y - quad.point.y,
                             l = Math.sqrt(x * x + y * y),
@@ -328,16 +353,11 @@
                             x *= l;
                             y *= l;
 
-                            //if (!d.fixed) {
-                            if (true) {
-                                d.x -= x;
-                                d.y -= y;
-                            }
-                            //if (!quad.point.fixed) {
-                            if (true) {
-                                quad.point.x += x;
-                                quad.point.y += y;
-                            }
+                            d.x -= x;
+                            d.y -= y;
+
+                            quad.point.x += x;
+                            quad.point.y += y;
                         }
                     }
                     return x1 > nx2

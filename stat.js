@@ -7,8 +7,6 @@
 'use strict';
 
 (function (vis) {
-    var textFormat = d3.format(",");
-
     vis.meArc = function(d) {
         vis.layers.stat.toFront();
         if (!d._g)
@@ -65,6 +63,7 @@
                     li.append("strong")
                         .text(d.sha.substr(0, 10));
                 });
+                ul.append("li").append("hr");
                 d.files.length && ul.append("li")
                     .call(function(li) {
                         var key,
@@ -105,7 +104,8 @@
                             .text("Changed lines:");
                         var stat = {changes : "", additions : " + ", deletions : " - "};
                         for(var key in stat) {
-                            d.stats.hasOwnProperty(key)
+                            if (stat.hasOwnProperty(key))
+                                d.stats.hasOwnProperty(key)
                                 && li.append("ul")
                                     .attr("class", "group")
                                     .append("li")
