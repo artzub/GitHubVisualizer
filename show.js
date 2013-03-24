@@ -11,6 +11,8 @@
         _data,
         nodes,
         dateRange,
+        selected,
+        selectedExt,
 
         authorHash,
         filesHash,
@@ -41,7 +43,9 @@
         yH,
 
         setting,
-        rd3 = d3.random.irwinHall(8);
+        rd3 = d3.random.irwinHall(8),
+        colorless = d3.rgb("gray"),
+        colorlessFlash = d3.rgb("lightgray");
 
     var extColor = d3.scale.category20(),
         userColor = d3.scale.category20b();
@@ -179,7 +183,17 @@
     }
 
     function curColor(d) {
-        return d.flash ? d.flashColor : d.d3color;
+        var curExt = selectedExt;
+        if (!curExt
+            && selected
+            && selected.type == typeNode.file
+            && selected.ext)
+            curExt = selected.ext;
+
+        return curExt && curExt.color
+            && curExt.color !== d.d3color
+            ? (d.flash ? colorlessFlash : colorless)
+            : (d.flash ? d.flashColor : d.d3color);
     }
 
     function randomTrue() {
@@ -188,6 +202,24 @@
 
     function radius(d) {
         return Math.sqrt(d);
+    }
+
+    function contain(d, pos) {
+        var px = (lastEvent.translate[0] - pos[0]) / lastEvent.scale,
+            py = (lastEvent.translate[1] - pos[1]) / lastEvent.scale,
+            r = Math.sqrt( Math.pow( d.x + px , 2) +
+                Math.pow( d.y + py , 2 ) );
+
+        return r < (d.type == typeNode.author ? nr(d) * 1.5 : radius(nr(d)));
+    }
+
+    function getNodeFromPos(pos) {
+        for (var i = nodes.length - 1; i >= 0; i--) {
+            var d = nodes[i];
+            if (!d.fixed && contain(d, pos))
+                return d;
+        }
+        return null;
     }
 
     function node(d, type) {
@@ -202,6 +234,7 @@
             ext = extHash.get(c);
             if (!ext) {
                 ext = {
+                    key : c,
                     all : 0,
                     currents : {},
                     color : d3.rgb(extColor(c)),
@@ -675,7 +708,7 @@
             .range([0, h2])
             .domain([0, extMax]);
 
-        lHis = (lHis || layer.append("g"))
+        lHis = (lHis || layer.insert("g", ":first-child"))
             .attr("width", w3)
             .attr("height", h2)
             .attr("transform", "translate(" + [ ml , h - h2 - mb ] + ")");
@@ -732,6 +765,53 @@
             .remove();
     }
 
+    function lme(d) {
+        selectedExt = d.value;
+        toolTip.html("");
+        toolTip.append("div").attr("class", "row userInfo open").call(function(div) {
+            div = div.append("div").attr("class", "statInfo");
+
+            div.append("ul").call(function(ul) {
+                ul.append("li").call(function(li) {
+                    li.append("h1")
+                        .style("color", d.value.color)
+                        .style("text-shadow", "1px 1px 1px #000")
+                        .text(d.key)
+                    ;
+                    li.append("hr");
+                });
+                ul.append("li").call(function(li) {
+                    li.text("number of file:");
+                    li.append("strong")
+                        .text(d.value.now.length);
+                });
+                ul.append("li").call(function(li) {
+                    li.text("degree of change:");
+                    li.append("strong")
+                        .text(d3.sum(d3.values(d.value.currents)))
+                });
+            });
+        });
+        toolTip.show();
+        updateLegend();
+    }
+
+    function lml() {
+        selectedExt = null;
+        toolTip.hide();
+        updateLegend();
+    }
+
+    function legColor(d) { return selected
+        && selected.type == typeNode.file
+        && selected.ext
+        && selected.ext.color
+        ? selected.ext.color == d.value.color
+        ? d.value.color
+        : colorless
+        : d.value.color;
+    }
+
     function initLegend() {
         if (!layer)
             return;
@@ -742,7 +822,9 @@
             w3 = w / 3
             ;
 
-        lLeg = (lLeg || layer.append("g"))
+        lLeg && lLeg.remove();
+
+        lLeg = layer.append("g")
             .attr("width", w3)
             .attr("height", h2)
             .attr("transform", "translate(" + [ml, mt] + ")");
@@ -755,6 +837,9 @@
         g.exit().remove();
 
         g.enter().append("g")
+            .on("mouseover", lme)
+            .on("mousemove", vis.mtt)
+            .on("mouseout", lml)
             .attr("class", "gLeg")
             .attr("transform", function(d, i) {
                 return "translate(" + [0, i * 18] + ")";
@@ -763,12 +848,12 @@
         ;
         g.append("rect")
             .attr("height", 16)
-            .style("fill", function(d) { return d.value.color; })
+            .style("fill", legColor)
         ;
         g.append("text")
             .attr("class", "gttLeg")
             .style("font-size", "13px")
-            .text(function(d) { return d.key.substr(1); })
+            .text(function(d) { return d.key; })
             .style("fill", function(d) { return d3.rgb(d.value.color).brighter().brighter(); })
         ;
 
@@ -806,6 +891,7 @@
         }) + 4;
 
         g.selectAll("rect")
+            .style("fill", legColor)
             .attr("width", wb)
         ;
 
@@ -818,12 +904,153 @@
                 return !wl(d) || i * 18 > lLeg.attr("height") ? "hidden" : "visible";
             })
             .transition()
-            .duration(500)
             .attr("transform", function(d, i) {
                 return "translate(" + [0, i * 18] + ")";
             })
         ;
+    }
 
+    function getName(path) {
+        return path.substr(path.lastIndexOf("/") + 1);
+    }
+
+    function getPath(path) {
+        var i;
+        return path && path.length && (i = path.lastIndexOf("/") + 1) > 0 ? path.substr(0, i) : "";
+    }
+
+    function showToolTip(d) {
+        var res;
+        if (!d) {
+            toolTip.hide();
+            return;
+        }
+        if (toolTip.style("display") == "none") {
+            toolTip.selectAll("*").remove();
+
+            if (d.type == typeNode.author) {
+                toolTip.append("div").attr("class", "row userInfo open").call(function(div) {
+                    div = div.append("div").attr("class", "statInfo");
+
+                    div.node().appendChild(d.nodeValue.avatar);
+                    div.append("ul").call(function(ul) {
+                        (d.author.name || d.nodeValue.login) && ul.append("li").call(function(li) {
+                            li.append("h1")
+                                .text((d.nodeValue.name || d.nodeValue.login))
+                            ;
+                            li.append("hr");
+                        });
+                        ul.append("li").call(function(li) {
+                            li.text("email:");
+                            li.append("strong")
+                                .text(d.nodeValue.email)
+                        });
+                        ul.append("li").call(function(li) {
+                            li.text("login: ");
+                            li.append("strong")
+                                .text(d.nodeValue.login);
+                        });
+                    });
+                });
+            }
+            else {
+                toolTip.append("div").attr("class", "row userInfo open").call(function(div) {
+                    div = div.append("div").attr("class", "statInfo");
+
+                    div.append("ul").call(function(ul) {
+                        ul.append("li").call(function(li) {
+                            li.append("h1")
+                                .text(getName(d.nodeValue.name))
+                            ;
+                            li.append("hr");
+                        });
+                        ul.append("li").call(function(li) {
+                            li.text("extension:");
+                            li.append("strong")
+                                .style("color", d.d3color)
+                                .text(d.ext.key)
+                        });
+                        ul.append("li").call(function(li) {
+                            li.text("path:");
+                            li.append("strong")
+                                .text(getPath(d.nodeValue.name));
+                            li.append("hr");
+                        });
+
+                        ul.append("li").call(function(li) {
+                            li.text("degree of change: ");
+                            li.append("strong")
+                                .text(d3.values(d.statuses).length);
+                        });
+                        ul.append("li")
+                            .call(function(li) {
+                                var key,
+                                    stat = d3.values(d.statuses).reduce(function(a, b) {
+                                        for(key in b) {
+                                            if (b.hasOwnProperty(key)
+                                                && key != "status" && key != "name") {
+                                                a[key] = (a[key] || 0);
+                                                a[key] += b[key];
+                                            }
+                                        }
+                                        return a;
+                                    }, {});
+                                li = li.append("ul")
+                                    .attr("class", "setting");
+                                li = li.append("li").attr("class", "field");
+                                li.append("h1")
+                                    .text("Changed lines (all time):");
+                                var statSymbol = {changes : "", additions : " + ", deletions : " - "};
+                                for(key in stat) {
+                                    if (stat.hasOwnProperty(key))
+                                        li.append("ul")
+                                            .attr("class", "group")
+                                            .append("li")
+                                            .attr("class", "field")
+                                            .append("span")
+                                            .text(key + ": ")
+                                            .append("strong")
+                                            .style("color", d3.rgb(colors[key]).darker(.2))
+                                            .text(statSymbol[key] + textFormat(stat[key]));
+                                }
+                            });
+                    });
+                });
+            }
+
+            toolTip.show();
+        }
+    }
+
+    function moveToolTip(d, event) {
+        if (d)
+            vis.mtt(d);
+    }
+
+    function movem(d) {
+        var item = arguments.length > 1 && arguments[1] instanceof HTMLCanvasElement ? arguments[1] : this;
+        d = null;
+        if (selected) {
+            var od = selected;
+            if (contain(od, d3.mouse(item)))
+                d = od;
+            if (!d) {
+                od && (od.fixed &= 3);
+                selected = null;
+                d3.select("body").style("cursor", "default");
+            }
+        }
+        else
+            d = getNodeFromPos(d3.mouse(item));
+
+        if (d) {
+            selected = d;
+            d.fixed |= 4;
+            d3.select("body").style("cursor", "pointer");
+        }
+        showToolTip(d, d3.event);
+        moveToolTip(d, d3.event);
+        updateLegend();
     }
 
     vis.runShow = function(data, svg/*, params*/) {
@@ -902,6 +1129,7 @@
 
         layer.append("g")
             .call(zoom)
+            .on('mousemove.tooltip', movem)
             .append("rect")
             .attr("width", w)
             .attr("height", h)
@@ -910,13 +1138,13 @@
             .style("fill", "#ffffff")
             .style("fill-opacity", 0);
 
-        lHis && lHis.selectAll("*").remove();
+        lHis && lHis.remove();
+        lHis = null;
 
-        lCom = (
-                lCom || layer.append("g")
-                    .attr("width", 10)
-                    .attr("height", 14)
-            )
+        lCom && lCom.remove();
+        lCom = layer.append("g")
+            .attr("width", 10)
+            .attr("height", 14)
             .attr("transform", "translate(" + [w/2, h - 18] + ")")
             ;
         lCom.visible = !setting.showCommitMessage;
