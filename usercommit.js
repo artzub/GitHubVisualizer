@@ -187,7 +187,7 @@
             _layer.selectAll("text.sitem").text(function(n) { return prefixes.empty + n[0]; });
             item.text(prefixes.abs + d[0]);
             direction = d3.ascending;
-            _pack.sort(_curSort = env["s" + d[1]]);
+            _pack.value(_curValue).sort(_curSort = env["s" + d[1]]);
         }
         else if (item.classed("sort") && item.classed("abs")) {
             item.classed("sort abs", false);
@@ -210,7 +210,7 @@
 
         item.classed("checked", true);
         item.text(prefixes.vc);
-        _pack.value(_curValue = env["c" + d[1]]).nodes(root());
+        _pack.value(_curValue = env["c" + d[1]]).sort(_curSort).nodes(root());
         updateBubbles(_bubbles);
     }
 
@@ -277,8 +277,11 @@
         _layer = layer.ucDg = layer.ucDg || layer.append("g").attr("id", "ucDg");
         _layer.attr("transform", "translate(" + [w - _w - margin.right, h - _h - margin.bottom] + ")");
 
+        _layer.resize = resize;
+
         (_pack || (_pack = d3.layout.pack().value(_curValue = env.cCom).sort(_curSort = env.sCom)))
             .value(_curValue)
+            .padding(.5)
             .sort(_curSort)
             .size([_w - 96, _h - 4]);
 
@@ -401,6 +404,21 @@
                     });
             });
     };
+
+    function resize(w, h) {
+        _w = w * 0.15 + 100;
+        _h = h * 0.15;
+
+        _layer.attr("transform", "translate(" + [w - _w - margin.right, h - _h - margin.bottom] + ")");
+        _pack.size([_w - 96, _h - 4]);
+
+        _layer.selectAll(".ucbase")
+            .attr("width", _w + margin.right/2)
+            .attr("height", _h + margin.bottom/2)
+        ;
+
+        updateBubbles(_bubbles);
+    }
 })(vis || (vis = {}));
 
 

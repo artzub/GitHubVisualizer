@@ -4,7 +4,7 @@
  * Time: 12:54
  */
 
-'use strict';
+"use strict";
 
 (function (vis) {
     vis.meArc = function(d) {
@@ -174,9 +174,9 @@
         }
     };
 
-    vis.redrawStat = function(data, layout) {
+    vis.redrawStat = function(data, layer) {
 
-        layout = layout || vis.layers.stat;
+        layer = layer || vis.layers.stat;
 
         var _commits = data && data.commits ? data.commits.values() : null;
 
@@ -195,6 +195,7 @@
         var x = d3.time.scale()
                 .domain(d3.extent(bd))
                 .range([0, w - margin.left - margin.right])
+                //.nice(d3.time.year)
             ;
 
         var h6 = h/6;
@@ -261,14 +262,14 @@
                 .scale(x)
             ;
 
-        layout.cont = layout.cont || layout
+        layer.cont = layer.cont || layer
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
         ;
 
-        layout.cont.selectAll("path.areaFile").remove();
+        layer.cont.selectAll("path.areaFile").remove();
 
-        layout.cont.selectAll("path.areaFile")
+        layer.cont.selectAll("path.areaFile")
             .data(layers)
             .enter()
             .insert("path", ":first-child")
@@ -283,15 +284,15 @@
         ;
 
 
-        layout.cont.axis = layout.cont.axis || layout.cont.append("g")
+        layer.cont.axis = layer.cont.axis || layer.cont.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + h/2 + ")")
         ;
 
-        layout.cont.axis
+        layer.cont.axis
             .selectAll("*").remove();
 
-        layout.cont.axis
+        layer.cont.axis
             .call(xAxis)
             .selectAll("text")
             .attr("y", 0)
@@ -299,13 +300,22 @@
             .attr("dy", ".35em")
             .attr("transform", "rotate(90)")
             .style("text-anchor", "start")
+            .style("fill", function(d) {
+                return parseInt(this.textContent) ? "#fff" : null;
+            })
+            .style("font-size", function(d) {
+                return parseInt(this.textContent) ? "12px" : null;
+            })
+            .style("font-weight", function(d) {
+                return parseInt(this.textContent) ? "bold" : null;
+            })
         ;
 
-        layout.cont.points = layout.cont.points || layout.cont.append("g")
+        layer.cont.points = layer.cont.points || layer.cont.append("g")
             .attr("transform", "translate(0," + h/2 + ")")
         ;
 
-        var cData = layout.cont.points.selectAll("g.com")
+        var cData = layer.cont.points.selectAll("g.com")
             .data(_commits, function(d) { return d.sha; });
         cData.enter()
             .append("g")

@@ -61,7 +61,6 @@ function initGraphics(svg) {
                 ls[d.name] = d3.select(this).attr("class", "layer").attr("width", w).attr("height", h);
                 ls[d.name].getOrder = function() {
                     return d.order;
-                    return this;
                 };
                 ls[d.name].toFront = function() {
                     d.order &&
@@ -108,6 +107,9 @@ function initGraphics(svg) {
     };
 
     vis.resources = {
+    };
+
+    vis.switch = function(layer) {
     };
 
     vis.inited = true;
