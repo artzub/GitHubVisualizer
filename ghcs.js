@@ -98,8 +98,60 @@ var ghcs = {
 };
 
 (function(ghcs) {
-    ghcs.storage = sessionStorage;
-    if (ghcs.storage) {
+    /**
+     * script from http://learn.javascript.ru/cookie
+     */
+
+    // возвращает cookie с именем name, если есть, если нет, то undefined
+    function getCookie(name) {
+        var matches = document.cookie.match(new RegExp(
+            "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+        ));
+        return matches ? JSON.parse(decodeURIComponent(matches[1])) : undefined;
+    }
+
+    // устанавливает cookie c именем name и значением value
+    // options - объект с свойствами cookie (expires, path, domain, secure)
+    function setCookie(name, value, options) {
+        options = options || {};
+
+        var expires = options.expires;
+
+        if (typeof expires == "number" && expires) {
+            var d = new Date();
+            d.setTime(d.getTime() + expires*1000);
+            expires = options.expires = d;
+        }
+        if (expires && expires.toUTCString) {
+            options.expires = expires.toUTCString();
+        }
+
+        value = encodeURIComponent(JSON.stringify(value));
+
+        var updatedCookie = name + "=" + value;
+
+        for(var propName in options) {
+            if (!options.hasOwnProperty(propName))
+                continue;
+
+            updatedCookie += "; " + propName;
+            var propValue = options[propName];
+            if (propValue !== true) {
+                updatedCookie += "=" + propValue;
+            }
+        }
+
+        document.cookie = updatedCookie;
+    }
+
+    // удаляет cookie с именем name
+    function deleteCookie(name) {
+        setCookie(name, "", { expires: -1 })
+    }
+    /**end script*/
+
+    ghcs.sessionStorage = sessionStorage;
+    if (ghcs.sessionStorage) {
         Storage.prototype.set = function(key, value) {
             this.setItem(key, JSON.stringify(value));
         };
@@ -108,18 +160,33 @@ var ghcs = {
             var res = this.getItem(key);
             return res ? JSON.parse(res) : res;
         };
-        Storage.prototype.setImageData = setImageData;
+        //ghcs.sessionStorage.setImageData = setImageData;
     }
     else {
-        ghcs.storage = d3.map({});
-        ghcs.storage.clear = function() {
-            var ks = ghcs.storage.keys,
+        ghcs.sessionStorage = d3.map({});
+        ghcs.sessionStorage.clear = function() {
+            var ks = ghcs.sessionStorage.keys,
                 l = ks.length;
 
             while(--l > -1)
-                ghcs.storage.remove(ks[l]);
+                ghcs.sessionStorage.remove(ks[l]);
         };
-        ghcs.storage.setImageData = setImageData;
+        ghcs.sessionStorage.setImageData = setImageData;
+    }
+
+    ghcs.localStorage = localStorage;
+    if (!ghcs.localStorage) {
+        ghcs.localStorage = {
+            set : function(key, value) {
+                setCookie(key, value, {expires: 30758400, path : "/"})
+            },
+            get : function(key) {
+                return getCookie(key);
+            },
+            removeItem : function(key) {
+                deleteCookie(key);
+            }
+        }
     }
 
     var canvas = document.createElement("canvas"),
@@ -133,7 +200,7 @@ var ghcs = {
         canvas.width = image.width;
         canvas.height = image.height;
         ctx.drawImage(image, 0, 0);
-        ghcs.storage.set(url, canvas.toDataURL("image/png"));
+        ghcs.sessionStorage.set(url, canvas.toDataURL("image/png"));
         canvas.width = 0;
         canvas.height = 0;
     }

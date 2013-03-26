@@ -81,6 +81,12 @@ function applyParams() {
 
     parseParams(document.location.hash);
 
+    if (ghcs.params.hasOwnProperty("run")) {
+        ghcs.localStorage.set("run", ghcs.params.run);
+        document.location.hash = document.location.hash.replace(/&?run/, "");
+    }
+
+
     stackLoad = stackLoad-- < 1 ? 0 : stackLoad;
 
     d3.select("#misc").classed("open", !ghcs.params.user);
@@ -99,7 +105,6 @@ function applyParams() {
         chUser();
     }
     else if (ghcs.user && ghcs.user.repos) {
-        // && (!ghcs.repo || ghcs.repo.name != ghcs.params.repo || (ghcs.params.climit > 0 && ghcs.limits.commits != ghcs.params.climit))
         var r;
 
         ghcs.limits.commits = ghcs.params.climit || ghcs.limits.commits;
@@ -130,6 +135,7 @@ function applyParams() {
                 return d == r;
             });
         }
+
         analyseCommits();
     }
 }
@@ -137,6 +143,10 @@ function applyParams() {
 function nextStepApplyParams() {
     if (stackLoad)
         applyParams();
+    else if (ghcs.localStorage.get("run") != undefined) {
+        ghcs.localStorage.removeItem("run");
+        runShow();
+    }
 }
 
 function chRadio(d) {
