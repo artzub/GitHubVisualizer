@@ -20,7 +20,12 @@ var TYPE_REQUEST = {
 
 function makeUrl(url, type, limit) {
     limit = limit || 0;
-    var sec = "client_id=" + ghcs.settings.access.client_id + "&client_secret=" + ghcs.settings.access.client_secret;
+    var sec = [
+        "client_id=",
+        ghcs.settings.access.ncid || ghcs.settings.access.client_id,
+        "&client_secret=",
+        ghcs.settings.access.ncs || ghcs.settings.access.client_secret
+    ].join('');
     if (type == TYPE_REQUEST.repos) {
         sec += (ghcs.rot ? "&per_page=100&type=" + ghcs.rot : "" );
     }
@@ -186,7 +191,7 @@ function parseCommits(commits) {
                     };
                 })(obj), {
                     onerror : function(err) {
-                        console.log(err);
+                        log(err);
                         upCommits();
                     }
                 });
@@ -283,7 +288,8 @@ function chUser() {
 
                 ghcs.states.complete = function() {
                     stepsBar.secondStep();
-                    ldrTop.hide();
+                    if (!criticalError.visible)
+                        ldrTop.hide();
                     setTimeout(nextStepApplyParams, 500);
                 };
 
@@ -322,7 +328,7 @@ function chUser() {
                                 });
                             }, {
                                 onerror : function(err) {
-                                    console.log(err);
+                                    log(err);
                                 }
                             });
                         else
@@ -347,7 +353,7 @@ function chUser() {
 
 function getNext(req, fn) {
     var next;
-    if (req && req.meta && req.meta.Link) {
+    if (req && req.meta && req.meta.Link && !criticalError.visible) {
         next = req.meta.Link.reduce(function (a, b) {
             if (!a && b[1].rel == "next")
                 return b[0];
@@ -371,7 +377,8 @@ function analyseCommits() {
     ghcs.states.complete = function() {
         stepsBar.thirdStep();
         runBtn.enable();
-        ldrTop.hide();
+        if (!criticalError.visible)
+            ldrTop.hide();
         visBtn.enable().show();
 
         if (ghcs.repo && ghcs.repo.commits)
@@ -411,7 +418,7 @@ function analyseCommits() {
                     });
             }
             else {
-                if (!next)
+                if (!next && !criticalError.visible)
                     ghcs.repo.loadedAll = true;
 
                 ghcs.states.max =

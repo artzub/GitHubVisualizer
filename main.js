@@ -30,7 +30,8 @@ var cs, svg_cs, svg,
     psBar, runBtn, ldrTop, toolTip, showBtn,
     visBtn, visBtnRestart, visBtnStop, visBtnPause,
     repoList,
-    userTxt, curRep, divStat, stepsBar, cbDlr, cbDlsr;
+    userTxt, curRep, divStat, stepsBar, cbDlr, cbDlsr,
+    criticalError;
 
 function updateStatus(pos, label) {
     pos = pos > ghcs.states.max ? ghcs.states.max : pos;
@@ -221,6 +222,7 @@ function runShow() {
         visBtn.hide();
         visBtnPause.show();
         visBtnStop.show();
+        vis.layers.repo.show();
         vis.runShow(ghcs.repo);
     }
 }
@@ -505,7 +507,29 @@ function repoItemClick(d) {
 function init() {
     var body = d3.select(document.body);
     body.classed("opera", !!window.opera);
+
+    body.selectAll("a").attr("target", "_blank");
+
     var sms = d3.select("#sms").append("div");
+
+    criticalError = d3.select("#ex-limit");
+    criticalError.hide = function() {
+        criticalError.visible = false;
+        criticalError.style("display", "none");
+        return criticalError;
+    };
+    criticalError.show = function() {
+        criticalError.visible = true;
+        criticalError.style("display", null);
+        return criticalError;
+    };
+    criticalError.hide();
+
+    criticalError.select("button")
+        .on("click", function() {
+            criticalError.hide();
+            checkCompleted();
+        });
 
     log = (function () {
         var logCont = d3.select("#console")
@@ -534,6 +558,10 @@ function init() {
                 .style("opacity", 0)
                 .remove()
             ;
+            if(msg.indexOf('API Rate Limit Exceeded') >= 0) {
+                ldrTop.show();
+                criticalError.show();
+            }
         }
     })();
 
