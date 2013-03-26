@@ -359,6 +359,11 @@ function getNext(req, fn) {
 function analyseCommits() {
     runBtn.disable();
     ldrTop.show();
+    visBtn.disable().show();
+    visBtnPause.hide();
+    visBtnRestart.hide();
+    visBtnStop.hide();
+    vis.stopShow();
 
     ghcs.states.max = ghcs.limits.commits;
     ghcs.states.cur = 0;
@@ -367,7 +372,8 @@ function analyseCommits() {
         stepsBar.thirdStep();
         runBtn.enable();
         ldrTop.hide();
-        visBtn.enable();
+        visBtn.enable().show();
+
         if (ghcs.repo && ghcs.repo.commits)
             ghcs.repo.commitsCount = ghcs.repo.commits.values().filter(function(d) {
                 return !!d.files;

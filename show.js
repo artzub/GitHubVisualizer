@@ -47,8 +47,8 @@
         colorless = d3.rgb("gray"),
         colorlessFlash = d3.rgb("lightgray");
 
-    var extColor = d3.scale.category20(),
-        userColor = d3.scale.category20b();
+    var extColor,
+        userColor;
 
     var typeNode = {
         author : 0,
@@ -216,7 +216,7 @@
     function getNodeFromPos(pos) {
         for (var i = nodes.length - 1; i >= 0; i--) {
             var d = nodes[i];
-            if (!d.fixed && contain(d, pos))
+            if (!d.fixed && d.opacity && contain(d, pos))
                 return d;
         }
         return null;
@@ -374,6 +374,29 @@
     }
 
     var tempFileCanvas;
+
+    function generateSprite(w, h, r, g, b, a) {
+
+        if (!tempFileCanvas)
+            tempFileCanvas = document.createElement("canvas");
+
+        tempFileCanvas.width = w;
+        tempFileCanvas.height = h;
+
+        var imgCtx = tempFileCanvas.getContext("2d");
+        var gradient = imgCtx.createRadialGradient( w/2, h/2, 0, w/2, h/2, w/2 );
+
+        gradient.addColorStop( 0, 'rgba(255,255,255,' + a + ')' );
+        gradient.addColorStop( 0.3, 'rgba(' + [r, g, b, a * .5] + ')' );
+        gradient.addColorStop( 1, 'rgba(' + [r, g, b, 0] + ')' ); //0,0,64
+
+        imgCtx.fillStyle = gradient;
+        imgCtx.fillRect( 0, 0, w, h);
+
+        return tempFileCanvas;
+
+    }
+
     function colorize(img, r, g, b, a) {
         if (!img)
             return img;
@@ -528,7 +551,9 @@
                         bufCtx.fillStyle = c.toString();
                     }
                     else
-                        img = colorize(particle, c.r, c.g, c.b, 1);
+                        img = setting.asPlasma
+                            ? generateSprite(64, 64, c.r, c.g, c.b, 1)
+                            : colorize(particle, c.r, c.g, c.b, 1);
                     j = true;
                 }
 
@@ -623,6 +648,8 @@
 
         ctx.save();
         ctx.clearRect(0, 0, w, h);
+
+        d3.select(canvas).style("background", setting.asPlasma ? "#000" : null);
 
         redrawCanvas();
 
@@ -802,14 +829,18 @@
         updateLegend();
     }
 
-    function legColor(d) { return selected
-        && selected.type == typeNode.file
-        && selected.ext
-        && selected.ext.color
-        ? selected.ext.color == d.value.color
-        ? d.value.color
-        : colorless
-        : d.value.color;
+    function legColor(d) {
+        var ext = selectedExt;
+        if (!ext && selected
+            && selected.type == typeNode.file
+            && selected.ext)
+            ext = selected.ext;
+
+        return ext
+            ? ext == d.value
+            ? d.value.color
+            : colorless
+            : d.value.color;
     }
 
     function initLegend() {
@@ -1067,6 +1098,9 @@
         vis.layers.repo && cbDlr.uncheck();
         vis.layers.stat && cbDlsr.uncheck();
 
+        extColor = d3.scale.category20();
+        userColor = d3.scale.category20b();
+
         dateRange = d3.extent(data.dates);
 
         layer = d3.select("#canvas");
@@ -1246,4 +1280,8 @@
     vis.resumeShow = function() {
         pause = false;
     };
+
+    vis.showIsPaused = function() {
+        return pause && !stop;
+    }
 })(vis || (vis = {}));

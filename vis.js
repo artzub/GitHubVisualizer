@@ -65,21 +65,21 @@ function initGraphics(svg) {
                 ls[d.name].toFront = function() {
                     d.order &&
                         vis.layers.ordering(this, 0);
-                    return this;
+                    return ls[d.name];
                 };
                 ls[d.name].hide = function() {
                     this.visible = false;
                     if (this.datum().name == "repo" && vis.forceRep)
                         vis.forceRep.stop();
                     this.style("display", "none");
-                    return this;
+                    return ls[d.name];
                 };
                 ls[d.name].show = function() {
                     this.visible = true;
                     if (this.datum().name == "repo" && vis.forceRep)
                         vis.forceRep.resume();
                     this.style("display", null);
-                    return this;
+                    return ls[d.name];
                 };
                 ls[d.name].visible = true;
             });

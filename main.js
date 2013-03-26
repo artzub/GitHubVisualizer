@@ -27,7 +27,8 @@ var log;
 var cs, svg_cs, svg,
     margin = {top: 20, right: 20, bottom: 20, left: 20},
     w, h, stackLoad = 0,
-    psBar, runBtn, ldrTop, toolTip, showBtn, visBtn,
+    psBar, runBtn, ldrTop, toolTip, showBtn,
+    visBtn, visBtnRestart, visBtnStop, visBtnPause,
     repoList,
     userTxt, curRep, divStat, stepsBar, cbDlr, cbDlsr;
 
@@ -82,7 +83,11 @@ function applyParams() {
 
     stackLoad = stackLoad-- < 1 ? 0 : stackLoad;
 
+    d3.select("#misc").classed("open", !ghcs.params.user);
+
     if (ghcs.rot != ghcs.params.rot || ghcs.login != ghcs.params.user) {
+        d3.select("#about").classed("open", false);
+
         ghcs.rot = ghcs.params.rot;
         userTxt.property("value", ghcs.params.user);
 
@@ -121,6 +126,9 @@ function applyParams() {
                 vis.clRepo(r);
                 vis.mlRepo(r);
             }
+            repoList.selectAll("li").classed("selected", function(d) {
+                return d == r;
+            });
         }
         analyseCommits();
     }
@@ -199,7 +207,10 @@ function redrawStats() {
 
 function runShow() {
     if (ghcs.repo && ghcs.repo.commits) {
-        visBtn.disable();
+        visBtnRestart.hide();
+        visBtn.hide();
+        visBtnPause.show();
+        visBtnStop.show();
         vis.runShow(ghcs.repo);
     }
 }
@@ -303,6 +314,10 @@ function refreshRepoList(data) {
         return format((now - d.nodeValue.cdate)/lenYear);
     }
 
+    function titleAge(d) {
+        return "age " + age(d) + " of year."
+    }
+
     function color(d) {
         return vis.forceRep.colors(d.nodeValue.lang);
     }
@@ -344,6 +359,7 @@ function refreshRepoList(data) {
         span.append("span")
             .attr("class", "sRepoAge")
             .text(age)
+            .attr("title", titleAge)
             .style("background", color)
             .style("border-color", darker);
         span.append("span")
@@ -452,7 +468,7 @@ function refreshRepoList(data) {
 }
 
 function repoItemOver(d) {
-    if (d) {
+    if (d && vis.layers.repo.visible) {
         d.fixed = true;
         vis.meRepo(d);
         vis.mtt(d, null, null, {pageX : d.x, pageY : d.y});
@@ -477,11 +493,37 @@ function repoItemClick(d) {
 }
 
 function init() {
+    var body = d3.select(document.body);
+    body.classed("opera", !!window.opera);
+    var sms = d3.select("#sms").append("div");
+
     log = (function () {
         var logCont = d3.select("#console")
             .append("ul");
         return function (msg) {
-            logCont.append("li").text(msg instanceof Object ? JSON.stringify(msg) : msg);
+            console.log(msg);
+            try {
+                msg = msg instanceof Object ? JSON.stringify(msg) : msg;
+            }
+            catch(e) {
+                msg = msg.toString();
+            }
+            logCont.append("li").style("max-width", w/2 + "px").text(msg);
+            sms.append("div")
+                .append("span")
+                .style("max-width", 0 + "px")
+                .style("opacity", 0)
+                .text(msg)
+                .transition()
+                .duration(3000)
+                .style("max-width", w + "px")
+                .style("opacity", 1)
+                .transition()
+                .delay(5000)
+                .duration(3000)
+                .style("opacity", 0)
+                .remove()
+            ;
         }
     })();
 
@@ -549,15 +591,15 @@ function init() {
     stepsBar = d3.select(".steps");
     stepsBar.firstStep = function() {
         this.attr("class", "steps sfirst");
-        return this;
+        return stepsBar;
     };
     stepsBar.secondStep = function() {
         this.attr("class", "steps ssecond");
-        return this;
+        return stepsBar;
     };
     stepsBar.thirdStep = function() {
         this.attr("class", "steps");
-        return this;
+        return stepsBar;
     };
 
     runBtn = d3.select("#runBtn");
@@ -579,17 +621,61 @@ function init() {
     [runBtn, showBtn, userTxt, visBtn].forEach(function(item) {
         item.enable = function () {
             this.attr("disabled", null);
-            return this;
+            return item;
         };
         item.disable = function () {
             this.attr("disabled", "disabled");
-            return this;
+            return item;
         };
+    });
+
+    visBtnRestart = d3.select("#visBtnRestart").on('click', function() {
+        vis.stopShow();
+        visBtnRestart.hide();
+        visBtn.hide();
+        visBtnPause.show();
+        visBtnStop.show();
+        runShow();
+    });
+    visBtnPause = d3.select("#visBtnPause").on('click', function() {
+        vis.pauseShow();
+        visBtnRestart.hide();
+        visBtnPause.hide();
+        visBtn.show();
+    });
+    visBtnStop = d3.select("#visBtnStop").on('click', function() {
+        vis.stopShow();
+        visBtnRestart.show();
+        visBtnPause.hide();
+        visBtn.hide();
+        visBtnStop.hide();
+    });
+
+    [visBtn, visBtnRestart,
+        visBtnPause, visBtnStop].forEach(function(d) {
+        d.hide = function() {
+            d.style("display", "none");
+            return d;
+        };
+        d.show = function() {
+            d.style("display", null);
+            return d;
+        };
+    });
+
+    visBtn.on('click', function() {
+        visBtnRestart.hide();
+        visBtn.hide();
+        visBtnPause.show();
+        visBtnStop.show();
+        if (vis.showIsPaused())
+            vis.resumeShow();
+        else
+            runShow();
     });
 
     runBtn.on("click", rewriteHash);
     showBtn.on("click", rewriteHash);
-    visBtn.on("click", runShow);
 
     ldrTop = d3.select("#ldrTop");
     ldrTop.pntNode = d3.select(ldrTop.node().parentNode);
@@ -699,7 +785,7 @@ function init() {
                         li.append("hr");
                     });
                     user.info.location && ul.append("li")
-                        .html("<span class='mini-icon mini-icon-location'></span><strong>" + user.info.location + "</strong>")
+                        .html("<span class='mini-icon mini-icon-location'></span><strong>" + user.info.location + "</strong>");
                     user.info.blog && ul.append("li")
                         .call(function(li) {
                             li.append("span")
@@ -738,5 +824,6 @@ function init() {
         }
     };
 
+    d3.select("#about").classed("open", true);
     applyParams();
 }

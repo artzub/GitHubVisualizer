@@ -227,7 +227,6 @@
     }
 
     function getId(key) {
-        console.log(key);
         return key.replace(/[@\[\]\(\)#]/, "_").replace("(", "_").replace(")", "_");
     }
 

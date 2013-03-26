@@ -66,6 +66,20 @@ html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,abbr,address
 .mini-icon-star:before {
     content: "\f02a";
 }
+.mini-icon-help:before {
+    content: "\f02c";
+}
+.mini-icon-unwatch:before {
+    content: "\f01e";
+}
+.mini-icon-watching:before {
+    content: "\f01d";
+}
+.mini-icon-advanced-search:before {
+    content: "\f02f";
+}
+
+
 
 
 .mega-icon-public-repo:before {
@@ -142,9 +156,8 @@ input[type=number]:focus {
 }
 
 #console {
-    bottom: 0;
-    left: 0;
-    z-index: 100;
+    overflow-y: auto;
+    max-height: 200px;
 }
 
 /* progress bar */
@@ -470,6 +483,12 @@ svg {
     margin: 0;
 }
 
+@-moz-document url-prefix() {
+    #controls .btn {
+        padding: 1px 8px;/* для Firefox */
+    }
+}
+
 .row {
     display: block;
     max-width: 100%;
@@ -704,6 +723,22 @@ hr {
     z-index: 1;
 }
 
+.opera .steps > li:after {
+    border: 1.2em solid transparent;
+    border-left-color: #ffffff;
+    top: -0.1em;
+    right: -2.4em;
+    z-index: 0;
+}
+
+.opera .steps > li:before {
+    border: 1.15em solid transparent;
+    border-left-color: #50617F;
+    top: 0em;
+    right: -2.22em;
+    z-index: 1;
+}
+
 .steps.sfirst > li:not(.first) {
     border-color: #ccc;
     background: #858689;
@@ -738,7 +773,8 @@ hr {
     padding: 5px;
 }
 
-.sub blockquote {
+.sub blockquote,
+#misc blockquote {
     padding: 3px;
     margin: 2px 0;
     background: rgba(255, 252, 196, .6);
@@ -755,6 +791,14 @@ blockquote.green {
     background: rgba(198, 245, 188, .6);
     color: rgb(31, 166, 31);
     border-left: 2px solid rgb(31, 166, 31);
+}
+
+blockquote.a02 {
+    background: rgba(255, 252, 196, .2);
+}
+
+blockquote.a04 {
+    background: rgba(255, 252, 196, .4);
 }
 
 /** end stepbar */
@@ -860,6 +904,11 @@ blockquote.green {
 .gtLeg, .gttLeg {
     fill : #f9f9f9;
     text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+    cursor: default;
+}
+
+.gtLeg {
+    pointer-events: none;
 }
 
 .convolve ul {
@@ -1006,4 +1055,119 @@ text.citem:hover,
 text.sitem:hover {
     fill: rgba(244, 244, 244, 1);
     text-shadow: 0 1px 1px rgba(0, 0, 0, .5);
+}
+
+#misc {
+    top: 66px;
+    right: -2px;
+    position: fixed;
+    padding: 0;
+    padding-left: 1px;
+}
+
+#misc.open,
+#misc:hover {
+    padding: 5px;
+}
+
+#misc .userInfo {
+    padding: 3px 5px 0px 1px;
+}
+
+.hidder {
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+    border-bottom: 1px dotted rgba(244, 244, 244, .5);
+}
+
+.hidder:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: 0;
+}
+
+.numerable {
+    list-style: decimal !important;
+    padding-left: 22px !important;
+}
+
+.numerable li {
+    display: list-item;
+}
+
+.hidder > ul {
+    display: none;
+}
+
+.hidder .title {
+    cursor: pointer;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, .5);
+    margin: 0;
+}
+
+#misc.open .hidder .title,
+.hidder:hover .title {
+    margin: 0;
+    margin-bottom: -16px;
+    display: block;
+}
+
+.capture {
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, .5);
+}
+
+#misc.open .hidder .capture,
+.hidder:hover .capture {
+    margin-left: 18px;
+}
+
+#misc.open .hidder > ul,
+.hidder:hover > ul {
+    display: block;
+}
+
+#misc blockquote {
+    background: rgba(255, 252, 196, .2);
+}
+
+#sms {
+    z-index: 999;
+    bottom: 22px;
+    right: 0;
+}
+
+#sms div {
+    position: relative;
+    margin: 3px;
+    text-align: right;
+}
+
+#sms span {
+    background: rgba(255, 169, 176, .2);
+    color: rgb(255, 169, 176);
+    border: 1px solid rgb(255, 169, 176);
+    padding: 2px;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.forkme {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: url('forkme.png');
+    opacity: .5;
+    width: 112px;
+    height: 112px;
+    overflow: hidden;
+    text-decoration: none;
+    display: none;
+}
+
+#misc.open .forkme,
+#about:hover .forkme {
+    display: block;
 }
