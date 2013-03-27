@@ -1064,15 +1064,16 @@ text.sitem:hover {
 }
 
 #misc {
-    top: 66px;
+    top: 68px;
     right: -2px;
     position: fixed;
     padding: 0;
     padding-left: 1px;
     max-height: 70%;
-    max-height: -webkit-calc(100% - 88px);
-    max-height: calc(100% - 88px);
+    max-height: -webkit-calc(100% - 90px);
+    max-height: calc(100% - 90px);
     overflow-y: auto;
+    border: 1px solid rgba(244, 244, 244, 1);
 }
 
 #misc.open,
@@ -1180,4 +1181,9 @@ text.sitem:hover {
 #misc.open .forkme,
 #about:hover .forkme {
     display: block;
+}
+
+#misc,
+#userInfo {
+    box-shadow: -2px 4px 5px rgba(0, 0, 0, .5);
 }

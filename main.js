@@ -132,9 +132,6 @@ function applyParams() {
                 vis.clRepo(r);
                 vis.mlRepo(r);
             }
-            repoList.selectAll("li").classed("selected", function(d) {
-                return d == r;
-            });
         }
 
         analyseCommits();
@@ -185,13 +182,15 @@ function chCheckbox(d) {
                 && (ln.ns[ln.key] = d.property("checked"));
             break;
     }
+    saveSetting();
 }
 
 function chValue(d) {
     var ln;
     d = d3.select(this);
     (ln = d.datum()) && ln.ns
-        && (ln.ns[ln.key] = d.property("value"));
+        && (ln.ns[ln.key] = this.type == "number" ? +d.property("value") : d.property("value"));
+    saveSetting();
 }
 
 function checkCompleted() {
@@ -223,7 +222,7 @@ function runShow() {
         visBtnPause.show();
         visBtnStop.show();
         vis.layers.repo.show();
-        vis.runShow(ghcs.repo);
+        vis.runShow(ghcs.repo, null, visBtnStop.on('click'));
     }
 }
 
@@ -496,15 +495,36 @@ function repoItemOut(d) {
 }
 
 function repoItemClick(d) {
-    var item = d3.select(this),
+    /*var item = d3.select(this),
         sel = item.classed("selected");
     repoList.selectAll("li.selected").classed("selected", false);
-    !sel && item.classed("selected", true);
+    !sel && item.classed("selected", true);*/
     if (d)
         vis.clRepo(d);
 }
 
 function init() {
+    loadSettings();
+
+    d3.select(window).on("focus", function() {
+        if (window.hasOwnProperty("needPlayShow")) {
+//            log("focus window. need play show :" + window.needPlayShow);
+            if (window.needPlayShow)
+                startShow();
+            delete window.needPlayShow;
+        }
+    });
+
+    d3.select(window).on("blur", function() {
+        if (window.hasOwnProperty("needPlayShow"))
+            return;
+
+        window.needPlayShow = vis.showIsRun() && !vis.showIsPaused();
+//        log("blur window. need play show :" + window.needPlayShow);
+        if (window.needPlayShow)
+            pauseShow();
+    });
+
     var body = d3.select(document.body);
     body.classed("opera", !!window.opera);
 
@@ -528,8 +548,10 @@ function init() {
     criticalError.select("button")
         .on("click", function() {
             criticalError.hide();
+            ghcs.states.cur = ghcs.states.max;
             checkCompleted();
-        });
+        })
+    ;
 
     log = (function () {
         var logCont = d3.select("#console")
@@ -675,12 +697,15 @@ function init() {
         visBtnStop.show();
         runShow();
     });
-    visBtnPause = d3.select("#visBtnPause").on('click', function() {
+
+    function pauseShow() {
         vis.pauseShow();
         visBtnRestart.hide();
         visBtnPause.hide();
         visBtn.show();
-    });
+    }
+
+    visBtnPause = d3.select("#visBtnPause").on('click', pauseShow);
     visBtnStop = d3.select("#visBtnStop").on('click', function() {
         vis.stopShow();
         visBtnRestart.show();
@@ -701,7 +726,7 @@ function init() {
         };
     });
 
-    visBtn.on('click', function() {
+    function startShow() {
         visBtnRestart.hide();
         visBtn.hide();
         visBtnPause.show();
@@ -710,7 +735,8 @@ function init() {
             vis.resumeShow();
         else
             runShow();
-    });
+    }
+    visBtn.on('click', startShow);
 
     runBtn.on("click", rewriteHash);
     showBtn.on("click", rewriteHash);

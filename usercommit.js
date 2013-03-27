@@ -215,8 +215,11 @@
     }
 
     vis.clearUserCommitDg = function() {
-        vis.layers && vis.layers.stat && vis.layers.stat.ucDg && vis.layers.stat.ucDg.selectAll("*")
-            .remove();
+        if(vis.layers && vis.layers.stat && vis.layers.stat.ucDg) {
+            vis.layers.stat.ucDg.selectAll("*").remove();
+            vis.layers.stat.ucDg = null;
+            delete vis.layers.stat.ucDg;
+        }
     };
 
     function updateBubbles(bubbles) {

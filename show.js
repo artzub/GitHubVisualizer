@@ -42,6 +42,7 @@
         xW,
         yH,
 
+        dofinished,
         setting,
         rd3 = d3.random.irwinHall(8),
         colorless = d3.rgb("gray"),
@@ -53,6 +54,12 @@
     var typeNode = {
         author : 0,
         file : 1
+    };
+
+    var sizeUser = {
+        valueOf : function() {
+            return setting.sizeUser;
+        }
     };
 
     function reCalc(d) {
@@ -142,6 +149,12 @@
         if (pause)
             return;
 
+        if (stop) {
+            if (_worker)
+                clearInterval(_worker);
+            return;
+        }
+
         var dl, dr;
 
         dl = dateRange[0];
@@ -161,6 +174,8 @@
         if (dl >= dateRange[1]) {
             if (_worker)
                 clearInterval(_worker);
+            if (dofinished && typeof dofinished == "function")
+                dofinished();
         } else {
             if (!visTurn.length && setting.skipEmptyDate)
                 loop();
@@ -272,8 +287,8 @@
             x : x,
             y : y,
             id : type + (type == typeNode.file ? d.name : d.email),
-            size : type != typeNode.file ? 24 : 2,
-            weight : type != typeNode.file ? 24 : 2,
+            size : type != typeNode.file ? sizeUser : 2,
+            weight : type != typeNode.file ? sizeUser : 2,
             fixed : true,
             visible : false,
             links : 0,
@@ -431,6 +446,9 @@
     }
 
     function blink(d, aliveCheck) {
+        if (pause || stop)
+            return;
+
         d.flash = (d.flash -= setting.rateFlash) > 0 ? d.flash : 0;
 
         !d.flash && aliveCheck
@@ -1084,9 +1102,11 @@
         updateLegend();
     }
 
-    vis.runShow = function(data, svg/*, params*/) {
+    vis.runShow = function(data, svg, onfinished) {
         if (_worker)
             clearInterval(_worker);
+
+        dofinished = onfinished;
 
         _data = data && data.commits ? data.commits.values().sort(vis.sC) : null;
 
@@ -1250,7 +1270,8 @@
             .stop()
             .size([w, h])
             .gravity(setting.padding * .001)
-            .charge(function(d) { return -(setting.padding + d.size) * 8
+            .charge(function(d) {
+                return -(setting.padding + d.size) * 8
                 //* (Math.sqrt(d.links / lastEvent.scale) || 1)
                 ;
             }))
@@ -1283,5 +1304,9 @@
 
     vis.showIsPaused = function() {
         return pause && !stop;
+    };
+
+    vis.showIsRun = function() {
+        return !!_worker;
     }
 })(vis || (vis = {}));

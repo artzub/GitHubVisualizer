@@ -27,11 +27,11 @@
             <ul class="steps sfirst">
                 <li style="z-index: 2" class="first">
                     <label for="user"><strong>1.</strong></label>
-                    <input placeholder="Github's username" type="text" id="user">
+                    <input placeholder="GitHub username" type="text" id="user">
                     <button id="showBtn" title="Press for loading data about user repositories." class="btn" disabled="disabled">Show</button>
                     <div class="sub">
                         <div class="row">
-                            <blockquote>Enter Github's username.</blockquote>
+                            <blockquote>Enter a GitHub username.</blockquote>
                             <div class="row">
                                 <ul class="setting">
                                     <li class="field"><h1>Display:</h1>
@@ -160,7 +160,7 @@
                                                             </li>
                                                             <li class="field">
                                                                 <input data-ns="cs" id="cb-cs-showEdge" type="checkbox">
-                                                                <label for="cb-cs-showEdge">visible</label>
+                                                                <label for="cb-cs-showEdge">visible</label> — Coming soon...
                                                             </li>
                                                         </ul>
                                                     </li>
@@ -307,12 +307,12 @@
                         <ul>
                             <li>
                                 <h1 class="capture">
-                                    Visualization the history of repositories from Github.
+                                    Visualization GitHub repositories history.
                                 </h1>
                                 <hr>
-                                The service lets to see statistics by the history of repositories.<br />
-                                <i style="color:#f9f9f9">Data from GitHub are using only for analysis and visualization.
-                                    <br/>It isn't passed on to third parties.</i>
+                                This service lets the user to see statistics of repositories.<br />
+                                <i style="color:#f9f9f9">Your GitHub data will be used only for analysis and visualisation.
+                                    <br/>They will not be passed to third parties.</i>
                             </li>
                             <li>
                                 <br/>
@@ -323,44 +323,45 @@
                                             There are three main steps.<br/>
                                             Each step is logical stage contains of some setting.<br/>
                                             You can show/hide a layer or sub-layers from each stage.<br/>
-                                            The new stage is opened by the previous stage completion.
+                                            The new stage is opened after the previous stage is complete.
                                         </blockquote>
                                         <ul class="setting">
                                             <li class="field convolve">
-                                                <h1>The 1st step:</h1>
+                                                <h1>Step 1:</h1>
                                                 <ul class="group numerable">
-                                                    <li><label>Enter a username from GitHub into the input.</label></li>
+                                                    <li><label>Enter a GitHub username.</label></li>
                                                     <li>
-                                                        <label>Press the "Show" button.</label><br/>
-                                                        Then application will receive a data about user and him repositories.
+                                                        <label>Press "Show".</label><br/>
+                                                        This allows the application to receive a data about user and him repositories.
                                                     </li>
                                                 </ul>
                                             </li>
                                         </ul>
                                         <ul class="setting">
                                             <li class="field convolve">
-                                                <h1>The 2nd step:</h1>
+                                                <h1>Step 2:</h1>
                                                 <ul class="group numerable">
-                                                    <li><label>You should select a repository on the graph or the list in the second stage panel.</label></li>
+                                                    <li><label>Select a repository on the graph or the list in the "Step 2" panel.</label></li>
                                                     <li>
-                                                        <label>Press the "Analyze" button.</label><br/>
-                                                        Then application will receive data about commits of <br/>the selected repository from "Default Branch" (Set in settings a repository on Github).
+                                                        <label>Press "Analyze".</label><br/>
+                                                        The application will now receive data about commits of <br/>the selected repository from "Default Branch" (Set in settings a repository on Github).
                                                     </li>
                                                 </ul>
                                             </li>
                                         </ul>
                                         <ul class="setting">
                                             <li class="field convolve">
-                                                <h1>The 3rd step</h1>
+                                                <h1>Step 3:</h1>
                                                 <ul class="group numerable">
                                                     <li>
-                                                        <label>You can change needed settings in the third stage panel.</label><br/>
-                                                        Based on these parameters dynamic visualisation will run.<br/>
-                                                        You also can change them at the running state.
+                                                        <label>The third stage panel allows you to customize the parameters for
+                                                            dynamic visualisation.</label><br/>
+                                                        You can also change these parameters once the visualization is running.<br/>
+                                                        These settings will be save in the localStorage or the browser cookies.
                                                     </li>
                                                     <li>
-                                                        <label>Press the "Run" button for visualization start.</label><br/>
-                                                        In order to control process, you can use "Pause", "Stop" and "Restart" buttons.
+                                                        <label>Press "Run" to begin visualization.</label><br/>
+                                                        You can use the "Pause", "Stop" and "Restart" buttons to control the visualization.
                                                     </li>
                                                 </ul>
                                             </li>
@@ -375,7 +376,39 @@
                                         <h1>What's it mean:</h1>
                                         <ul class="setting">
                                             <li class="field convolve">
-                                                <h1>The 3rd step</h1>
+                                                <h1>Step 1:</h1>
+                                                <ul class="group numerable">
+                                                    <li>
+                                                        <label>
+
+                                                        </label>
+                                                    </li>
+                                                    <li>
+                                                        <label>Press the "Run" button for visualization start.</label><br/>
+                                                        In order to control process, you can use "Pause", "Stop" and "Restart" buttons.
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                        <ul class="setting">
+                                            <li class="field convolve">
+                                                <h1>Step 2:</h1>
+                                                <!--<ul class="group numerable">
+                                                    <li>
+                                                        <label>You can change needed settings in the third stage panel.</label><br/>
+                                                        Based on these parameters dynamic visualisation will run.<br/>
+                                                        You also can change them at the running state.
+                                                    </li>
+                                                    <li>
+                                                        <label>Press the "Run" button for visualization start.</label><br/>
+                                                        In order to control process, you can use "Pause", "Stop" and "Restart" buttons.
+                                                    </li>
+                                                </ul>-->
+                                            </li>
+                                        </ul>
+                                        <ul class="setting">
+                                            <li class="field convolve">
+                                                <h1>Step 3:</h1>
                                                 <!--<ul class="group numerable">
                                                     <li>
                                                         <label>You can change needed settings in the third stage panel.</label><br/>

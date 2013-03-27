@@ -181,10 +181,8 @@ function parseCommits(commits) {
                 obj.author.avatar = preloadImage(obj.author.avatar_url || (obj.author.avatar_url = makeGravatar(obj.author.email)));
             }
 
-            if (!obj.files) {
+            if (!obj.files && !criticalError.visible) {
                 JSONP(makeUrl(obj.url), (function(c) {
-                    ghcs.repo.dates.push(c.date);
-                    ghcs.repo.dates.sort(d3.ascending);
                     return function(req) {
                         parseCommit(getDataFromRequest(req), ghcs.repo.commits.get(c.sha));
                         upCommits();
@@ -198,6 +196,11 @@ function parseCommits(commits) {
             }
             else {
                 upCommits();
+            }
+
+            if (ghcs.repo.dates.indexOf(obj.date) < 0) {
+                ghcs.repo.dates.push(obj.date);
+                ghcs.repo.dates.sort(d3.ascending);
             }
         });
     }
@@ -266,6 +269,9 @@ function chSelect(e) {
         curRep.setName(null);
         stepsBar.secondStep();
     }
+    repoList.selectAll("li").classed("selected", function(d) {
+        return d == e;
+    });
 }
 
 function chUser() {
