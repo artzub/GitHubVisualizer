@@ -150,8 +150,7 @@
             return;
 
         if (stop) {
-            if (_worker)
-                clearInterval(_worker);
+            killWorker();
             return;
         }
 
@@ -172,8 +171,7 @@
         updateStatus(ghcs.states.cur += ghcs.limits.stepShow * ghcs.limits.stepType, timeFormat(new Date(dr)));
 
         if (dl >= dateRange[1]) {
-            if (_worker)
-                clearInterval(_worker);
+            killWorker();
             if (dofinished && typeof dofinished == "function")
                 dofinished();
         } else {
@@ -446,7 +444,7 @@
     }
 
     function blink(d, aliveCheck) {
-        if (pause || stop)
+        if (pause)
             return;
 
         d.flash = (d.flash -= setting.rateFlash) > 0 ? d.flash : 0;
@@ -1292,10 +1290,16 @@
         pause = true;
     };
 
+    function killWorker() {
+        if (_worker) {
+            clearInterval(_worker);
+            _worker = null;
+        }
+    }
+
     vis.stopShow = function() {
         stop = true;
-        if (_worker)
-            clearInterval(_worker);
+        killWorker();
     };
 
     vis.resumeShow = function() {

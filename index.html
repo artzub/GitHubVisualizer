@@ -72,7 +72,7 @@
                                         <ul class="group">
                                             <li class="field">
                                                 <input id="cb-dlucdg" type="checkbox" checked="checked">
-                                                <label for="cb-dlucdg">Layer committers diagram</label>
+                                                <label for="cb-dlucdg">Layer contributors diagram</label>
                                             </li>
                                         </ul>
                                     </li>
@@ -346,6 +346,15 @@
                                                         <label>Press "Analyze".</label><br/>
                                                         The application will now receive data about commits of <br/>the selected repository from "Default Branch" (Set in settings a repository on Github).
                                                     </li>
+                                                    <li><strong style="margin:0">Contributors diagram</strong>
+                                                        <ul class="group numerable">
+                                                            <li><label>Click by a point at the "size" column for change a parameter to
+                                                                calculation the size pack.</label>
+                                                            </li>
+                                                            <li><label>Click by a name of parameter for change direction the sorting pack.</label></li>
+                                                            <li><label>Mouseover on pack for show the tooltip by contributor.</label></li>
+                                                        </ul>
+                                                    </li>
                                                 </ul>
                                             </li>
                                         </ul>
@@ -379,13 +388,35 @@
                                                 <h1>Step 1:</h1>
                                                 <ul class="group numerable">
                                                     <li>
-                                                        <label>
-
-                                                        </label>
+                                                        <label>The size of node depends of date of create.</label><br/>
+                                                        Big nodes younger than small.
                                                     </li>
                                                     <li>
-                                                        <label>Press the "Run" button for visualization start.</label><br/>
-                                                        In order to control process, you can use "Pause", "Stop" and "Restart" buttons.
+                                                        <label>The opacity of node depends of date of last change.</label><br/>
+                                                        Transparent nodes have an earlier date of last change.
+                                                    </li>
+                                                    <li>
+                                                        <label>The color of node depends of main language.</label>
+                                                    </li>
+                                                    <li>
+                                                        <label>Nodes surround the node that has a later date of last change.</label>
+                                                    </li>
+                                                    <li>
+                                                        <label>Nodes repel each another if they have different language.</label>
+                                                    </li>
+                                                    <li><strong style="margin:0">Languages diagram</strong>
+                                                        <ul class="group numerable">
+                                                            <li>
+                                                                <label>
+                                                                    Shows color of language.
+                                                                </label>
+                                                            </li>
+                                                            <li>
+                                                                <label>
+                                                                    Shows count of repositories per each language.
+                                                                </label>
+                                                            </li>
+                                                        </ul>
                                                     </li>
                                                 </ul>
                                             </li>
@@ -393,33 +424,50 @@
                                         <ul class="setting">
                                             <li class="field convolve">
                                                 <h1>Step 2:</h1>
-                                                <!--<ul class="group numerable">
+                                                <ul class="group numerable">
                                                     <li>
-                                                        <label>You can change needed settings in the third stage panel.</label><br/>
-                                                        Based on these parameters dynamic visualisation will run.<br/>
-                                                        You also can change them at the running state.
+                                                        <label>
+                                                            The X axis shows date commits.
+                                                        </label>
                                                     </li>
                                                     <li>
-                                                        <label>Press the "Run" button for visualization start.</label><br/>
-                                                        In order to control process, you can use "Pause", "Stop" and "Restart" buttons.
+                                                        <label>
+                                                            Each red point is a commit.
+                                                        </label>
                                                     </li>
-                                                </ul>-->
+                                                    <li>
+                                                        <label>
+                                                            Arcs to top and to bottom are count of <span style="color: #ddffdd">added</span> and <span style="color:#ffdddd">deleted</span> lines at a commit.
+                                                        </label>
+                                                    </li>
+                                                    <li>
+                                                        <label>Areas show count of changed files</label><br/>
+                                                        Colors of areas: <span style="color:#A5EC6E">added files</span>, <span style="color:#FFB877">modified files</span>, <span style="color:#FF77B5">deleted files</span>
+                                                    </li>
+                                                    <li><strong style="margin:0">Contributors diagram</strong>
+                                                        <ul class="group">
+                                                            <li>
+                                                                <label>
+                                                                    Shows activity contributors based on different parameters.
+                                                                </label>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
                                             </li>
                                         </ul>
                                         <ul class="setting">
                                             <li class="field convolve">
                                                 <h1>Step 3:</h1>
-                                                <!--<ul class="group numerable">
-                                                    <li>
-                                                        <label>You can change needed settings in the third stage panel.</label><br/>
-                                                        Based on these parameters dynamic visualisation will run.<br/>
-                                                        You also can change them at the running state.
-                                                    </li>
-                                                    <li>
-                                                        <label>Press the "Run" button for visualization start.</label><br/>
-                                                        In order to control process, you can use "Pause", "Stop" and "Restart" buttons.
-                                                    </li>
-                                                </ul>-->
+                                                <ul class="group numerable">
+                                                    <li><label>Each particle is a file. It moves from developer to developer.</label></li>
+                                                    <li><label>The size of particle depends of the degree of changes.</label></li>
+                                                    <li><label>Each user gathers files which he used.</label></li>
+                                                    <li><label>If files leave a user orbit, it mean that they were deleted.</label></li>
+                                                    <li><label>Every second is a day.</label></li>
+                                                    <li><label>The histogram shows the number of files per commit, separated by a extension.</label></li>
+                                                    <li><label>The legend shows the number of files for all time separated by a extension.</label></li>
+                                                </ul>
                                             </li>
                                         </ul>
                                     </li>
@@ -432,6 +480,8 @@
                                         <h1>What was used:</h1>
                                         <blockquote>
                                             Uses<a title="D3js.org" href="http://d3js.org">D3.js</a> and<a href="http://developer.github.com/" title="Github API">Github API</a>.
+                                            <br/>
+                                            All rights to media contents form<a href="http://github.com/">GitHub</a> (fonts, some css selectors) belong to Github.
                                         </blockquote>
                                         <br/>
                                         <label><strong style="margin:0">HTML5:</strong></label>
