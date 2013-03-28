@@ -30,7 +30,8 @@ var cs, svg_cs, svg,
     psBar, runBtn, ldrTop, toolTip, showBtn,
     visBtn, visBtnRestart, visBtnStop, visBtnPause,
     repoList,
-    userTxt, curRep, divStat, stepsBar, cbDlr, cbDlsr,
+    userTxt, curRep, divStat, stepsBar,
+    cbDlr, cbDlsr, cbDlvml,
     criticalError;
 
 function updateStatus(pos, label) {
@@ -91,6 +92,7 @@ function applyParams() {
     stackLoad = stackLoad-- < 1 ? 0 : stackLoad;
 
     d3.select("#misc").classed("open", !ghcs.params.user);
+    d3.select("#example").classed("open", !ghcs.params.user);
 
     if (ghcs.rot != ghcs.params.rot || ghcs.login != ghcs.params.user) {
         d3.select("#about").classed("open", false);
@@ -221,7 +223,6 @@ function runShow() {
         visBtn.hide();
         visBtnPause.show();
         visBtnStop.show();
-        vis.layers.repo.show();
         vis.runShow(ghcs.repo, null, visBtnStop.on('click'));
     }
 }
@@ -495,10 +496,6 @@ function repoItemOut(d) {
 }
 
 function repoItemClick(d) {
-    /*var item = d3.select(this),
-        sel = item.classed("selected");
-    repoList.selectAll("li.selected").classed("selected", false);
-    !sel && item.classed("selected", true);*/
     if (d)
         vis.clRepo(d);
 }
@@ -589,14 +586,14 @@ function init() {
 
     cs = d3.select("#canvas");
     cs.hide = function() {
-        this.style("display", "none");
+        cs.style("display", "none");
         vis.inited && vis.layers.show.hide();
-        return this;
+        return cs;
     };
     cs.show = function() {
-        this.style("display", null);
+        cs.style("display", null);
         vis.inited && vis.layers.show.show();
-        return this;
+        return cs;
     };
 
     svg_cs = d3.select("#svg");
@@ -632,33 +629,33 @@ function init() {
     psBar = d3.select("#progressBar");
     psBar.pntNode = d3.select(psBar.node().parentNode);
     psBar.show = function() {
-        this.pntNode.style("display", null);
-        return this;
+        psBar.pntNode.style("display", null);
+        return psBar;
     };
     psBar.hide = function() {
-        this.pntNode.style("display", "none");
-        return this;
+        psBar.pntNode.style("display", "none");
+        return psBar;
     };
     psBar.setLabel = function(lbl) {
-        this.text(lbl);
-        return this;
+        psBar.text(lbl);
+        return psBar;
     };
     psBar.setPos = function(pos) {
-        this.style("width", pos);
-        return this;
+        psBar.style("width", pos);
+        return psBar;
     };
 
     stepsBar = d3.select(".steps");
     stepsBar.firstStep = function() {
-        this.attr("class", "steps sfirst");
+        stepsBar.attr("class", "steps sfirst");
         return stepsBar;
     };
     stepsBar.secondStep = function() {
-        this.attr("class", "steps ssecond");
+        stepsBar.attr("class", "steps ssecond");
         return stepsBar;
     };
     stepsBar.thirdStep = function() {
-        this.attr("class", "steps");
+        stepsBar.attr("class", "steps");
         return stepsBar;
     };
 
@@ -680,11 +677,11 @@ function init() {
 
     [runBtn, showBtn, userTxt, visBtn].forEach(function(item) {
         item.enable = function () {
-            this.attr("disabled", null);
+            item.attr("disabled", null);
             return item;
         };
         item.disable = function () {
-            this.attr("disabled", "disabled");
+            item.attr("disabled", "disabled");
             return item;
         };
     });
@@ -731,6 +728,7 @@ function init() {
         visBtn.hide();
         visBtnPause.show();
         visBtnStop.show();
+        cbDlvml.check();
         if (vis.showIsPaused())
             vis.resumeShow();
         else
@@ -744,41 +742,42 @@ function init() {
     ldrTop = d3.select("#ldrTop");
     ldrTop.pntNode = d3.select(ldrTop.node().parentNode);
     ldrTop.show = function () {
-        this.pntNode.style("display", null);
-        return this;
+        ldrTop.pntNode.style("display", null);
+        return ldrTop;
     };
     ldrTop.hide = function () {
-        this.pntNode.style("display", "none");
-        return this;
+        ldrTop.pntNode.style("display", "none");
+        return ldrTop;
     };
 
     toolTip = d3.select("#tooltip");
     toolTip.show = function () {
-        this.style("display", "block");
-        return this;
+        toolTip.style("display", "block");
+        return toolTip;
     };
     toolTip.hide = function () {
-        this.style("display", null);
-        return this;
+        toolTip.style("display", null);
+        return toolTip;
     };
 
     cbDlr = d3.select("#cb-dlr").datum("repo");
     cbDlsr = d3.select("#cb-dlsr").datum("stat");
+    cbDlvml = d3.select("#cb-dlvml").datum("show");
 
-    [cbDlr, cbDlsr].forEach(function(item) {
+    [cbDlr, cbDlsr, cbDlvml].forEach(function(item) {
         item.check = function() {
-            this.property("checked", true);
-            chCheckbox.apply(this.node());
+            item.property("checked", true);
+            chCheckbox.apply(item.node());
         };
 
         item.uncheck = function() {
-            this.property("checked", false);
-            chCheckbox.apply(this.node());
+            item.property("checked", false);
+            chCheckbox.apply(item.node());
         };
 
         item.trigger = function() {
-            this.property("checked", !this.property("checked"));
-            chCheckbox.apply(this.node());
+            item.property("checked", !item.property("checked"));
+            chCheckbox.apply(item.node());
         };
     });
 
@@ -795,30 +794,30 @@ function init() {
         .on("mouseout", repoItemOut);
 
     curRep.setName = function(r) {
-        this.selectAll("*").remove();
-        this.datum(r);
+        curRep.selectAll("*").remove();
+        curRep.datum(r);
         if (!r)
-            this.append("span")
+            curRep.append("span")
                 .text("Select Repo...");
         else {
-            this.append("span")
+            curRep.append("span")
                 .style("color", d3.rgb(vis.forceRep.colors(r.nodeValue.lang)).brighter())
                 .attr("class", "mega-icon mega-icon-" + (!r.nodeValue.forked ? "public-repo" : "repo-forked"));
 
-            this.append("strong")
+            curRep.append("strong")
                 .style("margin-right", "5px")
                 .style("text-shadow", "0 0 3px rgba(0, 0, 0, 1)")
                 .style("color", d3.rgb(vis.forceRep.colors(r.nodeValue.lang)).brighter())
                 .text((r.nodeValue.name || ""));
 
-            this.append("a")
+            curRep.append("a")
                 .attr("target", "_blank")
                 .attr("title", "Go to Github")
                 .attr("href", (r.nodeValue.html_url || "#"))
                 .attr("class", "mega-icon mini-icon-link a-icon");
         }
 
-        return this;
+        return curRep;
     };
 
     divStat = d3.select("#divStat");

@@ -210,27 +210,27 @@
         ]).sort(vis.sC);
 
         var layers =
-                [
-                    {
-                        color: colors.deletedFile,
-                        values: sorted.map(function (d) {
-                            return {t : 1, x: d.date, y0 : 0, y: (d.stats ? -d.stats.f.d : 0)}
-                        })
-                    },
-                    {
-                        color: colors.modifiedFile,
-                        values: sorted.map(function (d) {
-                            return {x: d.date, y0 : 0, y: (d.stats ? d.stats.f.m : 0)}
-                        })
-                    },
-                    {
-                        color: colors.addedFile,
-                        values: sorted.map(function (d) {
-                            return {x: d.date, y0: (d.stats ? d.stats.f.m : 0), y : (d.stats ? d.stats.f.a : 0)}
-                        })
-                    }
-                ]
-            ;
+            [
+                {
+                    color: colors.deletedFile,
+                    values: sorted.map(function (d) {
+                        return {t : 1, x: d.date, y0 : 0, y: (d.stats ? -d.stats.f.d : 0)}
+                    })
+                },
+                {
+                    color: colors.modifiedFile,
+                    values: sorted.map(function (d) {
+                        return {x: d.date, y0 : 0, y: (d.stats ? d.stats.f.m : 0)}
+                    })
+                },
+                {
+                    color: colors.addedFile,
+                    values: sorted.map(function (d) {
+                        return {x: d.date, y0: (d.stats ? d.stats.f.m : 0), y : (d.stats ? d.stats.f.a : 0)}
+                    })
+                }
+            ]
+        ;
 
         function interpolateSankey(points) {
             var x0 = points[0][0], y0 = points[0][1], x1, y1, x2,

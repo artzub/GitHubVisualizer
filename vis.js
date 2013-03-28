@@ -68,17 +68,17 @@ function initGraphics(svg) {
                     return ls[d.name];
                 };
                 ls[d.name].hide = function() {
-                    this.visible = false;
-                    if (this.datum().name == "repo" && vis.forceRep)
+                    ls[d.name].visible = false;
+                    if (ls[d.name].datum().name == "repo" && vis.forceRep)
                         vis.forceRep.stop();
-                    this.style("display", "none");
+                    ls[d.name].style("display", "none");
                     return ls[d.name];
                 };
                 ls[d.name].show = function() {
-                    this.visible = true;
-                    if (this.datum().name == "repo" && vis.forceRep)
+                    ls[d.name].visible = true;
+                    if (ls[d.name].datum().name == "repo" && vis.forceRep)
                         vis.forceRep.resume();
-                    this.style("display", null);
+                    ls[d.name].style("display", null);
                     return ls[d.name];
                 };
                 ls[d.name].visible = true;

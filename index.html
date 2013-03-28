@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="utf-8">
+    <link rel="icon" href="favicon.png">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <title>GitHub Visualizer</title>
 
@@ -18,8 +19,29 @@
     <script src="repo.js"></script>
     <script src="langhg.js"></script>
     <script src="show.js"></script>
+
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
 </head>
 <body onload="init()">
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-28343295-7', 'artzub.com');
+    ga('send', 'pageview');
+
+</script>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=286934187985046";
+    fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
 
 <header>
     <div id="controls" class="popup">
@@ -133,6 +155,7 @@
                                             <li class="field convolve"><h1>Code_swarm:</h1>
                                                 <ul class="setting">
                                                     <li class="field"><h1>The number of cycles of life element:</h1>
+                                                        <blockquote class="a02">value 0 — immortal</blockquote>
                                                         <ul class="group">
                                                             <li class="field">
                                                                 <label for="n-cs-userLife">User</label>
@@ -313,6 +336,12 @@
                                 This service lets the user to see statistics of repositories.<br />
                                 <i style="color:#f9f9f9">Your GitHub data will be used only for analysis and visualisation.
                                     <br/>They will not be passed to third parties.</i>
+                            </li>
+                            <li style="background: rgba(255, 255, 255, .6); margin-top: 5px; padding: 3px;">
+                                <!-- Place this tag where you want the +1 button to render. -->
+                                <div class="g-plusone" data-size="small" data-annotation="inline" data-width="450"></div>
+                                <br/>
+                                <div class="fb-like" data-href="http://artzub.com/ghv" data-send="true" data-layout="button_count" data-width="450" data-show-faces="true"></div>
                             </li>
                             <li>
                                 <br/>
@@ -590,6 +619,51 @@
 </div>
 
 <div id="sms" class="popup">
+</div>
+
+<div id="example" class="popup tooltip">
+    <div>
+        <a href="#repo=d3&climit=100&user=mbostock&run" title="Run visualization repo D3js">
+            <img src="ss_d3.png" alt="D3js">
+        </a>
+        <h1><a href="https://github.com/mbostock/d3" title="Visit on Github">D3js</a></h1>
+        <span>A JavaScript visualization library for HTML and SVG.</span>
+    </div>
+    <div>
+        <a href="#repo=mc&climit=100&user=MidnightCommander&run" title="Run visualization repo MidnightCommander">
+            <img src="ss_mc.png" alt="MidnightCommander">
+        </a>
+        <h1><a href="https://github.com/MidnightCommander/mc" title="Visit on Github">MidnightCommander</a></h1>
+        <span>Midnight Commander's repository.</span>
+    </div>
+    <div>
+        <a href="#repo=jquery&climit=100&user=jquery&run" title="Run visualization repo jQuery">
+            <img src="ss_jquery.png" alt="jQuery">
+        </a>
+        <h1><a href="https://github.com/jquery/jquery" title="Visit on Github">jQuery</a></h1>
+        <span>jQuery JavaScript Library.</span>
+    </div>
+    <div>
+        <a href="#repo=bootstrap&climit=100&user=twitter&run" title="Run visualization repo Bootstrap">
+            <img src="ss_bootstrap.png" alt="Bootstrap">
+        </a>
+        <h1><a href="https://github.com/twitter/bootstrap&run" title="Visit on Github">Bootstrap</a></h1>
+        <span>Sleek, intuitive, and powerful front-end framework for faster and easier web development.</span>
+    </div>
+    <div>
+        <a href="#repo=rails&climit=100&user=rails&run" title="Run visualization repo Ruby on Rails">
+            <img src="ss_rails.png" alt="Rails">
+        </a>
+        <h1><a href="https://github.com/rails/rails" title="Visit on Github">Rails</a></h1>
+        <span>Ruby on Rails</span>
+    </div>
+    <div>
+        <a href="#repo=song-of-github&climit=100&user=ajacksified&run" title="Run visualization repo Ruby on Song-of-github">
+            <img src="ss_song-of-github.png" alt="song-of-github">
+        </a>
+        <h1><a href="https://github.com/ajacksified/song-of-github" title="Visit on Github">Song-of-github</a></h1>
+        <span>Let me play you the song of my contributions.</span>
+    </div>
 </div>
 
 <footer>

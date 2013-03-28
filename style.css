@@ -79,9 +79,6 @@ html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,abbr,address
     content: "\f02f";
 }
 
-
-
-
 .mega-icon-public-repo:before {
     content: "\f201";
 }
@@ -637,6 +634,19 @@ hr {
     max-width: 960px;
     max-height: 1280px;
 }
+
+@-moz-document url-prefix() {
+    #userInfo.open ul,
+    #userInfo:hover ul {
+        -webkit-transition: all .5s ease-in-out .5s;
+        -moz-transition: all .5s ease-in-out .5s;
+        -o-transition: all .5s ease-in-out .5s;
+        transition: all .5s ease-in-out .5s;
+
+        width: 350px;
+    }
+}
+
 /** stepbar */
 
 .steps {
@@ -1186,4 +1196,45 @@ text.sitem:hover {
 #misc,
 #userInfo {
     box-shadow: -2px 4px 5px rgba(0, 0, 0, .5);
+}
+
+#example {
+    z-index: 8;
+    top: 7%;
+    left: 1%;
+    text-align: center;
+    vertical-align: middle;
+    display: none;
+    min-width: 320px;
+    max-width: 50%;
+    max-height: 70%;
+    max-height: -webkit-calc(100% - 88px);
+    max-height: calc(100% - 88px);
+    overflow-y: auto;
+}
+
+#example div {
+    line-height: 17px;
+    border: 1px solid #DFDFDF;
+    width: 275px;
+    background: rgba(249, 249, 249, .2);
+    margin: 10px;
+    display: inline-block;
+}
+
+#example a {
+    color: rgba(172, 213, 229, 1);
+}
+
+#example a:hover {
+    color: rgba(221, 246, 255, 1);
+}
+
+#example.open {
+    display: block;
+}
+
+#example img {
+    width: 275px;
+    height: auto;
 }
