@@ -78,7 +78,7 @@ var ghcs = {
             , showCommitMessage : false // show commit message
             , skipEmptyDate : true // skip empty date
             , blendingLighter : true
-            , asPlasma : false
+            , asPlasma : true
         }
     },
 
