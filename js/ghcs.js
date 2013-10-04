@@ -52,7 +52,9 @@ var ghcs = {
             client_id : "c45417c5d6249959a91d",
             client_secret : "4634b3aa7549c3d6306961e819e5ec9b355a6548",
             ncid : undefined,
-            ncs : undefined
+            ncs : undefined,
+            code : undefined,
+            accessToken : undefined
         },
         cs : {
             fileLife : 255 // number of steps of life a file

@@ -5,11 +5,11 @@ html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,abbr,address
 
 @font-face {
     font-family: 'Octicons Regular';
-    src: url(github_webfont.eot);
-    src: url(github_webfont_ie.eot) format("embedded-opentype"),
-         url(github_webfont.woff) format("woff"),
-         url(github_webfont.ttf) format("truetype"),
-         url(github_webfont.svg) format("svg");
+    src: url(resource/github_webfont.eot);
+    src: url(resource/github_webfont_ie.eot) format("embedded-opentype"),
+         url(resource/github_webfont.woff) format("woff"),
+         url(resource/github_webfont.ttf) format("truetype"),
+         url(resource/github_webfont.svg) format("svg");
     font-weight: normal;
     font-style: normal;
 }
@@ -38,7 +38,9 @@ html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,abbr,address
     height: 32px;
 }
 
-
+.mini-icon-x:before {
+    content: "\f081";
+}
 .mini-icon-octocat:before {
     content: "\f008";
 }
@@ -635,6 +637,127 @@ hr {
     max-height: 1280px;
 }
 
+#userOAuth {
+    right: 65px;
+    z-index: 51;
+    padding: 5px;
+}
+
+#userOAuth .checkbox {
+    margin: auto 0;
+    font-weight: bold;
+    padding: 3px;
+    border: 1px solid #919191;
+    background: #858689;
+    cursor: pointer;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+#userOAuth span {
+    display: inline-block;
+    font-size: 14px;
+}
+
+#userOAuth input[type=checkbox].checkbox:before {
+    content: "On";
+}
+#userOAuth input[type=checkbox].checkbox:after {
+    content: "Off";
+}
+
+#userOAuth .checkbox:before,
+#userOAuth .checkbox .before,
+#userOAuth .checkbox:checked:before,
+#userOAuth .checked .before,
+#userOAuth.have .before {
+    color: #C5C5C5;
+    text-shadow: 0 1px 1px #000;
+}
+
+#userOAuth .checkbox:after,
+#userOAuth .checkbox .after,
+#userOAuth .checkbox:checked:after,
+#userOAuth .checked .after,
+#userOAuth.have .after {
+    color: #FF3E2F;
+    text-shadow: 0 1px 1px #000;
+}
+
+#userOAuth .checkbox:before,
+#userOAuth .checkbox .before {
+    max-width: 0;
+    overflow: hidden;
+    margin-bottom: -2px;
+}
+
+#userOAuth .checkbox:checked:before,
+#userOAuth .checked .before,
+#userOAuth.have .before {
+    max-width: 960px;
+    overflow: inherit;
+}
+
+#userOAuth .checkbox:after,
+#userOAuth .checkbox .after {
+    max-width: 960px;
+    overflow: inherit;
+}
+
+#userOAuth .checkbox:checked:after,
+#userOAuth .checked .after,
+#userOAuth.have .after {
+    max-width: 0;
+    overflow: hidden;
+    margin-bottom: -2px;
+}
+
+#userOAuth .checkbox:checked:before,
+#userOAuth .checked .before,
+#userOAuth.have .before {
+    color: #adff2f;
+}
+#userOAuth .checkbox:checked:after,
+#userOAuth .checked .after,
+#userOAuth.have .after {
+    color: #C5C5C5;
+}
+
+#userOAuth .checkbox:checked:hover:before,
+#userOAuth .checkbox:checked:hover:after,
+#userOAuth .checked:hover .before,
+#userOAuth .checked:hover .after {
+    text-shadow: 0 1px 1px #000;
+}
+
+#userOAuth .checkbox:hover:before,
+#userOAuth:not(.have) .checkbox:not(.checked):hover .before {
+    color: #C0D0A9;
+    text-shadow: 0 1px 1px #000, 0 0 12px #adff2f;
+}
+
+#userOAuth .checkbox:checked:hover:after,
+#userOAuth .checked:hover .after,
+#userOAuth.have .checkbox:hover .after {
+    color: #CEB1AE;
+    text-shadow: 0 1px 1px #000, 0 0 12px #FF3E2F;
+}
+
+#userOAuth .checkbox:checked:hover:after,
+#userOAuth .checked:hover .after,
+#userOAuth.have .checkbox:hover .after,
+#userOAuth .checkbox:hover:before,
+#userOAuth:not(.have) .checkbox:not(.checked):hover .before {
+    -webkit-transition: max-width .5s ease-in-out .2s;
+    -moz-transition: max-width .5s ease-in-out .2s;
+    -o-transition: max-width .5s ease-in-out .2s;
+    transition: max-width .5s ease-in-out .2s;
+
+    max-width: 960px;
+    overflow: inherit;
+}
+
 @-moz-document url-prefix() {
     #userInfo.open ul,
     #userInfo:hover ul {
@@ -1010,16 +1133,22 @@ blockquote.a04 {
     display: inline-block;
 }
 
+/*.rItemBase>span:nth-child(2) {
+    margin-bottom: 2px;
+    overflow: hidden;
+}*/
+
 .sRepoAge {
     padding: 2px 3px;
     border: 1px solid #000000;
-    overflow: hidden;
     margin-right: 5px;
     color: #f9f9f9;
     font-size: 10px;
     font-weight: normal;
     text-align: right;
-}
+/*  margin-top: 2px;
+    overflow: hidden;
+*/}
 
 .sRepoRating {
     font-size: 10px;
@@ -1179,7 +1308,7 @@ text.sitem:hover {
     position: absolute;
     top: 0;
     right: 0;
-    background: url('forkme.png');
+    background: url('resource/forkme.png');
     opacity: .5;
     width: 112px;
     height: 112px;

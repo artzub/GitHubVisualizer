@@ -6,6 +6,16 @@
 
 'use strict';
 
+if(typeof(window.hasOAuth) === "string") {
+    loadSettings();
+    ghcs.settings.access.code = window.hasOAuth;
+    saveSetting();
+    var code = 'code=' + window.hasOAuth;
+    var rg = new RegExp('[\\?&]' + code);
+    location.href = location.href.replace(location.search, location.search.replace(rg, ''));
+    delete window["hasOAuth"];
+}
+
 var timeFormat = (function() {
     var fd = d3.time.format("%b %d, %Y %X");
     return function(ms) {
@@ -500,8 +510,36 @@ function repoItemClick(d) {
         vis.clRepo(d);
 }
 
+function getAccessToken(code) {
+    d3.xhr(makeOAuthGetAccessTokenUrl(code)).post(function (err, data) {
+        if (!err && data && data.response) {
+            data = JSON.parse(data.response);
+            if (data && data.access_token) {
+                d3.select("#userOAuth").classed("have", true);
+                ghcs.settings.access.token = data.access_token;
+                saveSetting();
+                loadSettings();
+            }
+            else {
+                log(data);
+            }
+        }
+        else {
+            log(err);
+            log(data);
+        }
+    });
+}
+
 function init() {
     loadSettings();
+
+    if (ghcs.settings.access.code) {
+        getAccessToken(code);
+        delete ghcs.settings.access.code;
+    }
+    else
+        d3.select("#userOAuth").classed("have", !!ghcs.settings.access.token);
 
     d3.select(window).on("focus", function() {
         if (window.hasOwnProperty("needPlayShow")) {
@@ -556,9 +594,10 @@ function init() {
         return function (msg) {
             console.log(msg);
             try {
-                msg = msg instanceof Object ? JSON.stringify(msg) : msg;
+                msg = JSON.stringify(msg);
             }
             catch(e) {
+                console.log(e);
                 msg = msg.toString();
             }
             logCont.append("li").style("max-width", w/2 + "px").text(msg);
@@ -888,5 +927,31 @@ function init() {
     };
 
     d3.select("#about").classed("open", true);
+
+    d3.select("#getOAuth").on('click', function() {
+        if(!ghcs.settings.access.token) {
+            if (window.oauthWindow) {
+                window.oauthWindow.focus();
+            }
+            else {
+                window.oauthWindow = window.open(
+                    makeOAuthUrl(),
+                    'OAuthGitHub',
+                    'menubar=false,location=false,resizable=yes,scrollbars=yes,status=yes'
+                );
+                window.hasOAuth = function(code) {
+                    delete window.hasOAuth;
+                    delete window.oauthWindow;
+                    getAccessToken(code);
+                };
+            }
+        }
+        else {
+            d3.select("#userOAuth").classed("have", false);
+            delete ghcs.settings.access.token;
+            saveSetting();
+        }
+    });
+
     applyParams();
 }
