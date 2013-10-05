@@ -233,11 +233,15 @@
                                                                 <label for="cb-cs-showLabel">User's name</label>
                                                             </li>
                                                             <li class="field">
-                                                                <input data-ns="cs" id="cb-cs-showHalo" type="checkbox" checked="checked">
-                                                                <label for="cb-cs-showHalo">Halo</label>
+                                                                <input data-ns="cs" id="cb-cs-useAvatar" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-useAvatar">Use user's avatar</label>
                                                             </li>
                                                         </ul>
                                                         <ul class="group">
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showHalo" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showHalo">Halo</label>
+                                                            </li>
                                                             <li class="field">
                                                                 <input data-ns="cs" id="cb-cs-asPlasma" type="checkbox" checked="checked">
                                                                 <label for="cb-cs-asPlasma">Particle as plasma</label>
@@ -248,10 +252,14 @@
                                                             </li>
                                                         </ul>
                                                         <ul class="group">
-                                                            <!--<li class="field">
-                                                                <input id="cb-cs-showFilename" type="checkbox" checked="checked">
-                                                                <label for="cb-cs-showFilename">Show file's name</label>
-                                                            </li>-->
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showTrack" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showTrack">Show traces of particles</label>
+                                                            </li>
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-vanishingTail" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-vanishingTail">Vanishing tails</label>
+                                                            </li>
                                                         </ul>
                                                         <ul class="group">
                                                             <li class="field">
@@ -304,12 +312,6 @@
                                                         <label for="txt-cs-labelPattern">Pattern for user's label</label>
                                                         <input data-ns="cs" id="txt-cs-labelPattern" type="text" value="%n <%e>">
                                                         <blockquote class="a02">%n - name; %e - email; %l - login</blockquote>
-                                                    </li>
-                                                </ul>
-                                                <ul class="group">
-                                                    <li class="field">
-                                                        <input data-ns="cs" id="cb-cs-useAvatar" type="checkbox" checked="checked">
-                                                        <label for="cb-cs-useAvatar">Use user's avatar</label>
                                                     </li>
                                                 </ul>
                                                 <ul class="group">
@@ -664,42 +666,42 @@
 <div id="example" class="popup tooltip">
     <div>
         <a href="#repo=d3&climit=100&user=mbostock&run" title="Run visualization repo D3js">
-            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/ss_d3.png" alt="D3js">
+            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_d3.png" alt="D3js">
         </a>
         <h1><a href="https://github.com/mbostock/d3" title="Visit on Github">D3js</a></h1>
         <span>A JavaScript visualization library for HTML and SVG.</span>
     </div>
     <div>
         <a href="#repo=mc&climit=100&user=MidnightCommander&run" title="Run visualization repo MidnightCommander">
-            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/ss_mc.png" alt="MidnightCommander">
+            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_mc.png" alt="MidnightCommander">
         </a>
         <h1><a href="https://github.com/MidnightCommander/mc" title="Visit on Github">MidnightCommander</a></h1>
         <span>Midnight Commander's repository.</span>
     </div>
     <div>
         <a href="#repo=jquery&climit=100&user=jquery&run" title="Run visualization repo jQuery">
-            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/ss_jquery.png" alt="jQuery">
+            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_jquery.png" alt="jQuery">
         </a>
         <h1><a href="https://github.com/jquery/jquery" title="Visit on Github">jQuery</a></h1>
         <span>jQuery JavaScript Library.</span>
     </div>
     <div>
-        <a href="#repo=bootstrap&climit=100&user=twitter&run" title="Run visualization repo Bootstrap">
-            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/ss_bootstrap.png" alt="Bootstrap">
+        <a href="#repo=bootstrap&climit=100&user=twbs&run" title="Run visualization repo Bootstrap">
+            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_bootstrap.png" alt="Bootstrap">
         </a>
-        <h1><a href="https://github.com/twitter/bootstrap&run" title="Visit on Github">Bootstrap</a></h1>
+        <h1><a href="https://github.com/twbs/bootstrap&run" title="Visit on Github">Bootstrap</a></h1>
         <span>Sleek, intuitive, and powerful front-end framework for faster and easier web development.</span>
     </div>
     <div>
         <a href="#repo=rails&climit=100&user=rails&run" title="Run visualization repo Ruby on Rails">
-            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/ss_rails.png" alt="Rails">
+            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_rails.png" alt="Rails">
         </a>
         <h1><a href="https://github.com/rails/rails" title="Visit on Github">Rails</a></h1>
         <span>Ruby on Rails</span>
     </div>
     <div>
         <a href="#repo=song-of-github&climit=100&user=ajacksified&run" title="Run visualization repo Ruby on Song-of-github">
-            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/ss_song-of-github.png" alt="song-of-github">
+            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_song-of-github.png" alt="song-of-github">
         </a>
         <h1><a href="https://github.com/ajacksified/song-of-github" title="Visit on Github">Song-of-github</a></h1>
         <span>Let me play you the song of my contributions.</span>
@@ -711,7 +713,7 @@
         <ul>
             <li class="progressBar">
                 <div class="meter orange" style="display: none">
-                    <span id="progressBar" style="width: 0%"></span>
+                    <span id="progressBar" style="width: 0"></span>
                 </div>
             </li>
         </ul>

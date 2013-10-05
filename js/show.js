@@ -90,6 +90,11 @@
             if (n.fixed) {
                 n.x = xW(n.x);
                 n.y = yH(n.y);
+                /*if (n.statuses[d.sha].status == TYPE_STATUS_FILE.added) {
+                    n.x = a.x;
+                    n.y = a.y;
+                }*/
+                n.paths = [{x: n.x, y: n.y}];
             }
 
             n.size += 2;
@@ -146,13 +151,13 @@
 
     function loop() {
 
-        if (pause)
-            return;
-
         if (stop) {
             killWorker();
             return;
         }
+
+        if (pause)
+            return;
 
         var dl, dr;
 
@@ -460,6 +465,22 @@
 
         d.visible && !d.opacity
             && (d.visible = false);
+
+        if (d.paths) {
+            d.pathLife = (d.pathLife || 0);
+            if (d.pathLife++ > 0) {
+                d.pathLife = 0;
+                if (d.paths.length) {
+                    if (d.flash)
+                        d.paths.shift();
+                    else {
+                        d.paths.shift();
+                        d.paths.shift();
+                        d.paths.shift();
+                    }
+                }
+            }
+        }
     }
 
     function sortBySize(a, b) {
@@ -500,6 +521,64 @@
 
     function filterVisible(d) {
         return checkVisible(d) && (d.visible || d.alive);
+    }
+
+    function drawTail(c, d, x, y, vanishing) {
+        if (!vanishing) {
+            bufCtx.save();
+            bufCtx.beginPath();
+        }
+
+        //bufCtx.lineCap = "round";
+        bufCtx.lineJoin = "round";
+        bufCtx.fillStyle = "none";
+        bufCtx.strokeStyle = c.toString();
+        bufCtx.lineWidth = 1;//(radius(nr(d)) / 4)  || 1;
+
+        var cura = bufCtx.globalAlpha;
+
+        var rs = d.paths.slice(0).reverse()
+            , lrs = rs.length
+            , p;
+
+        if (!vanishing) {
+            bufCtx.moveTo(x, y);
+            for (p in rs) {
+                if (!rs.hasOwnProperty(p))
+                    continue;
+
+                bufCtx.lineTo(
+                    Math.floor(rs[p].x),
+                    Math.floor(rs[p].y)
+                );
+            }
+            bufCtx.stroke();
+            bufCtx.restore();
+        }
+        else {
+            for (p in rs) {
+                if (!rs.hasOwnProperty(p))
+                    continue;
+
+                bufCtx.beginPath();
+                if (p < 1)
+                    bufCtx.moveTo(x, y);
+                else
+                    bufCtx.moveTo(
+                        Math.floor(rs[p - 1].x),
+                        Math.floor(rs[p - 1].y)
+                    );
+                bufCtx.lineTo(
+                    Math.floor(rs[p].x),
+                    Math.floor(rs[p].y)
+                );
+                //bufCtx.closePath();
+                bufCtx.stroke();
+                bufCtx.globalAlpha = ((lrs - p) / lrs) * cura;
+
+            }
+            bufCtx.globalAlpha = cura;
+        }
     }
 
     function redrawCanvas() {
@@ -576,7 +655,11 @@
                 x = Math.floor(d.x);
                 y = Math.floor(d.y);
 
-                s = radius(nr(d)) * (setting.showHalo ? 8 : 1);
+                if (setting.showTrack) {
+                    drawTail(c, d, x, y, setting.vanishingTail);
+                }
+
+                s = radius(nr(d)) * (setting.showHalo ? setting.asPlasma ? 8 : 10 : 1);
                 setting.showHalo
                     ? bufCtx.drawImage(img, x - s / 2, y - s / 2, s, s)
                     : bufCtx.arc(x, y, s, 0, PI_CIRCLE, true)
@@ -590,6 +673,8 @@
         }
 
         if (setting.showUser || setting.showLabel) {
+            bufCtx.globalCompositeOperation = 'source-over';
+
             n = _forceAuthor.nodes().filter(filterVisible).sort(sortByOpacity);
             l = n.length;
 
@@ -665,7 +750,7 @@
         ctx.save();
         ctx.clearRect(0, 0, w, h);
 
-        d3.select(canvas).style("background", setting.asPlasma ? "#000" : null);
+        d3.select(canvas).style("background", "#000");
 
         redrawCanvas();
 
@@ -731,6 +816,10 @@
                 d.x -= x;
                 d.y -= y;
             }
+            d.paths && (d.flash || d.paths.length > 1) && d.paths.push({
+                x : d.x,
+                y : d.y
+            });
         };
     }
 
@@ -1034,8 +1123,8 @@
                                 var key,
                                     stat = d3.values(d.statuses).reduce(function(a, b) {
                                         for(key in b) {
-                                            if (b.hasOwnProperty(key)
-                                                && key != "status" && key != "name") {
+                                            if (key != "status" && key != "name"
+                                                && b.hasOwnProperty(key)) {
                                                 a[key] = (a[key] || 0);
                                                 a[key] += b[key];
                                             }
