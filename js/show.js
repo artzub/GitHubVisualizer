@@ -97,7 +97,7 @@
                 n.paths = [{x: n.x, y: n.y}];
             }
 
-            n.size += 2;
+            n.size += 1;
             n.fixed = false;
 
             n.author = a;
@@ -524,15 +524,10 @@
     }
 
     function drawTail(c, d, x, y, vanishing) {
-        if (!vanishing) {
-            bufCtx.save();
+        if (!vanishing)
             bufCtx.beginPath();
-        }
 
-        //bufCtx.lineCap = "round";
         bufCtx.lineJoin = "round";
-        bufCtx.fillStyle = "none";
-        bufCtx.strokeStyle = c.toString();
         bufCtx.lineWidth = 1;//(radius(nr(d)) / 4)  || 1;
 
         var cura = bufCtx.globalAlpha;
@@ -553,7 +548,6 @@
                 );
             }
             bufCtx.stroke();
-            bufCtx.restore();
         }
         else {
             for (p in rs) {
@@ -572,7 +566,6 @@
                     Math.floor(rs[p].x),
                     Math.floor(rs[p].y)
                 );
-                //bufCtx.closePath();
                 bufCtx.stroke();
                 bufCtx.globalAlpha = ((lrs - p) / lrs) * cura;
 
@@ -597,7 +590,7 @@
         bufCtx.translate(lastEvent.translate[0], lastEvent.translate[1]);
         bufCtx.scale(lastEvent.scale, lastEvent.scale);
 
-        var n, l, i, j,
+        var n, l, i,
             img,
             d, beg,
             c, x, y, s;
@@ -612,11 +605,37 @@
 
             l = n.length;
 
+            if (!setting.showHalo && setting.showTrack) {
+                c = null;
+                i = 100;
+
+                bufCtx.fillStyle = 'none';
+                bufCtx.globalAlpha = i * .01;
+
+                while(--l > -1) {
+                    d = n[l];
+
+                    if (i != d.opacity) {
+                        i = d.opacity;
+                        bufCtx.globalAlpha = i * .01;
+                    }
+
+                    if (!c || compereColor(c, curColor(d))) {
+                        c = curColor(d);
+                        bufCtx.strokeStyle = c.toString();
+                    }
+
+                    drawTail(c, d, Math.floor(d.x), Math.floor(d.y), setting.vanishingTail);
+                }
+            }
+
+            l = n.length;
+
             c = null;
             i = 100;
-            j = true;
             beg = false;
 
+            bufCtx.strokeStyle = 'none';
             bufCtx.globalAlpha = i * .01;
 
             while(--l > -1) {
@@ -629,46 +648,42 @@
 
                 if (!c || compereColor(c, curColor(d))) {
                     c = curColor(d);
-                    j = false;
-                }
 
-                if (!j) {
                     if (!setting.showHalo) {
                         if (beg) {
-                            bufCtx.closePath();
-                            bufCtx.fill();
                             bufCtx.stroke();
+                            bufCtx.fill();
                         }
 
                         bufCtx.beginPath();
-                        beg = true;
-                        bufCtx.strokeStyle = "none";
                         bufCtx.fillStyle = c.toString();
+                        beg = true;
                     }
-                    else
+                    else {
+                        bufCtx.strokeStyle = c.toString();
                         img = setting.asPlasma
                             ? generateSprite(64, 64, c.r, c.g, c.b, 1)
                             : colorize(particle, c.r, c.g, c.b, 1);
-                    j = true;
+                    }
                 }
 
                 x = Math.floor(d.x);
                 y = Math.floor(d.y);
 
-                if (setting.showTrack) {
+                if (setting.showHalo && setting.showTrack)
                     drawTail(c, d, x, y, setting.vanishingTail);
-                }
 
-                s = radius(nr(d)) * (setting.showHalo ? setting.asPlasma ? 8 : 10 : 1);
-                setting.showHalo
-                    ? bufCtx.drawImage(img, x - s / 2, y - s / 2, s, s)
-                    : bufCtx.arc(x, y, s, 0, PI_CIRCLE, true)
-                ;
+                s = radius(nr(d)) * (setting.showHalo ? setting.asPlasma ? 8 : 10 : .8);
+                if (!setting.showHalo) {
+                    bufCtx.moveTo(x + s, y);
+                    bufCtx.arc(x, y, s, 0, PI_CIRCLE, true);
+                }
+                else
+                    bufCtx.drawImage(img, x - s / 2, y - s / 2, s, s);
             }
             if (!setting.showHalo && beg) {
-                bufCtx.closePath();
-                bufCtx.fill();
                 bufCtx.stroke();
+                bufCtx.fill();
             }
         }
 
@@ -1337,7 +1352,7 @@
         defImg.src = "default.png";
 
         particle = new Image();
-        particle.src = "particle.png";
+        particle.src = "resource/particle.png";
 
         _force = (_force || d3.layout.force()
             .stop()
