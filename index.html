@@ -10,25 +10,27 @@
 
     <script type="text/javascript">
         (function() {
-            var params = {};
-            var ss = location.search;
-            var ind = ss.indexOf('code=');
-            if (ind > 0) {
-                ss.substr(1).split('&').forEach(function(item){
-                    var pair = item.split('=');
-                    params[pair[0].toLowerCase()] = pair.length > 1 ? pair[1] : null;
-                });
-                if(params.code) {
-                    if (opener) {
-                        opener.console.log('have opener');
-                        opener.console.log("hasOAuth method is null:"  + (!opener.hasOAuth));
-                        opener.hasOAuth &&
-                            opener.hasOAuth(params.code);
-                        opener.console.log('close window');
-                        close();
+            if (location.host == "artzub.com") {
+                location = location.href.replace(/\/artzub\.com\/ghv/, "/ghv.artzub.com");
+            }
+            else {
+                var params = {};
+                var ss = location.search;
+                var ind = ss.indexOf('code=');
+                if (ind > 0) {
+                    ss.substr(1).split('&').forEach(function(item){
+                        var pair = item.split('=');
+                        params[pair[0].toLowerCase()] = pair.length > 1 ? pair[1] : null;
+                    });
+                    if(params.code) {
+                        if (opener) {
+                            opener.hasOAuth &&
+                                opener.hasOAuth(params.code);
+                            close();
+                        }
+                        else
+                            window.hasOAuth = params.code;
                     }
-                    else
-                        window.hasOAuth = params.code;
                 }
             }
         })();
@@ -44,7 +46,10 @@
     })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
     ga('create', 'UA-28343295-7', 'artzub.com');
+    ga('create', 'UA-28343295-9', 'artzub.com', {name : 'newTracker'});
+
     ga('send', 'pageview');
+    ga('newTracker.send', 'pageview');
 
 </script>
 <div id="fb-root"></div>

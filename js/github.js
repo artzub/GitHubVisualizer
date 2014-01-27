@@ -27,28 +27,27 @@ function makeOAuthUrl(scope) {
         ghcs.settings.access.ncid || ghcs.settings.access.client_id,
         '&scope=',
         scope,
-        '&redirect_url=http://artzub.com/ghv/test'
+        '&redirect_url=' + location.protocol + "://" + location.host + "/"
     ].join('');
 }
 
 function makeOAuthGetAccessTokenUrl(code) {
-    //https://github.com/login/oauth/access_token?client_id=c45417c5d6249959a91d&client_secret=4634b3aa7549c3d6306961e819e5ec9b355a6548&code=300339033f8542033a9c
+    //https/github.com/login/oauth/access_token?client_id=c45417c5d6249959a91d&client_secret=4634b3aa7549c3d6306961e819e5ec9b355a6548&code=300339033f8542033a9c
     return [
-        'http://artzub.com/cross/?m=p&rt=p&ct=j',
-        '&u=https://github.com/login/oauth/access_token',
-        '&d={"client_id":"',
+        '/proxy/https/',
+        'github.com/login/oauth/access_token?',
+        'client_id=',
         ghcs.settings.access.ncid || ghcs.settings.access.client_id,
-        '","client_secret":"',
+        '&client_secret=',
         ghcs.settings.access.ncs || ghcs.settings.access.client_secret,
-        '","code":"',
-        code || ghcs.settings.access.code,
-        '"}'
+        '&code=',
+        code || ghcs.settings.access.code
     ].join('');
 }
 
 function makeUrl(url, type, limit) {
     limit = limit || 0;
-    var sec = ''
+    var sec = '';
     if (TYPE_REQUEST.checkOAuth || !ghcs.settings.access.token) {
         sec = [
             "client_id=",

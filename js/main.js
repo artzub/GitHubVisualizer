@@ -104,6 +104,9 @@ function applyParams() {
     d3.select("#misc").classed("open", !ghcs.params.user);
     d3.select("#example").classed("open", !ghcs.params.user);
 
+    ghcs.login && (ghcs.login = ghcs.login.toLowerCase());
+    ghcs.params.user && (ghcs.params.user = ghcs.params.user.toLowerCase());
+
     if (ghcs.rot != ghcs.params.rot || ghcs.login != ghcs.params.user) {
         d3.select("#about").classed("open", false);
 
@@ -512,11 +515,11 @@ function repoItemClick(d) {
 
 function getAccessToken(code) {
     d3.xhr(makeOAuthGetAccessTokenUrl(code)).post(function (err, data) {
-        if (!err && data && data.response) {
-            data = JSON.parse(data.response);
-            if (data && data.access_token) {
+        if (!err && data && data.responseText) {
+            data = data.responseText.replace(/access_token=(.*?)&.*/, "$1");
+            if (data && data.length > 0) {
                 d3.select("#userOAuth").classed("have", true);
-                ghcs.settings.access.token = data.access_token;
+                ghcs.settings.access.token = data;
                 saveSetting();
                 loadSettings();
             }
