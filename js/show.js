@@ -345,8 +345,11 @@
             i = data.length;
             while(--i > -1) {
                 d = data[i];
-                d.nodes = [];
+
                 if (!d) continue;
+
+                d.nodes = [];
+
 
                 n = getAuthor(d);
                 d.userNode = n;
@@ -416,7 +419,7 @@
     }
 
     function colorize(img, r, g, b, a) {
-        if (!img)
+        if (!img || !img.width)
             return img;
 
         if (!tempFileCanvas)
@@ -722,14 +725,16 @@
                         bufCtx.stroke();
                     }
 
+
+                    var useAvatar = setting.useAvatar && d.img && d.img.width;
                     bufCtx.beginPath();
                     bufCtx.strokeStyle = "transparent";
-                    bufCtx.fillStyle = setting.useAvatar ? "transparent" : c;
+                    bufCtx.fillStyle = useAvatar ? "transparent" : c;
                     bufCtx.arc(x, y, nr(d), 0, PI_CIRCLE, true);
                     bufCtx.closePath();
                     bufCtx.fill();
                     bufCtx.stroke();
-                    if (setting.useAvatar && d.img) {
+                    if (useAvatar) {
                         bufCtx.clip();
                         bufCtx.drawImage(d.img, x - nr(d), y - nr(d), nr(d) * 2, nr(d) * 2);
                     }

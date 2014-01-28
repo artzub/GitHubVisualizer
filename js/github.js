@@ -253,7 +253,7 @@ function parseRepos(data) {
         ghcs.users[ghcs.login] = ghcs.users[ghcs.login] || {};
         ghcs.users[ghcs.login].repos = (ghcs.users[ghcs.login].repos || []).concat(
             data.filter(function (d) {
-                return !d.private && !d.hasOwnProperty("nodeValue");
+                return !d.hasOwnProperty("nodeValue");
             }).map(function (d) {
                 d = {
                     x : (Math.random() * w) || 1,

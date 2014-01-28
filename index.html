@@ -39,28 +39,7 @@
     <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
 </head>
 <body onload="init()">
-<script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-28343295-7', 'artzub.com');
-    ga('create', 'UA-28343295-9', 'artzub.com', {name : 'newTracker'});
-
-    ga('send', 'pageview');
-    ga('newTracker.send', 'pageview');
-
-</script>
 <div id="fb-root"></div>
-<script>(function(d, s, id) {
-    var js, fjs = d.getElementsByTagName(s)[0];
-    if (d.getElementById(id)) return;
-    js = d.createElement(s); js.id = id;
-    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=286934187985046";
-    fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));</script>
-
 <header>
     <div id="controls" class="popup">
         <div class="row">
@@ -723,7 +702,19 @@
     </div>
 </footer>
 
-<script src="http://d3js.org/d3.v3.js"></script>
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-28343295-7', 'ghv.artzub.com');
+    if (document.location.hash.replace(/^#/, "").length < 1)
+        ga('send', 'pageview');
+
+</script>
+
+<script charset="utf-8" src="http://mbostock.github.io/d3/d3.js?3.4.1"></script>
 <script src="js/md5.js"></script>
 <script src="js/jsonp.js"></script>
 <script src="js/ghcs.js"></script>
@@ -735,5 +726,14 @@
 <script src="js/repo.js"></script>
 <script src="js/langhg.js"></script>
 <script src="js/show.js"></script>
+
+<script>(function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=286934187985046";
+    fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
 </body>
 </html>

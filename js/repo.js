@@ -269,15 +269,17 @@
             .attr("class", "cRepo")
             .attr("transform", tr)
 
-            .call(vis.forceRep.drag)
-            .on("mouseover.select", vis.meRepo)
-            .on("mouseout.select", vis.mlRepo)
-
             .on("mousedown.select", vis.mdRepo)
             .on("mouseup.select", vis.muRepo)
 
+            .on("mouseover.select", vis.meRepo)
+            .on("mouseout.select", vis.mlRepo)
+
             .on("mousemove.mtt", vis.mtt)
+
             .on("click.select", vis.clRepo)
+
+            .call(vis.forceRep.drag)
 
             .call(vis.forceRep.appCT);
 
@@ -288,10 +290,11 @@
         function tick(e) {
             var quadtree = d3.geom.quadtree(vis.forceRep.nodes());
             vis.forceRep.circle
-                .each(cluster(.025/*10 * e.alpha * e.alpha*/))
-                .each(collide(.5, quadtree))
+                .each(cluster(/*e.alpha */ .025/*10 * e.alpha * e.alpha*/))
+                .each(collide(.4, quadtree))
                 .attr("transform", tr);
-            vis.forceRep.resume();
+            if (e.alpha < .5)
+                vis.forceRep.resume();
         }
 
         // Move d to be adjacent to the cluster node.
@@ -335,8 +338,8 @@
         // Resolves collisions between d and all other circles.
         function collide(alpha, quadtree) {
             return function(d) {
-                var padding = vis.forceRep.radius.range()[1] / 2,
-                    r = vis.forceRep.radius(vis.forceRep.rad(d)) + 3 * padding,
+                var padding = vis.forceRep.radius.range()[1] * 1.5,
+                    r = vis.forceRep.radius(vis.forceRep.rad(d)) + padding,
                     nx1 = d.x - r,
                     nx2 = d.x + r,
                     ny1 = d.y - r,
@@ -346,7 +349,9 @@
                         var x = d.x - quad.point.x,
                             y = d.y - quad.point.y,
                             l = Math.sqrt(x * x + y * y),
-                            r = (vis.forceRep.radius(vis.forceRep.rad(d)) + vis.forceRep.radius(vis.forceRep.rad(quad.point))) * 1.02 /*+ (d.nodeValue.lang !== quad.point.nodeValue.lang) * padding*/;
+                            /*+ (d.nodeValue.lang !== quad.point.nodeValue.lang) * padding*/
+                            r = vis.forceRep.radius(vis.forceRep.rad(d)) +
+                                vis.forceRep.radius(vis.forceRep.rad(quad.point)) * 1.02;
                         if (l < r) {
                             l = (l - r) / (l || 1) * (alpha || 1);
 

@@ -93,6 +93,15 @@ function applyParams() {
 
     parseParams(document.location.hash);
 
+    if (ga) {
+        var page = "/" + document.location.hash.replace(/^#/, "?");
+        if (ga.currentPage != page) {
+            ga.currentPage = page;
+            ga('set', 'page', page);
+            ga('send', 'pageview');
+        }
+    }
+
     if (ghcs.params.hasOwnProperty("run")) {
         ghcs.localStorage.set("run", ghcs.params.run);
         document.location.hash = document.location.hash.replace(/&?run/, "");
@@ -595,13 +604,18 @@ function init() {
         var logCont = d3.select("#console")
             .append("ul");
         return function (msg) {
-            console.log(msg);
-            try {
-                msg = JSON.stringify(msg);
+            console.log("error", msg);
+            if (msg.data && msg.data.message) {
+                msg = msg.meta.status + ': ' + msg.data.message;
             }
-            catch(e) {
-                console.log(e);
-                msg = msg.toString();
+            else {
+                try {
+                    msg = JSON.stringify(msg);
+                }
+                catch(e) {
+                    console.log(e);
+                    msg = msg.toString();
+                }
             }
             logCont.append("li").style("max-width", w/2 + "px").text(msg);
             sms.append("div")
