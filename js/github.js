@@ -164,7 +164,7 @@ function preloadImage(url) {
     if (!image) {
         image = new Image();
         image.onerror = function () {
-            return console.log(this);
+            return log(this);
         };
         image.src = crossUrl((url || (url = "https://secure.gravatar.com/avatar/" + Date.now() + Date.now() + "?d=identicon&f=y&s=96")), "image");
 
@@ -376,7 +376,7 @@ function chUser() {
                         divStat.updateInfo();
                     }, {
                         onerror : function(err) {
-                            console.log(err);
+                            log(err);
                         }
                     });
                 }
@@ -438,6 +438,7 @@ function analyseCommits() {
         return;
     }
 
+    GAEvent.Repos.Analyse(getUserRepo());
     JSONP(makeUrl(ghcs.repo.commits_url, TYPE_REQUEST.commits, ghcs.limits.commits), function getAll(req) {
         getNext(req, function(next) {
             var l = req && req.data && req.data instanceof Array ? req.data.length : 0;
@@ -451,8 +452,9 @@ function analyseCommits() {
                 JSONP(next.replace("per_page=100", "per_page=" + (l > 100 ? 100 : l)),
                     getAll, {
                         onerror : (function(len) {
-                            return function() {
+                            return function(err) {
                                 ghcs.states.max -= len;
+                                log(err);
                             };
                         })(l)
                     });

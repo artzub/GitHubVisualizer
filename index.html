@@ -8,20 +8,28 @@
     <title>GitHub Visualizer</title>
     <link rel="stylesheet" href="style.css">
 
+    <script src="js/cookies.js"></script>
+
     <script type="text/javascript">
         (function() {
+            var ss = location.search;
+            var ind = ss ? ss.indexOf('code=') : -1;
             if (location.host == "artzub.com") {
-                location = location.href.replace(/\/artzub\.com\/ghv/, "/ghv.artzub.com");
+                setCookie('referrer', document.referrer, {
+                    domain : '.artzub.com',
+                    path : '/'
+                });
+                console.log(document.referrer);
+                location.replace(location.href.replace(/\/artzub\.com\/ghv/, "/ghv.artzub.com"));
             }
-            else {
+            else if (ind > -1) {
                 var params = {};
-                var ss = location.search;
-                var ind = ss.indexOf('code=');
                 if (ind > 0) {
                     ss.substr(1).split('&').forEach(function(item){
                         var pair = item.split('=');
                         params[pair[0].toLowerCase()] = pair.length > 1 ? pair[1] : null;
                     });
+
                     if(params.code) {
                         if (opener) {
                             opener.hasOAuth &&
@@ -32,6 +40,20 @@
                             window.hasOAuth = params.code;
                     }
                 }
+            }
+            else if (ss) {
+                var ref = getCookie('referrer');
+                if (!ref || ref.replace(/\s+$/, '').replace(/^\s+/, '').length < 1)
+                    ref = document.referrer;
+                setCookie('referrer',  ref, {
+                    domain : '.artzub.com',
+                    path : '/'
+                });
+
+                ind = location.href
+                    .replace(location.hash, location.hash.replace("#", "&"))
+                    .replace(ss, ss.replace(/^\?/, "#"));
+                location.replace(ind.replace(/(.com)\/\//, "$1/"));
             }
         })();
     </script>
@@ -703,18 +725,28 @@
 </footer>
 
 <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    if (location.search.indexOf('code=') < 0) {
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-28343295-7', 'ghv.artzub.com');
-    if (document.location.hash.replace(/^#/, "").length < 1)
-        ga('send', 'pageview');
+        ga('create', 'UA-28343295-7', 'ghv.artzub.com'/*, {'alwaysSendReferrer': true }*/);
 
+        var ref = getCookie('referrer');
+        console.log(ref);
+        if (ref && ref.replace(/\s+$/, '').replace(/^\s+/, '').length > 0) {
+            ga('set', 'referrer', ref);
+        }
+        deleteCookie('referrer');
+
+
+        if (document.location.hash.replace(/^#/, "").length < 1)
+            ga('send', 'pageview');
+    }
 </script>
 
-<script charset="utf-8" src="http://mbostock.github.io/d3/d3.js?3.4.1"></script>
+<script charset="utf-8" src="http://d3js.org/d3.v3.min.js"></script>
 <script src="js/md5.js"></script>
 <script src="js/jsonp.js"></script>
 <script src="js/ghcs.js"></script>
@@ -734,6 +766,35 @@
     js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=286934187985046";
     fjs.parentNode.insertBefore(js, fjs);
 }(document, 'script', 'facebook-jssdk'));</script>
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function (d, w, c) {
+        (w[c] = w[c] || []).push(function() {
+            try {
+                w.yaCounter23779012 = new Ya.Metrika({id:23779012,
+                    clickmap:true,
+                    trackLinks:true,
+                    accurateTrackBounce:true,
+                    trackHash:true});
+            } catch(e) { }
+        });
+
+        var n = d.getElementsByTagName("script")[0],
+                s = d.createElement("script"),
+                f = function () { n.parentNode.insertBefore(s, n); };
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
+
+        if (w.opera == "[object Opera]") {
+            d.addEventListener("DOMContentLoaded", f, false);
+        } else { f(); }
+    })(document, window, "yandex_metrika_callbacks");
+</script>
+<noscript><div><img src="//mc.yandex.ru/watch/23779012" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+
 
 </body>
 </html>

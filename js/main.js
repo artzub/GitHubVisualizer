@@ -16,6 +16,109 @@ if(typeof(window.hasOAuth) === "string") {
     delete window["hasOAuth"];
 }
 
+var sendEvent = true;
+var sendEventCategory = ["Setting", "Button", "Access", "Log", "Repos"];
+
+var GAEvent = {
+    Setting : {
+        Name : "Setting",
+        Action : {
+            ChangeValue : "ChangeValue"
+        },
+        ChangeValue : function(d, v) {
+            gaEventSend(this.Name, this.Action.ChangeValue, d, v);
+        }
+    },
+    Button : {
+        Name : "Button",
+        RepoListSelect : function(d) {
+            gaEventSend(this.Name, "RepoListSelect", d);
+        },
+        Show : function(d) {
+            gaEventSend(this.Name, "Show", d);
+        },
+        Analyse : function(d) {
+            gaEventSend(this.Name, "Analyse", d);
+        }
+    },
+    Show : {
+        Name : "Show",
+        Action : {
+            Stop : "Stop",
+            Run : "Run",
+            Pause : "Pause",
+            Restart : "Restart"
+        },
+        Stop : function(d) {
+            gaEventSend(this.Name, this.Action.Stop, d);
+        },
+        Run : function(d) {
+            gaEventSend(this.Name, this.Action.Run, d);
+        },
+        Pause : function(d) {
+            gaEventSend(this.Name, this.Action.Pause, d);
+        },
+        Restart : function(d) {
+            gaEventSend(this.Name, this.Action.Restart, d);
+        }
+    },
+    Access : {
+        Name : "Access",
+        Action : {
+            SignIn : "SignIn",
+            SignOut : "SignOut"
+        },
+        SignIn: function(d) {
+            gaEventSend(this.Name, this.Action.SignIn, d);
+        },
+        SignOut: function(d) {
+            gaEventSend(this.Name, this.Action.SignOut, d);
+        }
+    },
+    Log : {
+        Name : "Log",
+        Action : {
+            Log : "Log"
+        },
+        Log : function(d) {
+            gaEventSend(this.Name, this.Action.Log, d);
+        }
+    },
+    Behavior : {
+        Name : "Behavior",
+        Action : {
+
+        }
+    },
+    Repos : {
+        Name : "Repos",
+        Action : {
+            Analyse : "Analyse"
+        },
+        Analyse : function(d) {
+            gaEventSend(this.Name, this.Action.Analyse, d);
+        },
+        Select: function(d) {
+            gaEventSend(this.Name, "Select", d);
+        },
+        Deselect: function(d) {
+            gaEventSend(this.Name, "Deselect", d);
+        }
+    }
+};
+
+function gaEventSend(category, action, label, value) {
+    if (!ga || !sendEvent || sendEventCategory.indexOf(category) < 0)
+        return;
+
+    ga("send", 'event', {
+        'eventCategory': category,
+        'eventAction': action,
+        'eventLabel': label
+        , 'eventValue': value
+    });
+}
+
 var timeFormat = (function() {
     var fd = d3.time.format("%b %d, %Y %X");
     return function(ms) {
@@ -69,9 +172,11 @@ function rewriteHash() {
     var step,
         hash = [];
     if (this == showBtn.node() && ghcs.params) {
+        GAEvent.Button.Show(ghcs.params.user || "(not set)");
         step = 0;
     }
     else if (this == runBtn.node() && ghcs.params) {
+        GAEvent.Button.Analyse((ghcs.login || "(not set)") + "/" + (ghcs.repo ? ghcs.repo.name : "(not set)"));
         step = 1;
     }
 
@@ -91,22 +196,25 @@ function rewriteHash() {
 function applyParams() {
     d3.event && d3.event.preventDefault();
 
-    parseParams(document.location.hash);
+    var hash = document.location.hash.substr(1);
 
-    if (ga) {
-        var page = "/" + document.location.hash.replace(/^#/, "?");
-        if (ga.currentPage != page) {
-            ga.currentPage = page;
-            ga('set', 'page', page);
-            ga('send', 'pageview');
-        }
-    }
+    if (hash.indexOf("#") > -1)
+        document.location.hash = "#" + hash.replace(/#/g, "&");
+
+    parseParams(hash);
 
     if (ghcs.params.hasOwnProperty("run")) {
         ghcs.localStorage.set("run", ghcs.params.run);
-        document.location.hash = document.location.hash.replace(/&?run/, "");
+        document.location.hash = "#" + hash.replace(/&?run=?/, "");
     }
 
+    if (ga) {
+        if (ga.currentPage != hash) {
+            ga.currentPage = hash;
+            ga('set', 'page', hash ? "?" + hash : hash);
+            ga('send', 'pageview');
+        }
+    }
 
     stackLoad = stackLoad-- < 1 ? 0 : stackLoad;
 
@@ -185,25 +293,34 @@ function chCheckbox(d) {
         case "cb-dlr":
         case "cb-dlsr":
             ln = d.datum();
-            vis.layers[ln]
-            && ((d.property("checked") && vis.layers[ln].show()) || vis.layers[ln].hide());
+            if (vis.layers[ln]) {
+                gaEventSend("Behavior", "Show/Hide", ln, d.property("checked"));
+                ((d.property("checked") && vis.layers[ln].show()) || vis.layers[ln].hide());
+            }
             break;
         case "cb-dllh":
-            vis.layers.repo
-            && vis.layers.repo.langHg
-            && vis.layers.repo.langHg.style("display", d.property("checked") ? null : "none");
+            if (vis.layers.repo
+                && vis.layers.repo.langHg) {
+                gaEventSend("Behavior", "Show/Hide", "cb-dllh", d.property("checked"));
+                vis.layers.repo.langHg.style("display", d.property("checked") ? null : "none");
+            }
             break;
         case "cb-dlucdg":
-            vis.layers.stat
-            && vis.layers.stat.ucDg
-            && vis.layers.stat.ucDg.style("display", d.property("checked") ? null : "none");
+            if (vis.layers.stat
+                && vis.layers.stat.ucDg) {
+                gaEventSend("Behavior", "Show/Hide", "cb-dlucdg", d.property("checked"));
+                vis.layers.stat.ucDg.style("display", d.property("checked") ? null : "none");
+            }
             break;
         case "cb-dlvml":
+            gaEventSend("Behavior", "Show/Hide", "cb-dlvml", d.property("checked"));
             d.property("checked") ? cs.show() : cs.hide();
             break;
         default :
-            (ln = d.datum()) && ln.ns
-                && (ln.ns[ln.key] = d.property("checked"));
+            if ((ln = d.datum()) && ln.ns) {
+                ln.ns[ln.key] = d.property("checked");
+                GAEvent.Setting.ChangeValue(ln.key, ln.ns[ln.key]);
+            }
             break;
     }
     saveSetting();
@@ -212,8 +329,10 @@ function chCheckbox(d) {
 function chValue(d) {
     var ln;
     d = d3.select(this);
-    (ln = d.datum()) && ln.ns
-        && (ln.ns[ln.key] = this.type == "number" ? +d.property("value") : d.property("value"));
+    if ((ln = d.datum()) && ln.ns){
+        ln.ns[ln.key] = this.type == "number" ? +d.property("value") : d.property("value");
+        GAEvent.Setting.ChangeValue(ln.key, this.type == "number" ? ln.ns[ln.key] : 0);
+    }
     saveSetting();
 }
 
@@ -239,8 +358,13 @@ function redrawStats() {
     }, 100);
 }
 
+function getUserRepo() {
+    return ghcs.login + "/" + ghcs.repo.name;
+}
+
 function runShow() {
     if (ghcs.repo && ghcs.repo.commits) {
+        GAEvent.Show.Run(getUserRepo());
         visBtnRestart.hide();
         visBtn.hide();
         visBtnPause.show();
@@ -518,22 +642,35 @@ function repoItemOut(d) {
 }
 
 function repoItemClick(d) {
-    if (d)
+    if (d) {
+        try {
+            GAEvent.Button.RepoListSelect(ghcs.login + "/" + d.nodeValue.name);
+        }
+        catch (e) {
+            console.log("error", e);
+        }
         vis.clRepo(d);
+    }
 }
 
 function getAccessToken(code) {
     d3.xhr(makeOAuthGetAccessTokenUrl(code)).post(function (err, data) {
         if (!err && data && data.responseText) {
-            data = data.responseText.replace(/access_token=(.*?)&.*/, "$1");
-            if (data && data.length > 0) {
-                d3.select("#userOAuth").classed("have", true);
-                ghcs.settings.access.token = data;
-                saveSetting();
-                loadSettings();
+            var rt = data.responseText;
+            err = rt.indexOf('access_token=') > -1;
+            if(err) {
+                data = rt.replace(/access_token=(.*?)&.*/, "$1");
+                err = data.length > 0;
+                if (err) {
+                    d3.select("#userOAuth").classed("have", true);
+                    ghcs.settings.access.token = data;
+                    saveSetting();
+                    loadSettings();
+                }
             }
-            else {
-                log(data);
+
+            if(!err) {
+                log(rt);
             }
         }
         else {
@@ -605,8 +742,12 @@ function init() {
             .append("ul");
         return function (msg) {
             console.log("error", msg);
-            if (msg.data && msg.data.message) {
+            if (msg instanceof Event) {
+                msg = "error loading";
+            }
+            else if (msg.data && msg.data.message) {
                 msg = msg.meta.status + ': ' + msg.data.message;
+                GAEvent.Log.Log(msg);
             }
             else {
                 try {
@@ -616,6 +757,7 @@ function init() {
                     console.log(e);
                     msg = msg.toString();
                 }
+                GAEvent.Log.Log("other: " + msg);
             }
             logCont.append("li").style("max-width", w/2 + "px").text(msg);
             sms.append("div")
@@ -743,6 +885,7 @@ function init() {
     });
 
     visBtnRestart = d3.select("#visBtnRestart").on('click', function() {
+        GAEvent.Show.Restart(getUserRepo());
         vis.stopShow();
         visBtnRestart.hide();
         visBtn.hide();
@@ -752,6 +895,7 @@ function init() {
     });
 
     function pauseShow() {
+        GAEvent.Show.Pause(getUserRepo());
         vis.pauseShow();
         visBtnRestart.hide();
         visBtnPause.hide();
@@ -760,6 +904,7 @@ function init() {
 
     visBtnPause = d3.select("#visBtnPause").on('click', pauseShow);
     visBtnStop = d3.select("#visBtnStop").on('click', function() {
+        GAEvent.Show.Stop(getUserRepo());
         vis.stopShow();
         visBtnRestart.show();
         visBtnPause.hide();
@@ -947,6 +1092,7 @@ function init() {
 
     d3.select("#getOAuth").on('click', function() {
         if(!ghcs.settings.access.token) {
+            GAEvent.Access.SignIn('Github');
             if (window.oauthWindow) {
                 window.oauthWindow.focus();
             }
@@ -964,6 +1110,7 @@ function init() {
             }
         }
         else {
+            GAEvent.Access.SignOut('Github');
             d3.select("#userOAuth").classed("have", false);
             delete ghcs.settings.access.token;
             saveSetting();

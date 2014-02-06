@@ -7,9 +7,11 @@
 'use strict';
 
 (function(vis) {
+
     vis.mdRepo = function(d) {
     };
     vis.meRepo = function(d) {
+
         vis.layers.repo.langHg
         && vis.layers.repo.langHg.style("pointer-events", "none");
 
@@ -79,6 +81,7 @@
         toolTip.show();
     };
     vis.mlRepo = function(d, i) {
+
         if (vis.forceRep.selected && vis.forceRep.selected == d && i !== "deselect") {
             vis.muRepo(d);
         }
@@ -102,7 +105,11 @@
         toolTip.hide();
     };
     vis.clRepo = function(d) {
+        if (d3.event && d3.event.defaultPrevented)
+            return;
+
         if (vis.forceRep.selected && vis.forceRep.selected == d) {
+            GAEvent.Repos.Deselect(ghcs.login + "/" + d.nodeValue.name);
             vis.forceRep.selected = null;
             d && (d.fixed = 4);
         }
@@ -115,6 +122,7 @@
                 && vis.layers.repo.langHg.style("pointer-events", "none");
             }
 
+            GAEvent.Repos.Select(ghcs.login + "/" + d.nodeValue.name);
             vis.forceRep.selected = d;
             d && (d.fixed = true);
         }
@@ -122,6 +130,17 @@
     };
     vis.muRepo = function(d){
     };
+
+    vis.meForDragFix = function (d) {
+        d.fixed |= 4;
+        d.px = d.x;
+        d.py = d.y;
+    };
+
+    vis.moForDragFix = function (d) {
+        d.fixed &= ~4;
+    };
+
 
     function hideShowRepos(type, hidden) {
         vis.forceRep.circle
@@ -262,6 +281,15 @@
 
         vis.forceRep.circle = layout.selectAll(".cRepo")
             .data(data, function(d) { return d.nodeValue.id })
+        ;
+
+        vis.forceRep.dragFix = vis.forceRep.dragFix
+            || vis.forceRep.drag()
+                .on("drag.force",function (d) {
+                    d.moving = true;
+                    d.px = d3.event.x; d.py = d3.event.y;
+                    vis.forceRep.resume();
+                })
         ;
 
         vis.forceRep.circle.enter()
