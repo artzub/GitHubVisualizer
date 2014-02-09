@@ -203,6 +203,10 @@ function applyParams() {
 
     parseParams(hash);
 
+    if (ghcs.params.hasOwnProperty("wiki-repo")) {
+        document.location.hash = "#" + hash.replace(/wiki-repo=/, "repo=");
+    }
+
     if (ghcs.params.hasOwnProperty("run")) {
         ghcs.localStorage.set("run", ghcs.params.run);
         document.location.hash = "#" + hash.replace(/&?run=?/, "");
