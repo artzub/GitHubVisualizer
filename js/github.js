@@ -107,7 +107,7 @@ function parseCommit(org_commit, commit){
         deletions : 0
     };
 
-    commit.files = org_commit.files.map(function(f) {
+    commit.files = !org_commit.files ? [] : org_commit.files.map(function(f) {
         if (TYPE_STATUS_FILE[f.status] == undefined)
             console.log(f.status);
 
@@ -164,7 +164,8 @@ function preloadImage(url) {
     if (!image) {
         image = new Image();
         image.onerror = function () {
-            return log(this);
+
+            return log({error : "Image isn't loaded", url : this.src});
         };
         image.src = crossUrl((url || (url = "https://secure.gravatar.com/avatar/" + Date.now() + Date.now() + "?d=identicon&f=y&s=96")), "image");
 
