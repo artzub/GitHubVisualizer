@@ -16,7 +16,7 @@
             var ind = ss ? ss.indexOf('code=') : -1;
             console.log(document.referrer);
             if (location.host == "artzub.com") {
-                setCookie('referrer', document.referrer || "http://ghv.artzub.com/", {
+                setCookie('referrer', document.referrer || location.host == "artzub.com" ? "http://ghv.artzub.com/" : location.href, {
                     domain : '.artzub.com',
                     path : '/'
                 });
@@ -743,8 +743,9 @@
         deleteCookie('referrer');
 
 
-        if (document.location.hash.replace(/^#/, "").length < 1)
+        if (document.location.hash.replace(/^#/, "").length < 1) {
             ga('send', 'pageview');
+        }
     }
 </script>
 
@@ -752,7 +753,7 @@
 <script src="js/md5.js"></script>
 <script src="js/jsonp.js"></script>
 <script src="js/ghcs.js"></script>
-<script src="js/main.js?1"></script>
+<script src="js/main.js?4"></script>
 <script src="js/github.js"></script>
 <script src="js/vis.js"></script>
 <script src="js/stat.js"></script>

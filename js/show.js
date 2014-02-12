@@ -726,17 +726,19 @@
                     }
 
 
-                    var useAvatar = setting.useAvatar && d.img && d.img.width;
+                    img = setting.useAvatar ?
+                        (d.img && d.img.width > 0 && d.img.height > 0
+                            ? d.img : defImg) : null;
                     bufCtx.beginPath();
                     bufCtx.strokeStyle = "transparent";
-                    bufCtx.fillStyle = useAvatar ? "transparent" : c;
+                    bufCtx.fillStyle = img ? "transparent" : c;
                     bufCtx.arc(x, y, nr(d), 0, PI_CIRCLE, true);
                     bufCtx.closePath();
                     bufCtx.fill();
                     bufCtx.stroke();
-                    if (useAvatar) {
+                    if (img && nr(d) > 0) {
                         bufCtx.clip();
-                        bufCtx.drawImage(d.img, x - nr(d), y - nr(d), nr(d) * 2, nr(d) * 2);
+                        bufCtx.drawImage(img, x - nr(d), y - nr(d), nr(d) * 2, nr(d) * 2);
                     }
 
                     bufCtx.restore();
@@ -1354,7 +1356,7 @@
         nodes = initNodes(_data);
 
         defImg = new Image();
-        defImg.src = "default.png";
+        defImg.src = "resource/default.png";
 
         particle = new Image();
         particle.src = "resource/particle.png";

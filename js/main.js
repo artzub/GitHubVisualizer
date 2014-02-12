@@ -203,13 +203,27 @@ function applyParams() {
 
     parseParams(hash);
 
-    if (ghcs.params.hasOwnProperty("wiki-repo")) {
-        document.location.hash = "#" + hash.replace(/wiki-repo=/, "repo=");
+    if(ghcs.params.user == "artzub" &&
+       ghcs.params.repo && ghcs.params.repo.toLowerCase() == "githubcodeswarm") {
+        document.location.hash = "#" + hash.replace("repo=" + ghcs.params.repo, "repo=GitHubVisualizer");
+        return;
     }
 
     if (ghcs.params.hasOwnProperty("run")) {
         ghcs.localStorage.set("run", ghcs.params.run);
         document.location.hash = "#" + hash.replace(/&?run=?/, "");
+        return;
+    }
+
+    if (ghcs.params.hasOwnProperty("wiki-repo")) {
+        alert([
+            "Dear friend! I glad to welcome you on Github Visualizer!",
+            "You've followed a link that contains the incorrect search query 'wiki-repo='.",
+            "Let me (artzub@gmail.com) know where you found this link, please.",
+            "Thank you for your understanding!"
+        ].join('\n'));
+        document.location.hash = "#" + hash.replace(/wiki-repo=/, "repo=");
+        return;
     }
 
     if (ga) {
