@@ -72,21 +72,7 @@ function makeUrl(url, type, limit) {
 
 function crossUrl(url, rt) {
     return url;
-    /*var result = url, arr = /(.*)?\?(.*)/.exec(url);
-    if (arr) {
-        result = "http://artzub.com/cross/?"
-            + ( rt ? "rt=" + rt + "&" : "" )
-            + "u=" + arr[1];
-        if (arr.length > 2)
-            result += "&d=" + encodeURIComponent(arr[2]);
-    }
-    return result;*/
 }
-
-function randTrue() {
-    return Math.round((Math.random() * 2) % 2);
-}
-
 
 function getDataFromRequest(req) {
     return req && req.meta && req.meta.status == 200 && req.data ? req.data : (log(req) && null);
@@ -96,53 +82,58 @@ function parseCommit(org_commit, commit){
     if (!commit || !org_commit || commit.sha != org_commit.sha)
         return;
 
-    var s = commit.stats = {
-        f : {
-            m : 0,
-            a : 0,
-            d : 0
-        },
-        changes : 0,
-        additions : 0,
-        deletions : 0
-    };
+    try {
+        var s = commit.stats = {
+            f : {
+                m : 0,
+                a : 0,
+                d : 0
+            },
+            changes : 0,
+            additions : 0,
+            deletions : 0
+        };
 
-    commit.files = !org_commit.files ? [] : org_commit.files.map(function(f) {
-        if (TYPE_STATUS_FILE[f.status] == undefined)
-            console.log(f.status);
+        commit.files = !org_commit.files ? [] : org_commit.files.map(function(f) {
+            if (TYPE_STATUS_FILE[f.status] == undefined)
+                console.log(f.status);
 
-        f.status = TYPE_STATUS_FILE[f.status];
+            f.status = TYPE_STATUS_FILE[f.status];
 
-        if (f.changes > 0) {
-            s.changes += f.changes;
-            s.additions += f.additions;
-            s.deletions += f.deletions;
-        }
-        else if(f.status) {
-            commit.stats.changes++;
-            commit.stats.additions++;
-        }
-        else if(!f.status) {
-            commit.stats.changes -= commit.stats.changes ? 1 : 0;
-            commit.stats.additions -= commit.stats.additions ? 1 : 0;
-        }
+            if (f.changes > 0) {
+                s.changes += f.changes;
+                s.additions += f.additions;
+                s.deletions += f.deletions;
+            }
+            else if(f.status) {
+                commit.stats.changes++;
+                commit.stats.additions++;
+            }
+            else if(!f.status) {
+                commit.stats.changes -= commit.stats.changes ? 1 : 0;
+                commit.stats.additions -= commit.stats.additions ? 1 : 0;
+            }
 
-        (f.status == TYPE_STATUS_FILE.modified || f.status == TYPE_STATUS_FILE.renamed) && s.f.m++;
-        f.status == TYPE_STATUS_FILE.added && s.f.a++;
-        !f.status && s.f.d++;
+            (f.status == TYPE_STATUS_FILE.modified || f.status == TYPE_STATUS_FILE.renamed) && s.f.m++;
+            f.status == TYPE_STATUS_FILE.added && s.f.a++;
+            !f.status && s.f.d++;
 
-        return {
-            name : f.filename.toLowerCase(),
-            changes : f.changes || 0,
-            additions : f.additions || 0,
-            deletions : f.deletions || 0,
-            status : f.status
-        }
-    });
+            return {
+                name : f.filename.toLowerCase(),
+                changes : f.changes || 0,
+                additions : f.additions || 0,
+                deletions : f.deletions || 0,
+                status : f.status
+            }
+        });
 
-    ghcs.repo.stats = ghcs.repo.stats || {};
-    ghcs.repo.stats.changes = d3.max([ghcs.repo.stats.changes || 0, commit.stats.deletions, commit.stats.additions]);
-    ghcs.repo.stats.files = d3.max([ghcs.repo.stats.files || 0, s.f.a + s.f.m, s.f.d]);
+        ghcs.repo.stats = ghcs.repo.stats || {};
+        ghcs.repo.stats.changes = d3.max([ghcs.repo.stats.changes || 0, commit.stats.deletions, commit.stats.additions]);
+        ghcs.repo.stats.files = d3.max([ghcs.repo.stats.files || 0, s.f.a + s.f.m, s.f.d]);
+    }
+    catch (e) {
+        log(e);
+    }
 }
 
 function upCommits() {
@@ -159,7 +150,7 @@ function makeGravatar(email) {
 }
 
 function preloadImage(url) {
-    var ava, image;
+    var image;
     image = ghcs.imageHash.get(url);
     if (!image) {
         image = new Image();
@@ -194,7 +185,7 @@ function parseCommits(commits) {
                                 ? d.commit.author.email.replace(/@.*/, "")
                                 : d.commit.author.name,
                         email : d.commit.author.email,
-                        avatar_url : (d.author && d.author.avatar_url ? d.author.avatar_url + "&s=96" : null),
+                        avatar_url : (d.author && d.author.avatar_url ? d.author.avatar_url : null),
                         login : d.author && d.author.login ? d.author.login : d.commit.author.email
                     },
                     committer : {
@@ -203,7 +194,7 @@ function parseCommits(commits) {
                                 ? d.commit.committer.email.replace(/@.*/, "")
                                 : d.commit.committer.name,
                         email : d.commit.committer.email,
-                        avatar_url : (d.committer && d.committer.avatar_url ? d.committer.avatar_url + "&s=96" : null),
+                        avatar_url : (d.committer && d.committer.avatar_url ? d.committer.avatar_url : null),
                         login : d.committer && d.committer.login ? d.committer.login : d.commit.committer.email
                     },
                     date : Date.parse(d.commit.author.date),

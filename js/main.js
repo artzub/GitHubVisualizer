@@ -763,9 +763,11 @@ function init() {
             if (msg instanceof Event) {
                 msg = "error loading";
             }
+            else if (msg instanceof TypeError) {
+                msg = msg.message;
+            }
             else if (msg.data && msg.data.message) {
                 msg = msg.meta.status + ': ' + msg.data.message;
-                GAEvent.Log.Log(msg);
             }
             else {
                 try {
@@ -775,8 +777,9 @@ function init() {
                     console.log(e);
                     msg = msg.toString();
                 }
-                GAEvent.Log.Log("other: " + msg);
+                msg = "other: " + msg;
             }
+            GAEvent.Log.Log(msg);
             logCont.append("li").style("max-width", w/2 + "px").text(msg);
             sms.append("div")
                 .append("span")
