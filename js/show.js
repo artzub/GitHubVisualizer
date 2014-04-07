@@ -46,7 +46,11 @@
         setting,
         rd3 = d3.random.irwinHall(8),
         colorless = d3.rgb("gray"),
-        colorlessFlash = d3.rgb("lightgray");
+        colorlessFlash = d3.rgb("lightgray"),
+
+        particleImageCache,
+        neonBallCache
+        ;
 
     var extColor,
         userColor;
@@ -398,8 +402,7 @@
 
     function generateSprite(w, h, r, g, b, a) {
 
-        if (!tempFileCanvas)
-            tempFileCanvas = document.createElement("canvas");
+        var tempFileCanvas = document.createElement("canvas");
 
         tempFileCanvas.width = w;
         tempFileCanvas.height = h;
@@ -422,14 +425,10 @@
         if (!img || !img.width)
             return img;
 
-        if (!tempFileCanvas)
-            tempFileCanvas = document.createElement("canvas");
+        var tempFileCanvas = document.createElement("canvas");
 
-        if (tempFileCanvas.width != img.width)
-            tempFileCanvas.width = img.width;
-
-        if (tempFileCanvas.height != img.height)
-            tempFileCanvas.height = img.height;
+        tempFileCanvas.width = img.width;
+        tempFileCanvas.height = img.height;
 
         var imgCtx = tempFileCanvas.getContext("2d"),
             imgData, i;
@@ -596,7 +595,8 @@
         var n, l, i,
             img,
             d, beg,
-            c, x, y, s;
+            c, x, y, s,
+            currentCache = setting.asPlasma ? neonBallCache : particleImageCache;
 
         if (setting.showFile) {
             n = _force.nodes()
@@ -664,9 +664,13 @@
                     }
                     else {
                         bufCtx.strokeStyle = c.toString();
-                        img = setting.asPlasma
-                            ? generateSprite(64, 64, c.r, c.g, c.b, 1)
-                            : colorize(particle, c.r, c.g, c.b, 1);
+                        img = currentCache.get(bufCtx.strokeStyle);
+                        if (!img) {
+                            img = setting.asPlasma
+                                ? generateSprite(64, 64, c.r, c.g, c.b, 1)
+                                : colorize(particle, c.r, c.g, c.b, 1);
+                            currentCache.set(bufCtx.strokeStyle, img);
+                        }
                     }
                 }
 
@@ -1212,6 +1216,9 @@
     }
 
     vis.runShow = function(data, svg, onfinished) {
+        particleImageCache = d3.map({});
+        neonBallCache = d3.map({});
+
         if (_worker)
             clearInterval(_worker);
 
