@@ -47,10 +47,11 @@ var ghcs = {
         stepShow : 1,
         stepType : ONE_DAY
     },
+    version : 1,
     settings : {
         access : {
             client_id : "c45417c5d6249959a91d",
-            client_secret : "4634b3aa7549c3d6306961e819e5ec9b355a6548",
+            client_secret : "3630a057d4ebbbdbfc84f855376f3f46f58b9710",
             ncid : undefined,
             ncs : undefined,
             code : undefined,
@@ -161,8 +162,14 @@ var ghcs = {
 })(ghcs);
 
 function loadSettings() {
-    if (ghcs.localStorage.get("ghcs.settings")) {
-        ghcs.settings = ghcs.localStorage.get("ghcs.settings");
+    if (ghcs.localStorage.get('setting.version') == ghcs.version) {
+        if (ghcs.localStorage.get("ghcs.settings")) {
+            ghcs.settings = ghcs.localStorage.get("ghcs.settings");
+        }
+    }
+    else {
+        ghcs.localStorage.set('setting.version', ghcs.version);
+        saveSetting();
     }
 }
 

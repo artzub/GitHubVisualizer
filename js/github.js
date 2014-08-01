@@ -32,7 +32,6 @@ function makeOAuthUrl(scope) {
 }
 
 function makeOAuthGetAccessTokenUrl(code) {
-    //https/github.com/login/oauth/access_token?client_id=c45417c5d6249959a91d&client_secret=4634b3aa7549c3d6306961e819e5ec9b355a6548&code=300339033f8542033a9c
     return [
         '/proxy/https/',
         'github.com/login/oauth/access_token?',

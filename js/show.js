@@ -153,42 +153,61 @@
         })).start();
     }
 
+    var tempTimeout;
     function loop() {
 
-        if (stop) {
-            killWorker();
-            return;
+        if (tempTimeout) {
+            clearTimeout(tempTimeout);
+            tempTimeout = null;
         }
 
-        if (pause)
-            return;
+        while(true) {
 
-        var dl, dr;
+            if (stop) {
+                killWorker();
+                return;
+            }
 
-        dl = dateRange[0];
-        dr = dl + ghcs.limits.stepShow * ghcs.limits.stepType;
-        dateRange[0] = dr;
+            if (pause)
+                return;
 
-        var visTurn = _data.filter(function (d) {
-            return d.date >= dl && d.date < dr;
-        });
+            var dl, dr;
 
-        ghcs.asyncForEach(visTurn, reCalc, ONE_SECOND / (visTurn.length > 1 ? visTurn.length : ONE_SECOND));
-        //visTurn.forEach(reCalc);
+            dl = dateRange[0];
+            dr = dl + ghcs.limits.stepShow * ghcs.limits.stepType;
+            dateRange[0] = dr;
+
+            var visTurn = _data.filter(function (d) {
+                return d.date >= dl && d.date < dr;
+            });
+
+            ghcs.asyncForEach(visTurn, reCalc, ONE_SECOND / (visTurn.length > 1 ? visTurn.length : ONE_SECOND));
+            //visTurn.forEach(reCalc);
 
 
-        updateStatus(ghcs.states.cur += ghcs.limits.stepShow * ghcs.limits.stepType, timeFormat(new Date(dr)));
+            updateStatus(ghcs.states.cur += ghcs.limits.stepShow * ghcs.limits.stepType, timeFormat(new Date(dr)));
 
-        if (dl >= dateRange[1]) {
-            killWorker();
-            if (dofinished && typeof dofinished == "function")
-                dofinished();
-        } else {
-            if (!visTurn.length && setting.skipEmptyDate)
-                loop();
+            try {
+                if (dl >= dateRange[1]) {
+                    killWorker();
+                    if (dofinished && typeof dofinished == "function")
+                        dofinished();
+                    throw new Error('break');
+                } else {
+                    if (!visTurn.length && setting.skipEmptyDate) {
+                        //tempTimeout = setTimeout(loop, 1);
+                    }
+                    else
+                        throw new Error('break');
+                }
+            }
+            catch (e) {
+                break;
+            }
+            finally {
+                updateExtHistogram();
+            }
         }
-
-        updateExtHistogram();
     }
 
     function run() {
