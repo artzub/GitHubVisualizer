@@ -299,7 +299,9 @@ function chSelect(e) {
     });
 }
 
-function chUser() {
+function chUser(typeUser) {
+    typeUser = typeUser || "users";
+
     if (ghcs.chUserTimer) {
         clearTimeout(ghcs.chUserTimer);
         delete ghcs.chUserTimer;
@@ -329,12 +331,15 @@ function chUser() {
                 if (!ghcs.users.hasOwnProperty(login) || !ghcs.users[login].hasOwnProperty("repos")) {
 
                     ldrTop.show();
-                    JSONP(makeUrl("https://api.github.com/users/" + login), function (req) {
+                    JSONP(makeUrl("https://api.github.com/" + typeUser + "/" + login), function (req) {
                         var data = getDataFromRequest(req);
                         if (!data) {
                             parseRepos(null);
                             return;
                         }
+
+                        if (data.type === "Organization" && typeUser !== "orgs")
+                            return chUser("orgs");
 
                         var u = ghcs.users[data.login] = {info: data};
                         u.info.avatar = new Image();//preloadeImage(u.info.avatar_url);
