@@ -491,15 +491,7 @@
             d.pathLife = (d.pathLife || 0);
             if (d.pathLife++ > 0) {
                 d.pathLife = 0;
-                if (d.paths.length) {
-                    if (d.flash)
-                        d.paths.shift();
-                    else {
-                        d.paths.shift();
-                        d.paths.shift();
-                        d.paths.shift();
-                    }
-                }
+                d.paths.length && d.paths.splice(0, d.flash ? 1 : 5);
             }
         }
     }
@@ -595,6 +587,99 @@
         }
     }
 
+    var trackCtx, trackCanvas;
+    /**
+     * Draw tracks of particles
+     * @param nodes
+     * @param lastEvent
+     * @returns {HTMLCanvasElement|null}
+     */
+    function drawTrack(nodes, lastEvent) {
+        if (!trackCtx) {
+            trackCanvas = document.createElement("canvas");
+            trackCanvas.width = w;
+            trackCanvas.height = h;
+
+            trackCtx = trackCanvas.getContext('2d');
+            trackCtx.lineJoin = "round";
+            trackCtx.lineWidth = 1;//(radius(nr(d)) / 4)  || 1;
+        }
+
+        trackCtx.save();
+
+        trackCtx.globalCompositeOperation = "destination-out";
+
+        var test = true;
+        trackCtx.fillStyle = test ? "rgba(0, 0, 0, .2)" : "rgba(0, 0, 0, 1)";
+        trackCtx.fillRect(0, 0, w, h);
+
+        trackCtx.globalAlpha = 1;
+        trackCtx.globalCompositeOperation = 'source-over';
+
+        trackCtx.translate(lastEvent.translate[0], lastEvent.translate[1]);
+        trackCtx.scale(lastEvent.scale, lastEvent.scale);
+
+        if (nodes && nodes.length) {
+
+            var d, l = nodes.length, color, c = null;
+
+            trackCtx.fillStyle = "none";
+
+            while (--l > -1) {
+                d = nodes[l];
+
+                color = curColor(d);
+                if (!c || compereColor(c, color)) {
+                    c = color;
+                    trackCtx.strokeStyle = c.toString();
+                }
+
+                if (!d.paths || !d.paths.length)
+                    continue;
+
+                var rs = d.paths.slice(0).reverse()
+                    , lrs = rs.length
+                    , p
+                    ;
+
+                if (test) {
+                    trackCtx.beginPath();
+                    p = rs.pop();
+                    trackCtx.moveTo(Math.floor(p.x), Math.floor(p.y));
+                    while (p = rs.pop()) {
+                        trackCtx.lineTo(
+                            Math.floor(p.x),
+                            Math.floor(p.y)
+                        );
+                    }
+                    trackCtx.lineTo(
+                        Math.floor(d.x),
+                        Math.floor(d.y)
+                    );
+                    trackCtx.stroke();
+                }
+                else {
+                    while (p = rs.pop()) {
+                        trackCtx.beginPath();
+                        trackCtx.moveTo(Math.floor(p.x), Math.floor(p.y));
+
+                        p = rs.length ? rs[rs.length - 1] : d;
+
+                        trackCtx.lineTo(
+                            Math.floor(p.x),
+                            Math.floor(p.y)
+                        );
+                        trackCtx.globalAlpha = ((lrs - rs.length + 1) / lrs);
+                        trackCtx.stroke();
+                    }
+                }
+            }
+        }
+
+        trackCtx.restore();
+        return trackCanvas;
+    }
+
     function redrawCanvas() {
 
         bufCtx.save();
@@ -608,17 +693,32 @@
             bufCtx.globalCompositeOperation = 'source-over';
         }
 
-        bufCtx.translate(lastEvent.translate[0], lastEvent.translate[1]);
-        bufCtx.scale(lastEvent.scale, lastEvent.scale);
-
         var n, l, i,
             img,
             d, beg,
             c, x, y, s,
+            tracksImg,
             currentCache = setting.asPlasma ? neonBallCache : particleImageCache;
 
-        if (setting.showFile) {
+
+        if (setting.showTrack && setting.showFile) {
             n = _force.nodes()
+                .filter(filterVisible)
+                .sort(sortBySize)
+                .sort(sortByOpacity)
+                .sort(sortByColor)
+            ;
+
+            tracksImg = drawTrack(n, lastEvent);
+            setting.showTrack && tracksImg &&
+            bufCtx.drawImage(tracksImg, 0, 0, w, h);
+        }
+
+        bufCtx.translate(lastEvent.translate[0], lastEvent.translate[1]);
+        bufCtx.scale(lastEvent.scale, lastEvent.scale);
+
+        if (setting.showFile) {
+            n = n || _force.nodes()
                 .filter(filterVisible)
                 .sort(sortBySize)
                 .sort(sortByOpacity)
@@ -627,7 +727,7 @@
 
             l = n.length;
 
-            if (!setting.showHalo && setting.showTrack) {
+            /*if (!setting.showHalo && setting.showTrack) {
                 c = null;
                 i = 100;
 
@@ -649,7 +749,7 @@
 
                     drawTail(c, d, Math.floor(d.x), Math.floor(d.y), setting.vanishingTail);
                 }
-            }
+            }*/
 
             l = n.length;
 
@@ -696,8 +796,9 @@
                 x = Math.floor(d.x);
                 y = Math.floor(d.y);
 
-                if (setting.showHalo && setting.showTrack)
+                /*if (setting.showHalo && setting.showTrack)
                     drawTail(c, d, x, y, setting.vanishingTail);
+                */
 
                 s = radius(nr(d)) * (setting.showHalo ? setting.asPlasma ? 8 : 10 : .8);
                 if (!setting.showHalo) {
@@ -781,21 +882,26 @@
         bufCtx.restore();
     }
 
+    var reqAnim, restart, restartFunction;
     function render() {
-        requestAnimationFrame(render);
+
+        if (restart) {
+            console.log('out');
+            return restartFunction && restartFunction();
+        }
+
+        reqAnim = requestAnimationFrame(render);
 
         lHis && lHis.style("display", setting.showHistogram ? null : "none");
         lLeg && lLeg.style("display", setting.showCountExt ? null : "none");
 
-        if (valid)
+        if (valid || restart)
             return;
 
         valid = true;
 
         ctx.save();
         ctx.clearRect(0, 0, w, h);
-
-        d3.select(canvas).style("background", "#000");
 
         redrawCanvas();
 
@@ -806,6 +912,9 @@
     }
 
     function tick() {
+        if (restart)
+            return console.log('tick finish');
+
         if (_force.nodes()) {
 
             _force.nodes()
@@ -824,6 +933,10 @@
             );
         }
 
+        if (restart)
+            return console.log('tick finish');
+
+        console.log('resume');
         _forceAuthor.resume();
         _force.resume();
     }
@@ -1235,192 +1348,210 @@
     }
 
     vis.runShow = function(data, svg, onfinished) {
-        particleImageCache = d3.map({});
-        neonBallCache = d3.map({});
 
-        if (_worker)
-            clearInterval(_worker);
+        restart = true;
+        console.log('restart');
+        killWorker();
 
-        dofinished = onfinished;
+        if (reqAnim)
+            restartFunction = insideRestartShow;
+        else
+            insideRestartShow();
 
-        _data = data && data.commits ? data.commits.values().sort(vis.sC) : null;
+        function insideRestartShow() {
+            restartFunction = null;
 
-        if (!_data || !_data.length)
-            return;
+            particleImageCache = d3.map({});
+            neonBallCache = d3.map({});
 
-        setting = ghcs.settings.cs;
+            dofinished = onfinished;
 
-        vis.layers.repo && cbDlr.uncheck();
-        vis.layers.stat && cbDlsr.uncheck();
+            _data = data && data.commits ? data.commits.values().sort(vis.sC) : null;
 
-        extColor = d3.scale.category20();
-        userColor = d3.scale.category20b();
+            if (!_data || !_data.length)
+                return;
 
-        dateRange = d3.extent(data.dates);
+            setting = ghcs.settings.cs;
 
-        layer = d3.select("#canvas");
-        layer.select("#mainCanvas").remove();
+            vis.layers.repo && cbDlr.uncheck();
+            vis.layers.stat && cbDlsr.uncheck();
 
-        lastEvent = {
-            translate: [0, 0],
-            scale : 1
-        };
+            extColor = d3.scale.category20();
+            userColor = d3.scale.category20b();
 
-        xW = d3.scale.linear()
-            .range([0, w])
-            .domain([0, w]);
+            dateRange = d3.extent(data.dates);
 
-        yH = d3.scale.linear()
-            .range([0, h])
-            .domain([0, h]);
+            layer = d3.select("#canvas");
+            layer.select("#mainCanvas").remove();
 
-        var zoom = d3.behavior.zoom()
-            .scaleExtent([.1, 8])
-            .scale(1)
-            .translate([0, 0])
-            .on("zoom", function() {
-                lastEvent.translate = d3.event.translate.slice(0);
-                lastEvent.scale = d3.event.scale;
+            lastEvent = {
+                translate: [0, 0],
+                scale: 1
+            };
 
-                var tl = lastEvent.translate[0] / lastEvent.scale,
-                    tt = lastEvent.translate[1] / lastEvent.scale;
+            xW = d3.scale.linear()
+                .range([0, w])
+                .domain([0, w]);
 
-                xW.range([-tl, -tl + w / lastEvent.scale])
-                    .domain([0, w]);
-                yH.range([-tt, -tt + h / lastEvent.scale])
-                    .domain([0, h]);
+            yH = d3.scale.linear()
+                .range([0, h])
+                .domain([0, h]);
 
-                valid = false;
-            });
+            var zoom = d3.behavior.zoom()
+                .scaleExtent([.1, 8])
+                .scale(1)
+                .translate([0, 0])
+                .on("zoom", function () {
+                    lastEvent.translate = d3.event.translate.slice(0);
+                    lastEvent.scale = d3.event.scale;
 
-        canvas = layer.append("canvas")
-            .text("This browser don't support element type of Canvas.")
-            .attr("id", "mainCanvas")
-            .attr("width", w)
-            .attr("height", h)
-            .call(zoom)
-            .node();
+                    var tl = lastEvent.translate[0] / lastEvent.scale,
+                        tt = lastEvent.translate[1] / lastEvent.scale;
 
-        ctx = canvas.getContext("2d");
+                    xW.range([-tl, -tl + w / lastEvent.scale])
+                        .domain([0, w]);
+                    yH.range([-tt, -tt + h / lastEvent.scale])
+                        .domain([0, h]);
 
-        bufCanvas = document.createElement("canvas");
-        bufCanvas.width = w;
-        bufCanvas.height = h;
+                    valid = false;
+                });
 
-        bufCtx = bufCanvas.getContext("2d");
-        bufCtx.globalCompositeOperation = 'lighter';
+            trackCtx = trackCanvas = null;
 
-        bufCtx.font = "normal normal " + setting.sizeUser / 2 + "px Tahoma";
-        bufCtx.textAlign = "center";
+            canvas = layer.append("canvas")
+                .text("This browser don't support element type of Canvas.")
+                .attr("id", "mainCanvas")
+                .attr("width", w)
+                .attr("height", h)
+                .call(zoom)
+                .node();
 
-        layer = svg || vis.layers.show;
-        layer && layer.show && layer.show();
+            d3.select(canvas).style("background", "#000");
 
-        layer.append("g")
-            .call(zoom)
-            .on('mousemove.tooltip', movem)
-            .append("rect")
-            .attr("width", w)
-            .attr("height", h)
-            .attr("x", 0)
-            .attr("y", 0)
-            .style("fill", "#ffffff")
-            .style("fill-opacity", 0);
+            ctx = canvas.getContext("2d");
 
-        lHis && lHis.remove();
-        lHis = null;
+            bufCanvas = document.createElement("canvas");
+            bufCanvas.width = w;
+            bufCanvas.height = h;
 
-        lCom && lCom.remove();
-        lCom = layer.append("g")
-            .attr("width", 10)
-            .attr("height", 14)
-            .attr("transform", "translate(" + [w/2, h - 18] + ")")
+            bufCtx = bufCanvas.getContext("2d");
+            bufCtx.globalCompositeOperation = 'lighter';
+
+            bufCtx.font = "normal normal " + setting.sizeUser / 2 + "px Tahoma";
+            bufCtx.textAlign = "center";
+
+            layer = svg || vis.layers.show;
+            layer && layer.show && layer.show();
+
+            layer.append("g")
+                .call(zoom)
+                .on('mousemove.tooltip', movem)
+                .append("rect")
+                .attr("width", w)
+                .attr("height", h)
+                .attr("x", 0)
+                .attr("y", 0)
+                .style("fill", "#ffffff")
+                .style("fill-opacity", 0);
+
+            lHis && lHis.remove();
+            lHis = null;
+
+            lCom && lCom.remove();
+            lCom = layer.append("g")
+                .attr("width", 10)
+                .attr("height", 14)
+                .attr("transform", "translate(" + [w / 2, h - 18] + ")")
             ;
-        lCom.visible = !setting.showCommitMessage;
+            lCom.visible = !setting.showCommitMessage;
 
-        lCom.selectAll("text").remove();
-        lCom.showCommitMessage = lCom.showCommitMessage || function(text) {
-            if (setting.showCommitMessage && !lCom.visible) {
-                lCom.visible = true;
-                lCom.style("display", null);
-            }
-            else if (!setting.showCommitMessage && lCom.visible) {
-                lCom.visible = false;
-                lCom.style("display", "none");
-            }
+            lCom.selectAll("text").remove();
+            lCom.showCommitMessage = lCom.showCommitMessage || function (text) {
+                if (setting.showCommitMessage && !lCom.visible) {
+                    lCom.visible = true;
+                    lCom.style("display", null);
+                }
+                else if (!setting.showCommitMessage && lCom.visible) {
+                    lCom.visible = false;
+                    lCom.style("display", "none");
+                }
 
-            lCom.append("text")
-                .attr("text-anchor", "middle")
-                .attr("class", "com-mess")
-                .attr("transform", "translate("+ [0, -lCom.node().childElementCount * 14] +")")
-                .text(text.split("\n")[0].substr(0, 100))
-                .transition()
-                .delay(500)
-                .duration(2000)
-                .style("fill-opacity", 1)
-                .duration(200)
-                .style("font-size", "11.2pt")
-                .transition()
-                .duration(1500)
-                .style("fill-opacity", .3)
-                .style("font-size", "11pt")
-                .each("end", function() {
-                    lCom.selectAll("text").each(function(d, i) {
-                        d3.select(this)
-                            .attr("transform", "translate("+ [0, -i * 14] +")");
-                    });
+                lCom.append("text")
+                    .attr("text-anchor", "middle")
+                    .attr("class", "com-mess")
+                    .attr("transform", "translate(" + [0, -lCom.node().childElementCount * 14] + ")")
+                    .text(text.split("\n")[0].substr(0, 100))
+                    .transition()
+                    .delay(500)
+                    .duration(2000)
+                    .style("fill-opacity", 1)
+                    .duration(200)
+                    .style("font-size", "11.2pt")
+                    .transition()
+                    .duration(1500)
+                    .style("fill-opacity", .3)
+                    .style("font-size", "11pt")
+                    .each("end", function () {
+                        lCom.selectAll("text").each(function (d, i) {
+                            d3.select(this)
+                                .attr("transform", "translate(" + [0, -i * 14] + ")");
+                        });
+                    })
+                    .remove();
+            };
+
+            psBar.show();
+            ghcs.states.cur = 0;
+            ghcs.states.max = dateRange[1] - dateRange[0];
+            updateStatus(ghcs.states.cur, timeFormat(new Date(dateRange[0])));
+
+            links = [];
+            nodes = initNodes(_data);
+
+            defImg = new Image();
+            defImg.src = "resource/default.png";
+
+            particle = new Image();
+            particle.src = "resource/particle.png";
+
+            _force = (_force || d3.layout.force()
+                .stop()
+                .size([w, h])
+                .friction(.75)
+                .gravity(0)
+                .charge(function (d) {
+                    return -1 * radius(nr(d));
                 })
-                .remove();
-        };
-
-        psBar.show();
-        ghcs.states.cur = 0;
-        ghcs.states.max = dateRange[1] - dateRange[0];
-        updateStatus(ghcs.states.cur, timeFormat(new Date(dateRange[0])));
-
-        links = [];
-        nodes = initNodes(_data);
-
-        defImg = new Image();
-        defImg.src = "resource/default.png";
-
-        particle = new Image();
-        particle.src = "resource/particle.png";
-
-        _force = (_force || d3.layout.force()
-            .stop()
-            .size([w, h])
-            .friction(.75)
-            .gravity(0)
-            .charge(function(d) {return -1 * radius(nr(d)); } )
-            .on("tick", tick))
-            .nodes([])
+                .on("tick", tick))
+                .nodes([])
             ;
 
-        zoomScale = d3.scale.linear()
-            .range([5, 1])
-            .domain([.1, 1]);
+            zoomScale = d3.scale.linear()
+                .range([5, 1])
+                .domain([.1, 1]);
 
-        _forceAuthor = (_forceAuthor || d3.layout.force()
-            .stop()
-            .size([w, h])
-            .gravity(setting.padding * .001)
-            .charge(function(d) {
-                return -(setting.padding + d.size) * 8
-                //* (Math.sqrt(d.links / lastEvent.scale) || 1)
-                ;
-            }))
-            .nodes([])
+            _forceAuthor = (_forceAuthor || d3.layout.force()
+                .stop()
+                .size([w, h])
+                .gravity(setting.padding * .001)
+                .charge(function (d) {
+                    return -(setting.padding + d.size) * 8
+                        //* (Math.sqrt(d.links / lastEvent.scale) || 1)
+                        ;
+                }))
+                .nodes([])
             ;
 
-        initLegend();
+            initLegend();
 
-        stop = false;
-        pause = false;
+            stop = false;
+            pause = false;
 
-        run();
-        _force.start();
-        _forceAuthor.start();
+            restart = false;
+            run();
+            _force.start();
+            _forceAuthor.start();
+        }
     };
 
     vis.pauseShow = function() {
