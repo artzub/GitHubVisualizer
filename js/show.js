@@ -609,7 +609,7 @@
 
         trackCtx.globalCompositeOperation = "destination-out";
 
-        var test = true;
+        var test = setting.vanishingTail;
         trackCtx.fillStyle = test ? "rgba(0, 0, 0, .2)" : "rgba(0, 0, 0, 1)";
         trackCtx.fillRect(0, 0, w, h);
 
@@ -624,6 +624,8 @@
             var d, l = nodes.length, color, c = null;
 
             trackCtx.fillStyle = "none";
+            if (test)
+                trackCtx.lineWidth = .2;
 
             while (--l > -1) {
                 d = nodes[l];
