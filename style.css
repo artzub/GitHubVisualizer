@@ -1368,4 +1368,18 @@ text.sitem:hover {
 #example img {
     width: 275px;
     height: auto;
+    opacity: 1;
+
+    -webkit-transition: all .5s;
+    -moz-transition: all .5s;
+    -o-transition: all .5s;
+    transition: all .5s;
+}
+
+#example img[src$='preloader24.gif'] {
+    width: 48px;
+    height: auto;
+    opacity: .2;
+    margin-top: 15px;
+    margin-bottom: 15px;
 }

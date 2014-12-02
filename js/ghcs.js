@@ -47,7 +47,7 @@ var ghcs = {
         stepShow : 1,
         stepType : ONE_DAY
     },
-    version : 1,
+    version : 5,
     settings : {
         access : {
             client_id : "c45417c5d6249959a91d",

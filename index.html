@@ -351,7 +351,7 @@
         <div class="row" id="divStat"></div>
     </div>
 
-    <div id="misc" class="row popup tooltip">
+    <div id="misc" class="open row popup tooltip">
         <div class="row userInfo open">
             <div class="statInfo">
                 <ul>
@@ -668,45 +668,45 @@
 <div id="sms" class="popup">
 </div>
 
-<div id="example" class="popup tooltip">
+<div id="example" class="open popup tooltip">
     <div>
         <a href="#repo=d3&climit=100&user=mbostock&run" title="Run visualization repo D3js">
-            <img src="https://f.cloud.github.com/assets/134249/1274358/39cb552a-2d96-11e3-9936-c892a2f81bb6.gif" alt="D3js">
+            <img src="resource/preloader24.gif" class="asyncload" data-src="http://hsto.org/files/164/ad3/241/164ad32418ea4410b7547bcd8193ebf2.gif" alt="D3js">
         </a>
         <h1><a href="https://github.com/mbostock/d3" title="Visit on Github">D3js</a></h1>
         <span>A JavaScript visualization library for HTML and SVG.</span>
     </div>
     <div>
         <a href="#repo=mc&climit=100&user=MidnightCommander&run" title="Run visualization repo MidnightCommander">
-            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_mc.png" alt="MidnightCommander">
+            <img src="resource/preloader24.gif" class="asyncload" data-src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_mc.png" alt="MidnightCommander">
         </a>
         <h1><a href="https://github.com/MidnightCommander/mc" title="Visit on Github">MidnightCommander</a></h1>
         <span>Midnight Commander's repository.</span>
     </div>
     <div>
         <a href="#repo=jquery&climit=100&user=jquery&run" title="Run visualization repo jQuery">
-            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_jquery.png" alt="jQuery">
+            <img src="resource/preloader24.gif" class="asyncload" data-src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_jquery.png" alt="jQuery">
         </a>
         <h1><a href="https://github.com/jquery/jquery" title="Visit on Github">jQuery</a></h1>
         <span>jQuery JavaScript Library.</span>
     </div>
     <div>
         <a href="#repo=bootstrap&climit=100&user=twbs&run" title="Run visualization repo Bootstrap">
-            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_bootstrap.png" alt="Bootstrap">
+            <img src="resource/preloader24.gif" class="asyncload" data-src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_bootstrap.png" alt="Bootstrap">
         </a>
         <h1><a href="https://github.com/twbs/bootstrap" title="Visit on Github">Bootstrap</a></h1>
         <span>Sleek, intuitive, and powerful front-end framework for faster and easier web development.</span>
     </div>
     <div>
         <a href="#repo=rails&climit=100&user=rails&run" title="Run visualization repo Ruby on Rails">
-            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_rails.png" alt="Rails">
+            <img src="resource/preloader24.gif" class="asyncload" data-src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_rails.png" alt="Rails">
         </a>
         <h1><a href="https://github.com/rails/rails" title="Visit on Github">Rails</a></h1>
         <span>Ruby on Rails</span>
     </div>
     <div>
         <a href="#repo=song-of-github&climit=100&user=ajacksified&run" title="Run visualization repo Ruby on Song-of-github">
-            <img src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_song-of-github.png" alt="song-of-github">
+            <img src="resource/preloader24.gif" class="asyncload" data-src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_song-of-github.png" alt="song-of-github">
         </a>
         <h1><a href="https://github.com/ajacksified/song-of-github" title="Visit on Github">Song-of-github</a></h1>
         <span>Let me play you the song of my contributions.</span>
@@ -726,6 +726,23 @@
 </footer>
 
 <script>
+    !function() {
+
+        function whenLoad(from, to, url) {
+            from.onload = function() {
+                to.src = url;
+                from = null;
+            };
+            from.src = url;
+        }
+
+        var imgs = document.querySelectorAll('img.asyncload');
+        var i = imgs.length;
+        while(i--) {
+            whenLoad(new Image(), imgs[i], imgs[i].dataset.src);
+        }
+    }();
+
     if (location.search.indexOf('code=') < 0) {
         (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
             (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
