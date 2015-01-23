@@ -239,6 +239,8 @@ function applyParams() {
     d3.select("#misc").classed("open", !ghcs.params.user);
     d3.select("#example").classed("open", !ghcs.params.user);
 
+    !ghcs.params.user && asyncLoad();
+
     ghcs.login && (ghcs.login = ghcs.login.toLowerCase());
     ghcs.params.user && (ghcs.params.user = ghcs.params.user.toLowerCase());
 
