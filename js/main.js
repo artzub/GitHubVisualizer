@@ -588,7 +588,7 @@ function refreshRepoList(data) {
                 li.append("span")
                     .text("Sources: ");
                 li.append("strong")
-                    .text(user.info.public_repos - user.info.forks);
+                    .text(user.info.public_repos - (user.info.forks || 0) + (user.info.total_private_repos || 0));
             });
         ul.append("li")
             .on("mouseover", meForks)
@@ -673,6 +673,14 @@ function repoItemClick(d) {
     }
 }
 
+function getAuthUserInfo() {
+    JSONP(makeUrl(ghcs.apiUrl + "user"), function(req) {
+        ghcs.settings.access.username = (getDataFromRequest(req) || {}).login;
+        d3.select("#authUser").text(ghcs.settings.access.username).attr("href", "#user=" + ghcs.settings.access.username);
+        saveSetting();
+    })
+}
+
 function getAccessToken(code) {
     d3.xhr(makeOAuthGetAccessTokenUrl(code)).post(function (err, data) {
         if (!err && data && data.responseText) {
@@ -686,6 +694,7 @@ function getAccessToken(code) {
                     ghcs.settings.access.token = data;
                     saveSetting();
                     loadSettings();
+                    getAuthUserInfo();
                 }
             }
 
@@ -707,8 +716,13 @@ function init() {
         getAccessToken(code);
         delete ghcs.settings.access.code;
     }
-    else
-        d3.select("#userOAuth").classed("have", !!ghcs.settings.access.token);
+    else {
+        var hasToken = !!ghcs.settings.access.token;
+        d3.select("#userOAuth").classed("have", hasToken);
+        hasToken && (ghcs.settings.access.username
+            ? d3.select("#authUser").text(ghcs.settings.access.username).attr("href", "#user=" + ghcs.settings.access.username)
+            : getAuthUserInfo())
+    }
 
     d3.select(window).on("focus", function() {
         if (window.hasOwnProperty("needPlayShow")) {
@@ -1089,7 +1103,7 @@ function init() {
                             li.append("span")
                                 .attr("class", "mini-icon mini-icon-public-repo");
                             li.append("strong")
-                                .text(user.info.public_repos - user.info.forks);
+                                .text(user.info.public_repos - (user.info.forks || 0) + (user.info.total_private_repos || 0));
                         });
                     user.info.forks && ul.append("li")
                         .on("mouseover", meForks)
@@ -1135,7 +1149,9 @@ function init() {
         else {
             GAEvent.Access.SignOut('Github');
             d3.select("#userOAuth").classed("have", false);
+            d3.select("#authUser").text("").attr("href", "#");
             delete ghcs.settings.access.token;
+            delete ghcs.settings.access.username;
             saveSetting();
         }
     });

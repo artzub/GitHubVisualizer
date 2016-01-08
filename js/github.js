@@ -20,7 +20,7 @@ var TYPE_REQUEST = {
 
 function makeOAuthUrl(scope) {
     scope = scope || 'repo';
-    if (typeof(scope) === 'Array')
+    if (Array.isArray(scope))
         scope = scope.join(',');
     return [
         'https://github.com/login/oauth/authorize?client_id=',
@@ -331,7 +331,7 @@ function chUser(typeUser) {
                 if (!ghcs.users.hasOwnProperty(login) || !ghcs.users[login].hasOwnProperty("repos")) {
 
                     ldrTop.show();
-                    JSONP(makeUrl("https://api.github.com/" + typeUser + "/" + login), function (req) {
+                    JSONP(makeUrl(ghcs.apiUrl + typeUser + "/" + login), function (req) {
                         var data = getDataFromRequest(req);
                         if (!data) {
                             parseRepos(null);
@@ -353,8 +353,13 @@ function chUser(typeUser) {
                         updateStatus(ghcs.states.cur, "loading ...");
                         psBar.show();
 
-                        if (data.repos_url)
-                            JSONP(makeUrl(data.repos_url, TYPE_REQUEST.repos), function getAll(req) {
+                        var url = data.repos_url;
+                        if (ghcs.settings.access.token && ghcs.settings.access.username == login) {
+                            url = ghcs.apiUrl + "user/repos";
+                        }
+
+                        if (url)
+                            JSONP(makeUrl(url, TYPE_REQUEST.repos), function getAll(req) {
                                 parseRepos(getDataFromRequest(req));
                                 getNext(req, function(next) {
                                     if (next) {

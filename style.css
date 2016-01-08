@@ -662,6 +662,16 @@ hr {
     font-size: 14px;
 }
 
+#divStatOAuth > div {
+    max-height: 0;
+    font-size: 0;
+}
+
+#divStatOAuth:hover > div {
+    max-height: 32px;
+    font-size: inherit;
+}
+
 #userOAuth input[type=checkbox].checkbox:before {
     content: "On";
 }

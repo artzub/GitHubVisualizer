@@ -47,16 +47,10 @@ var ghcs = {
         stepShow : 1,
         stepType : ONE_DAY
     },
-    version : 5,
+    apiUrl: "https://api.github.com/",
+    authUser: undefined,
+    version : 6,
     settings : {
-        access : {
-            client_id : "c45417c5d6249959a91d",
-            client_secret : "3630a057d4ebbbdbfc84f855376f3f46f58b9710",
-            ncid : undefined,
-            ncs : undefined,
-            code : undefined,
-            accessToken : undefined
-        },
         cs : {
             fileLife : 255 // number of steps of life a file
             , userLife : 255 // number of steps of life a user
@@ -84,6 +78,15 @@ var ghcs = {
             , asPlasma : false
             , showTrack : true
             , vanishingTail : true
+        },
+        access : {
+            client_id : "c45417c5d6249959a91d",
+            client_secret : undefined,
+            ncid : undefined,
+            ncs : undefined,
+            code : undefined,
+            accessToken : undefined,
+            username: undefined
         }
     },
 
