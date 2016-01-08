@@ -168,6 +168,8 @@
             delete vis.forceRep;
         }
 
+        delete vis.reposGroup;
+
         vis.layers && vis.layers.repo && vis.layers.repo.selectAll("*")
             .transition()
             .duration(750)
@@ -176,6 +178,18 @@
         vis.layers.repo.langHg = null;
     };
 
+    function tr(d) {
+        return "translate(" + [d.x, d.y] + ")";
+    }
+
+    var zoom = d3.behavior.zoom()
+        .scaleExtent([.5, 1])
+        ;
+
+    function zoomed() {
+        this.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    }
+
     vis.redrawRepos = function(data, layout) {
 
         layout = layout || vis.layers.repo;
@@ -183,10 +197,6 @@
         if (!data) {
             vis.clearRepos();
             return;
-        }
-
-        function tr(d) {
-            return "translate(" + [d.x, d.y] + ")";
         }
 
         vis.forceRep = vis.forceRep || d3.layout.force()
@@ -279,7 +289,23 @@
             .start()
         ;
 
-        vis.forceRep.circle = layout.selectAll(".cRepo")
+        if (!vis.reposGroup) {
+            layout.append("rect")
+                .attr("width", w)
+                .attr("height", h)
+                .style("fill", "none")
+                .style("pointer-events", "all");
+            vis.reposGroup = layout.append("g");
+            zoom.center([w *.5, h * .5])
+                .on("zoom", zoomed.bind(vis.reposGroup));
+            layout.call(zoom)
+                .on("mousedown.zoom", null)
+                .on("touchstart.zoom", null)
+                .on("touchmove.zoom", null)
+                .on("touchend.zoom", null);
+        }
+
+        vis.forceRep.circle = vis.reposGroup.selectAll(".cRepo")
             .data(data, function(d) { return d.nodeValue.id })
         ;
 
@@ -318,7 +344,7 @@
         function tick(e) {
             var quadtree = d3.geom.quadtree(vis.forceRep.nodes());
             vis.forceRep.circle
-                .each(cluster(/*e.alpha */ .025/*10 * e.alpha * e.alpha*/))
+                .each(cluster(.025/*10 * e.alpha * e.alpha*/))
                 .each(collide(.4, quadtree))
                 .attr("transform", tr);
             if (e.alpha < .5)

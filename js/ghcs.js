@@ -48,7 +48,6 @@ var ghcs = {
         stepType : ONE_DAY
     },
     apiUrl: "https://api.github.com/",
-    authUser: undefined,
     version : 6,
     settings : {
         cs : {
