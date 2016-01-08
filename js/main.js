@@ -894,15 +894,22 @@ function init() {
         return stepsBar;
     };
 
-    runBtn = d3.select("#runBtn");
-    showBtn = d3.select("#showBtn");
+    runBtn = d3.select("#runBtn")
+        .on("click", rewriteHash);
+    showBtn = d3.select("#showBtn")
+        .on("click", rewriteHash);
+    var showBtnHandle = rewriteHash.bind(showBtn.node());
+
     visBtn = d3.select("#visBtn");
-    userTxt = d3.select("#user").on("change", function() {
+    userTxt = d3.select("#user").on("keyup", function() {
         stepsBar.firstStep();
         showBtn.disable();
         if (this.value) {
-            if (this.value != ghcs.login)
+            if (this.value.trim() != ghcs.login) {
                 showBtn.enable();
+                if (d3.event && d3.event.keyCode === 13)
+                    showBtnHandle();
+            }
             else
                 stepsBar.secondStep();
         }
@@ -973,9 +980,6 @@ function init() {
             runShow();
     }
     visBtn.on('click', startShow);
-
-    runBtn.on("click", rewriteHash);
-    showBtn.on("click", rewriteHash);
 
     ldrTop = d3.select("#ldrTop");
     ldrTop.pntNode = d3.select(ldrTop.node().parentNode);
