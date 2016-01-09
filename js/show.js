@@ -486,14 +486,6 @@
 
         d.visible && !d.opacity
             && (d.visible = false);
-
-        if (d.paths) {
-            d.pathLife = (d.pathLife || 0);
-            if (d.pathLife++ > 0) {
-                d.pathLife = 0;
-                d.paths.length && d.paths.splice(0, d.flash ? 1 : 5);
-            }
-        }
     }
 
     function sortBySize(a, b) {
@@ -678,6 +670,16 @@
                         trackCtx.stroke();
                     }
                 }
+
+
+                if (d.paths) {
+                    d.pathLife = (d.pathLife || 0);
+                    if (d.pathLife++ > 0) {
+                        d.pathLife = 0;
+                        d.paths.length && d.paths.splice(0, d.flash ? 1 : 4);
+                    }
+                }
+
             }
         }
 
