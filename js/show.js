@@ -619,13 +619,16 @@
         trackCtx.translate(lastEvent.translate[0], lastEvent.translate[1]);
         trackCtx.scale(lastEvent.scale, lastEvent.scale);
 
+        if (test) {
+            //trackCtx.globalAlpha = .1;
+            trackCtx.lineWidth = .4;
+        }
+
         if (nodes && nodes.length) {
 
             var d, l = nodes.length, color, c = null;
 
             trackCtx.fillStyle = "none";
-            if (test)
-                trackCtx.lineWidth = .2;
 
             while (--l > -1) {
                 d = nodes[l];

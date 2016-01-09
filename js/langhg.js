@@ -46,7 +46,7 @@
         if (layout.langHg && layout.langHg.empty())
             layout.langHg = null;
 
-        layout.langHg = (layout.langHg || layout.insert("g", ":first-child"))
+        layout.langHg = (layout.langHg || layout.insert("g", ":last-child"))
             .attr("class", "langHg")
             .attr("width", w_hg + m.left + m.right)
             .attr("height", h_hg + m.top + m.bottom)
