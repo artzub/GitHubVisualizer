@@ -859,7 +859,7 @@ hr {
 }
 
 .steps > li:after {
-    border: 1.248em solid transparent;
+    border: 1.2em solid transparent;
     border-left-color: #ffffff;
     top: -0.05em;
     right: -2.44em;

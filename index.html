@@ -8,6 +8,12 @@
     <title>GitHub Visualizer</title>
     <link rel="stylesheet" charset="utf-8" href="style.css" >
 
+    <meta property="og:url"           content="http://ghv.artzub.com/" />
+    <meta property="og:type"          content="website" />
+    <meta property="og:title"         content="GitHub Visualizer" />
+    <meta property="og:description"   content="This service lets the user to see statistics of repositories." />
+    <meta property="og:image"         content="http://hsto.org/files/164/ad3/241/164ad32418ea4410b7547bcd8193ebf2.gif" />
+
     <script src="js/cookies.js"></script>
 
     <script type="text/javascript">
@@ -590,7 +596,8 @@
                             <li style="font-size: 11px; font-weight: bold;">
                                 @ 2013 Create by<a href="http://artzub.com">Artem Zubkov</a> [<a href="https://github.com/artzub/GitHubCodeSwarm/issues" title="Issues report">GitHub Issues</a> |<a href="mailto:artzub@gmail.com" title="Write me...">Bug report to email</a> ]
                                 <br />
-                                Powered by<a href="http://d3js.org" title="Perfect javascript framework">D3.js</a>
+                                Powered by<a href="http://d3js.org" title="Perfect javascript framework">D3.js</a><br />
+                                <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="License Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
                             </li>
                         </ul>
                     </li>
@@ -671,45 +678,45 @@
 
 <div id="example" class="open popup tooltip">
     <div>
-        <a href="#repo=d3&climit=100&user=mbostock&run" title="Run visualization repo D3js">
+        <a href="#repo=d3&climit=100&user=d3&run" title="Run visualization repo D3js">
             <img src="resource/preloader24.gif" class="asyncload" data-src="http://hsto.org/files/164/ad3/241/164ad32418ea4410b7547bcd8193ebf2.gif" alt="D3js">
         </a>
-        <h1><a href="https://github.com/mbostock/d3" title="Visit on Github">D3js</a></h1>
+        <h1><a href="#repo=d3&climit=100&user=d3&run" title="Visit on Github">D3js</a></h1>
         <span>A JavaScript visualization library for HTML and SVG.</span>
     </div>
     <div>
         <a href="#repo=mc&climit=100&user=MidnightCommander&run" title="Run visualization repo MidnightCommander">
             <img src="resource/preloader24.gif" class="asyncload" data-src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_mc.png" alt="MidnightCommander">
         </a>
-        <h1><a href="https://github.com/MidnightCommander/mc" title="Visit on Github">MidnightCommander</a></h1>
+        <h1><a href="#repo=mc&climit=100&user=MidnightCommander&run" title="Visit on Github">MidnightCommander</a></h1>
         <span>Midnight Commander's repository.</span>
     </div>
     <div>
         <a href="#repo=jquery&climit=100&user=jquery&run" title="Run visualization repo jQuery">
             <img src="resource/preloader24.gif" class="asyncload" data-src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_jquery.png" alt="jQuery">
         </a>
-        <h1><a href="https://github.com/jquery/jquery" title="Visit on Github">jQuery</a></h1>
+        <h1><a href="#repo=jquery&climit=100&user=jquery&run" title="Visit on Github">jQuery</a></h1>
         <span>jQuery JavaScript Library.</span>
     </div>
     <div>
         <a href="#repo=bootstrap&climit=100&user=twbs&run" title="Run visualization repo Bootstrap">
             <img src="resource/preloader24.gif" class="asyncload" data-src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_bootstrap.png" alt="Bootstrap">
         </a>
-        <h1><a href="https://github.com/twbs/bootstrap" title="Visit on Github">Bootstrap</a></h1>
+        <h1><a href="#repo=bootstrap&climit=100&user=twbs&run" title="Visit on Github">Bootstrap</a></h1>
         <span>Sleek, intuitive, and powerful front-end framework for faster and easier web development.</span>
     </div>
     <div>
         <a href="#repo=rails&climit=100&user=rails&run" title="Run visualization repo Ruby on Rails">
             <img src="resource/preloader24.gif" class="asyncload" data-src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_rails.png" alt="Rails">
         </a>
-        <h1><a href="https://github.com/rails/rails" title="Visit on Github">Rails</a></h1>
+        <h1><a href="#repo=rails&climit=100&user=rails&run" title="Visit on Github">Rails</a></h1>
         <span>Ruby on Rails</span>
     </div>
     <div>
         <a href="#repo=song-of-github&climit=100&user=ajacksified&run" title="Run visualization repo Ruby on Song-of-github">
             <img src="resource/preloader24.gif" class="asyncload" data-src="https://raw.github.com/artzub/GitHubCodeSwarm/master/resource/ss_song-of-github.png" alt="song-of-github">
         </a>
-        <h1><a href="https://github.com/ajacksified/song-of-github" title="Visit on Github">Song-of-github</a></h1>
+        <h1><a href="#repo=song-of-github&climit=100&user=ajacksified&run" title="Visit on Github">Song-of-github</a></h1>
         <span>Let me play you the song of my contributions.</span>
     </div>
 </div>
@@ -781,11 +788,11 @@
 <script src="js/show.js"></script>
 
 <script>(function(d, s, id) {
-    var js, fjs = d.getElementsByTagName(s)[0];
-    if (d.getElementById(id)) return;
-    js = d.createElement(s); js.id = id;
-    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=780984598581744";
-    fjs.parentNode.insertBefore(js, fjs);
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.12&appId=780984598581744&autoLogAppEvents=1';
+  fjs.parentNode.insertBefore(js, fjs);
 }(document, 'script', 'facebook-jssdk'));</script>
 
 <!-- Yandex.Metrika counter -->
