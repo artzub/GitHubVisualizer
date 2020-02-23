@@ -1,7 +1,8 @@
 {
-  "name": "ghv",
+  "name": "github-visualizer",
+  "fullname": "GitHub Visualizer",
   "version": "1.0.0",
-  "description": "The service for visualizing github user activity and repositories history.",
+  "description": "The service for visualizing github users activity and repositories history.",
   "main": "dist/main.js",
   "private": true,
   "repository": {
@@ -16,7 +17,7 @@
     "git",
     "visualizer"
   ],
-  "author": "Artem Zubkov <artzub@gmail.com>",
+  "author": "Artem Zubkov <artzub@gmail.com> (https://artzub.com)",
   "license": "Apache-2.0",
   "licenses": [
     {
@@ -110,5 +111,8 @@
     "presets": [
       "react-app"
     ]
+  },
+  "dependencies": {
+    "favicons-webpack-plugin": "^3.0.1"
   }
 }

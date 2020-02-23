@@ -64,6 +64,7 @@ module.exports = {
   testsSetup: resolveModule(resolveApp, 'src/setupTests'),
   proxySetup: resolveApp('src/setupProxy.js'),
   appNodeModules: resolveApp('node_modules'),
+  appAssets: resolveApp('src/assets'),
   publicUrlOrPath,
 };
 
