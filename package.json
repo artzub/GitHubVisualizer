@@ -1,0 +1,58 @@
+{
+  "name": "ghv",
+  "version": "1.0.0",
+  "description": "The service for visualizing github user activity and repositories history.",
+  "main": "dist/main.js",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/artzub/GitHubVisualizer.git"
+  },
+  "keywords": [
+    "github",
+    "d3",
+    "canvas",
+    "visualization",
+    "git",
+    "visualizer"
+  ],
+  "author": "Artem Zubkov <artzub@gmail.com>",
+  "license": "Apache-2.0",
+  "licenses": [{
+      "type": "Apache-2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0"
+  }],
+  "bugs": {
+    "url": "https://github.com/artzub/GitHubVisualizer/issues"
+  },
+  "homepage": "https://github.com/artzub/GitHubVisualizer#readme",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "dependencies": {
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.3.2",
+    "@testing-library/user-event": "^7.1.2",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-scripts": "3.4.0"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
