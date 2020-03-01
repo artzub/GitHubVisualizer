@@ -1,0 +1,47 @@
+{
+  "extends": [
+    "react-app",
+    "plugin:react/all",
+    "plugin:jest/recommended",
+    "plugin:promise/recommended",
+    "plugin:security/recommended"
+  ],
+  "plugins": [
+    "jest",
+    "react-redux",
+    "security",
+    "unicorn",
+    "promise"
+  ],
+
+  "settings": {
+    "import/resolver": {
+      "webpack": {
+        "config": "./config/webpack.config.js"
+      }
+    }
+  },
+
+  "rules": {
+    "semi": [2, "always"],
+    "eol-last": ["error", "always"],
+
+    "security/detect-object-injection": [0],
+
+    "promise/prefer-await-to-callbacks": "warn",
+    "promise/prefer-await-to-then": "warn",
+    "promise/always-return": "warn",
+
+    "react/jsx-indent": [2, 2, {"indentLogicalExpressions": true, "checkAttributes": true}],
+    "react/jsx-props-no-spreading":  [0],
+    "react/jsx-no-bind": [0],
+    "react/jsx-indent-props": [2, 2],
+    "react/function-component-definition": [1, { "namedComponents": "arrow-function", "unnamedComponents": "arrow-function" }],
+    "react/jsx-max-props-per-line": [1, { "when":  "multiline" }],
+    "react/jsx-no-literals": [0],
+    "react/jsx-max-depth": [0],
+    "react/jsx-sort-props": [0],
+    "react/jsx-fragments": [0],
+    "react/sort-prop-types": [0]
+  }
+}
