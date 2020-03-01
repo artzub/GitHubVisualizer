@@ -11,15 +11,8 @@ import FormGroup from '@material-ui/core/FormGroup';
 import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 import Checkbox from '@material-ui/core/Checkbox';
-import Alert from '@material-ui/lab/Alert';
-import { withStyles } from '@material-ui/core/styles';
 import Step, { propTypes } from './Step';
-
-const AlertStyled = withStyles(theme => ({
-  root: {
-    marginBottom: '8px'
-  }
-}))(Alert);
+import Panel from './Panel';
 
 const StepUser = props => {
   const { onClickAway, open } = props;
@@ -51,24 +44,23 @@ const StepUser = props => {
 
   return (
     <Step open={open} onClickAway={onClickAway} title={title}>
-      <AlertStyled severity="info">
-        Enter a GitHub username.
-      </AlertStyled>
-      <FormControl component="fieldset">
-        <FormLabel component="legend">
-          Display:
-        </FormLabel>
-        <FormGroup>
-          <FormControlLabel
-            control={<Checkbox checked={repos} onChange={onReposChange} />}
-            label="Layer repos"
-          />
-          <FormControlLabel
-            control={<Checkbox checked={histogram} onChange={onHistogramChange} />}
-            label="Layer histogram languages"
-          />
-        </FormGroup>
-      </FormControl>
+      <Panel hint="Enter a GitHub username.">
+        <FormControl component="fieldset">
+          <FormLabel component="legend">
+            Display:
+          </FormLabel>
+          <FormGroup>
+            <FormControlLabel
+              control={<Checkbox checked={repos} onChange={onReposChange} />}
+              label="Layer repos"
+            />
+            <FormControlLabel
+              control={<Checkbox checked={histogram} onChange={onHistogramChange} />}
+              label="Layer histogram languages"
+            />
+          </FormGroup>
+        </FormControl>
+      </Panel>
     </Step>
   );
 };

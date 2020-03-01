@@ -6,7 +6,6 @@ import StepShow from './StepShow';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
 import styled from 'styled-components';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 
 const steps = [{
   key: 'user',
