@@ -297,6 +297,7 @@ module.exports = function(webpackEnv) {
           'scheduler/tracing': 'scheduler/tracing-profiling',
         }),
         ...(modules.webpackAliases || {}),
+        '@': path.resolve(__dirname, '../src')
       },
       plugins: [
         // Adds support for installing with Plug'n'Play, leading to faster installs and adding
@@ -331,11 +332,11 @@ module.exports = function(webpackEnv) {
           use: [
             {
               options: {
-                cache: true,
+                cache: false,
                 formatter: require.resolve('react-dev-utils/eslintFormatter'),
                 eslintPath: require.resolve('eslint'),
                 resolvePluginsRelativeTo: __dirname,
-
+                configFile: path.resolve(__dirname, '../.eslintrc')
               },
               loader: require.resolve('eslint-loader'),
             },
