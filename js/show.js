@@ -271,7 +271,7 @@
             h2 = h/2,
             h5 = h/5;
         if (type == typeNode.file) {
-            c = c && c.match(/.*(\.\w+)$/) ? c.replace(/.*(\.\w+)$/, "$1").toLowerCase() : "Mics";
+            c = c && c.match(/.*(\.\w+)$/) ? c.replace(/.*(\.\w+)$/, "$1").toLowerCase() : "Misc";
             ext = extHash.get(c);
             if (!ext) {
                 ext = {
