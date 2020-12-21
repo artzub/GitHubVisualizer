@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import Popper from '@material-ui/core/Popper';
 import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
 import Collapse from '@material-ui/core/Collapse';
@@ -10,10 +9,20 @@ import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 const PaperStyled = withStyles(() => ({
   root: {
     padding: '0 16px',
-    marginLeft: '-8px',
-    boxShadow: `2px 3px 3px 0px rgba(0,0,0,0.12), -2px 3px 3px 0px rgba(0,0,0,0.12)`
+    boxShadow: `2px 3px 3px 0px rgba(0,0,0,0.12), -2px 3px 3px 0px rgba(0,0,0,0.12)`,
+    position: 'absolute',
+    top: '100%',
+    left: '-40px',
+    width: 'max-content',
+    zIndex: 10
   }
 }))(Paper);
+
+const ParentBoxStyled = withStyles(() => ({
+  root: {
+    position: 'relative'
+  }
+}))(Box);
 
 const BoxStyled = withStyles(() => ({
   root: {
@@ -61,30 +70,20 @@ const Step = props => {
 
   return (
     <ClickAwayListener onClickAway={onHookClickAway}>
-      <Box display="flex" alignItems="center" ref={onBoxRef}>
+      <ParentBoxStyled display="flex" alignItems="center" ref={onBoxRef}>
         {title && title}
 
-        <Popper
-          disablePortal
-          open={open}
-          anchorEl={boxRef.current}
-          placement="bottom-start"
-          transition
+        <PaperStyled
+          square
+          elevation={0}
         >
-          {({ TransitionProps }) => (
-            <PaperStyled
-              square
-              elevation={0}
-            >
-              <Collapse {...TransitionProps} in={later} timeout={350}>
-                <BoxStyled display="flex" flexDirection="column">
-                  {children}
-                </BoxStyled>
-              </Collapse>
-            </PaperStyled>
-          )}
-        </Popper>
-      </Box>
+          <Collapse in={later} timeout={350}>
+            <BoxStyled display="flex" flexDirection="column">
+              {children}
+            </BoxStyled>
+          </Collapse>
+        </PaperStyled>
+      </ParentBoxStyled>
     </ClickAwayListener>
   );
 };

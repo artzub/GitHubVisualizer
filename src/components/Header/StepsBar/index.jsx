@@ -40,8 +40,7 @@ const Index = () => {
   );
 
   const onCloseBy = useCallback(
-    event => {
-      console.log(event);
+    () => {
       setOpened(-1);
     },
     []
@@ -50,7 +49,11 @@ const Index = () => {
   return (
     <StepperStyled nonLinear activeStep={active}>
       {steps.map(({key, component: Component}, index) => (
-        <Step key={key} onMouseEnter={onOpenBy(index)} onMouseLeave={onCloseBy}>
+        <Step
+          key={key}
+          onMouseEnter={onOpenBy(index)}
+          onMouseLeave={onCloseBy}
+        >
           <StepLabel>
             <Component open={opened === index} onClickAway={onCloseBy} />
           </StepLabel>

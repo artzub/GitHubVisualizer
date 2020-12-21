@@ -3,5 +3,8 @@ import dark from '@/themes/dark';
 export default {
   ...dark,
 
-  name: 'light'
+  name: 'light',
+  palette: {
+    type: 'light',
+  }
 };

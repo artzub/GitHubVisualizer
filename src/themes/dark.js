@@ -1,3 +1,6 @@
 export default {
-  name: 'dark'
+  name: 'dark',
+  palette: {
+    type: 'dark'
+  }
 };
