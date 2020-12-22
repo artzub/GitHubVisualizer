@@ -8,6 +8,8 @@
   ],
   "plugins": [
     "jest",
+    "react",
+    "react-hooks",
     "react-redux",
     "security",
     "unicorn",
@@ -41,7 +43,40 @@
     "react/jsx-no-literals": [0],
     "react/jsx-max-depth": [0],
     "react/jsx-sort-props": [0],
-    "react/jsx-fragments": [0],
-    "react/sort-prop-types": [0]
+    "react/jsx-fragments": ["warn", "element"],
+    "react/sort-prop-types": [0],
+    // "import/no-unused-modules": [1, {"unusedExports": true}], // uncomment to find out what files are unused
+    "no-unused-vars": "warn",
+    "no-multi-spaces": "warn",
+    "no-restricted-syntax": "off",
+    "arrow-parens": "warn",
+    "comma-dangle": ["warn", "always-multiline"],
+    "padded-blocks": ["warn", "never"],
+    "react/require-default-props": "warn",
+    "linebreak-style": "off",
+    "arrow-body-style": "off",
+    "no-param-reassign": "off",
+    "react/no-typos": "off",
+    "func-names": "off",
+    "import/no-named-as-default-member": "off",
+    "import/no-named-as-default": "off",
+    "import/prefer-default-export": "off",
+    "jsx-a11y/anchor-is-valid": [ "error", {
+      "components": [ "Link" ],
+      "specialLink": [ "to", "hrefLeft", "hrefRight" ],
+      "aspects": [ "noHref", "invalidHref", "preferButton" ]
+    }],
+    "max-len": ["error", {"code": 180, "ignoreRegExpLiterals": true, "tabWidth": 2}],
+    "no-console": ["error", { "allow": ["debug"] }],
+    "no-underscore-dangle": "off",
+    "object-curly-newline": ["error", {
+      "ImportDeclaration": {"multiline": true, "consistent": true, "minProperties": 6}
+    }],
+    "react/jsx-filename-extension": ["warn", { "extensions": [".js", ".jsx"] }],
+    "react/jsx-one-expression-per-line": "off",
+    "react/destructuring-assignment": "off",
+    "react/no-danger": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "max-classes-per-file": "off"
   }
 }

@@ -27,7 +27,7 @@ const Index = () => {
   const [active, setActive] = useState(0);
 
   const onOpenBy = useCallback(
-    index => event => {
+    (index) => () => {
       if (index === opened) {
         return;
       }
@@ -36,14 +36,14 @@ const Index = () => {
       setOpened(nextOpened);
       setActive(nextOpened >= 0 ? nextOpened : active);
     },
-    [opened, active]
+    [opened, active],
   );
 
   const onCloseBy = useCallback(
     () => {
       setOpened(-1);
     },
-    []
+    [],
   );
 
   return (

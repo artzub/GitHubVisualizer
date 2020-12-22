@@ -11,8 +11,7 @@ export const addTheme = (name, theme) => {
 addTheme(light.name, light);
 addTheme(dark.name, dark);
 
-export const getTheme = name => {
-
+export const getTheme = (name) => {
   const theme = createMuiTheme(themes[name] || themes.dark);
 
   const GlobalStyle = createGlobalStyle`
@@ -40,6 +39,6 @@ export const getTheme = name => {
 
   return {
     theme,
-    GlobalStyle
+    GlobalStyle,
   };
 };

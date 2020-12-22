@@ -19,12 +19,12 @@ const UserBar = () => {
 
   const handleMenu = useCallback(
     ({ currentTarget }) => setAnchor(currentTarget),
-    []
+    [],
   );
 
   const handleClose = useCallback(
     () => setAnchor(null),
-    []
+    [],
   );
 
   return (

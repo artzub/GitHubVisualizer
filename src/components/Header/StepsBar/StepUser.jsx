@@ -14,7 +14,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Step, { propTypes } from './Step';
 import Panel from './Panel';
 
-const StepUser = props => {
+const StepUser = (props) => {
   const { onClickAway, open } = props;
 
   const [repos, setRepos] = useState(true);
@@ -22,12 +22,12 @@ const StepUser = props => {
 
   const onReposChange = useCallback(
     ({ target }) => setRepos(target.checked),
-    []
+    [],
   );
 
   const onHistogramChange = useCallback(
     ({ target }) => setHistogram(target.checked),
-    []
+    [],
   );
 
   const title = useMemo(
@@ -39,7 +39,7 @@ const StepUser = props => {
         </IconButton>
       </React.Fragment>
     ),
-    []
+    [],
   );
 
   return (
@@ -72,11 +72,11 @@ const {
 } = propTypes;
 
 StepUser.propTypes = {
-  ...stepProps
+  ...stepProps,
 };
 
 StepUser.defaultProps = {
-  open: false
+  open: false,
 };
 
 export default StepUser;

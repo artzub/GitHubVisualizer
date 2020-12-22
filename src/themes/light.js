@@ -6,5 +6,5 @@ export default {
   name: 'light',
   palette: {
     type: 'light',
-  }
+  },
 };

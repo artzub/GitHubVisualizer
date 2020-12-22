@@ -14,45 +14,45 @@ const PaperStyled = withStyles(() => ({
     top: '100%',
     left: '-40px',
     width: 'max-content',
-    zIndex: 10
-  }
+    zIndex: 10,
+  },
 }))(Paper);
 
 const ParentBoxStyled = withStyles(() => ({
   root: {
-    position: 'relative'
-  }
+    position: 'relative',
+  },
 }))(Box);
 
 const BoxStyled = withStyles(() => ({
   root: {
     marginTop: '8px',
-    marginBottom: '8px'
-  }
+    marginBottom: '8px',
+  },
 }))(Box);
 
-const Step = props => {
+const Step = (props) => {
   const { open, onClickAway, title, children } = props;
   const boxRef = useRef(null);
   const [later, setLater] = useState(false);
 
   const onBoxRef = useCallback(
-    node => {
+    (node) => {
       boxRef.current = node;
       if (node && node.parentNode) {
         boxRef.current = node.parentNode.parentNode.parentNode;
       }
     },
-    []
+    [],
   );
 
   const onHookClickAway = useCallback(
-    event => {
+    (event) => {
       if (open && onClickAway) {
         onClickAway(event);
       }
     },
-    [open, onClickAway]
+    [open, onClickAway],
   );
 
   useEffect(
@@ -65,7 +65,7 @@ const Step = props => {
         clearTimeout(timer);
       };
     },
-    [open]
+    [open],
   );
 
   return (
@@ -93,23 +93,23 @@ export const propTypes = {
     PropTypes.node,
     PropTypes.string,
     PropTypes.element,
-    PropTypes.func
+    PropTypes.func,
   ]).isRequired,
   title: PropTypes.oneOfType([
     PropTypes.node,
     PropTypes.string,
     PropTypes.element,
-    PropTypes.func
+    PropTypes.func,
   ]).isRequired,
   onClickAway: PropTypes.func.isRequired,
 
-  open: PropTypes.bool
+  open: PropTypes.bool,
 };
 
 Step.propTypes = propTypes;
 
 Step.defaultProps = {
-  open: false
+  open: false,
 };
 
 export default Step;

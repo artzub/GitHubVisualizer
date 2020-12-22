@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "allowSyntheticDefaultImports": false,
+    "baseUrl": "src",
+    "paths": {
+      "@/*": ["*"],
+      "+components/*": ["shared/components/*"],
+      "+utils/*": ["shared/utils/*"],
+      "+hooks/*": ["shared/hooks/*"],
+      "+theme/*": ["shared/theme/*"]
+    }
+  },
+  "exclude": ["node_modules", "build"]
+}

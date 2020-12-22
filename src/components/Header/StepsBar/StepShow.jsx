@@ -17,7 +17,7 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 
-const StepShow = props => {
+const StepShow = (props) => {
   const { onClickAway, open } = props;
 
   const [statistic, setStatistic] = useState(true);
@@ -25,12 +25,12 @@ const StepShow = props => {
 
   const onStatisticChange = useCallback(
     ({ target }) => setStatistic(target.checked),
-    []
+    [],
   );
 
   const onContributorsChange = useCallback(
     ({ target }) => setContributors(target.checked),
-    []
+    [],
   );
 
   const title = useMemo(
@@ -50,7 +50,7 @@ const StepShow = props => {
         </Button>
       </Box>
     ),
-    []
+    [],
   );
 
   return (
@@ -136,11 +136,11 @@ const {
 } = propTypes;
 
 StepShow.propTypes = {
-  ...stepProps
+  ...stepProps,
 };
 
 StepShow.defaultProps = {
-  open: false
+  open: false,
 };
 
 export default StepShow;

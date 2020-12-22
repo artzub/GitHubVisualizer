@@ -14,7 +14,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import BarChartIcon from '@material-ui/icons/BarChart';
 
-const StepRepo = props => {
+const StepRepo = (props) => {
   const { onClickAway, open } = props;
 
   const [statistic, setStatistic] = useState(true);
@@ -22,12 +22,12 @@ const StepRepo = props => {
 
   const onStatisticChange = useCallback(
     ({ target }) => setStatistic(target.checked),
-    []
+    [],
   );
 
   const onContributorsChange = useCallback(
     ({ target }) => setContributors(target.checked),
-    []
+    [],
   );
 
   const title = useMemo(
@@ -41,7 +41,7 @@ const StepRepo = props => {
         </Button>
       </React.Fragment>
     ),
-    []
+    [],
   );
 
   return (
@@ -74,11 +74,11 @@ const {
 } = propTypes;
 
 StepRepo.propTypes = {
-  ...stepProps
+  ...stepProps,
 };
 
 StepRepo.defaultProps = {
-  open: false
+  open: false,
 };
 
 export default StepRepo;

@@ -3,12 +3,12 @@ import { withStyles } from '@material-ui/core/styles';
 import Alert from '@material-ui/lab/Alert';
 import PropTypes from 'prop-types';
 
-const AlertStyled = withStyles(theme => ({
+const AlertStyled = withStyles(() => ({
   root: {
-    marginBottom: '8px'
-  }
+    marginBottom: '8px',
+  },
 }))(Alert);
-const Panel = props => {
+const Panel = (props) => {
   const { hint, children } = props;
   return (
     <React.Fragment>
@@ -27,18 +27,18 @@ Panel.propTypes = {
     PropTypes.node,
     PropTypes.string,
     PropTypes.element,
-    PropTypes.func
+    PropTypes.func,
   ]),
   children: PropTypes.oneOfType([
     PropTypes.node,
     PropTypes.string,
     PropTypes.element,
-    PropTypes.func
-  ]).isRequired
+    PropTypes.func,
+  ]).isRequired,
 };
 
 Panel.defaultProps = {
-  hint: null
+  hint: null,
 };
 
 export default Panel;
