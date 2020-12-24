@@ -26,10 +26,6 @@ export const getCommits = ({ owner, repo, branch, perPage = 10, page }) =>
       },
     });
 
-    if (signal.aborted) {
-      return {};
-    }
-
     const ids = data?.data?.map(({ sha }) => sha) || [];
 
     const commits = await Promise.all(ids.map(async (ref) => {

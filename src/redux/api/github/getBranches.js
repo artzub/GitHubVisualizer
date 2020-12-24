@@ -30,10 +30,6 @@ export const getBranches = ({ owner, repo, perPage = 10, page }) =>
       },
     });
 
-    if (signal.aborted) {
-      return {};
-    }
-
     const branches = await Promise.all((data?.data || []).map(async (branch) => {
       const commits = await client.repos.listCommits({
         repo,

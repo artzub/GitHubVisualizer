@@ -29,10 +29,6 @@ export const getCommits = ({ owner, repo, branch, page = '', perPage = 10 }) =>
       },
     });
 
-    if (signal.aborted) {
-      return {};
-    }
-
     const ids = data?.repository?.ref?.target?.history?.nodes?.map(({ oid }) => oid) || [];
 
     const commits = await Promise.all(ids.map(async (ref) => {

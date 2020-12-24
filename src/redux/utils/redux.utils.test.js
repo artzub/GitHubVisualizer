@@ -23,11 +23,14 @@ describe('Redux Utils', () => {
       expect(result).toBeInstanceOf(AbortSignal);
     });
 
-    it('should add CANCEL props to returned object', () => {
+    it('should add CANCEL props to returned object', async () => {
       const fn = jest.fn(mock);
       const result = withCancellation(fn);
       expect(result[CANCEL]).toBeDefined();
       expect(result[CANCEL]).toBeInstanceOf(Function);
+      result[CANCEL]();
+      const signal = await result;
+      expect(signal).toHaveProperty('aborted', true);
     });
   });
 
