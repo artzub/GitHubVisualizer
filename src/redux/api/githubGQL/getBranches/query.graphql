@@ -1,0 +1,26 @@
+query($owner: String!, $repo: String!, $perPage: Int!, ${this.cursorArgument}) {
+  rateLimit{
+    cost
+    remaining
+    resetAt
+  }
+  repository(owner: $owner, name: $repo) {
+    refs(refPrefix: "refs/heads/", first: $perPage, ${this.after}) {
+      totalCount
+      nodes {
+        name
+        target {
+          ...on Commit {
+            history {
+              totalCount
+            }
+          }
+        }
+      }
+      pageInfo {
+        nextPage: endCursor,
+        hasNextPage
+      }
+    }
+  }
+}

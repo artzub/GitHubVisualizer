@@ -1,0 +1,31 @@
+query($login: String!, $isOrganization: Boolean!) {
+  rateLimit{
+    cost
+    remaining
+    resetAt
+  }
+  organization(login: $login) @include(if: $isOrganization) {
+    ...repositoriesData
+    ...profileData
+  },
+  user(login: $login) @skip(if: $isOrganization) {
+    ...repositoriesData
+    ...profileData
+  },
+}
+
+fragment profileData on ProfileOwner {
+  id
+  name
+  login
+  location
+  websiteUrl
+}
+
+fragment repositoriesData on RepositoryOwner {
+  avatarUrl(size: 128)
+  url
+  repositories {
+    totalCount
+  }
+}

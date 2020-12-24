@@ -1,0 +1,35 @@
+query($search: String!) {
+  rateLimit{
+    cost
+    remaining
+    resetAt
+  }
+  search(first: 10, query: $search, type: USER) {
+    nodes {
+      type: __typename,
+      ... on User {
+        ...profileData
+        ...repositoriesData
+      },
+      ... on Organization {
+        ...profileData
+        ...repositoriesData
+      }
+    }
+  },
+}
+
+fragment profileData on ProfileOwner {
+  id
+  name
+  login
+}
+
+fragment repositoriesData on RepositoryOwner {
+  all: repositories {
+    totalCount
+  },
+  private: repositories(privacy: PRIVATE) {
+    totalCount
+  }
+}

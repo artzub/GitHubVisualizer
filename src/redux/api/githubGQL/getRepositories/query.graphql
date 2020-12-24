@@ -1,0 +1,56 @@
+query($owner: String!, $perPage: Int!, ${this.cursorArgument}) {
+  rateLimit{
+    cost
+    remaining
+    resetAt
+  }
+  profile: repositoryOwner(login: $owner) {
+    repositories(first: $perPage, ${this.after}) {
+      pageInfo {
+        nextPage: endCursor,
+        hasNextPage
+      }
+      nodes {
+        createdAt,
+        updatedAt,
+        pushedAt,
+        homepageUrl,
+        primaryLanguage {
+          id,
+          name
+        },
+        id,
+        isArchived,
+        isEmpty,
+        isFork,
+        isInOrganization,
+        isLocked,
+        isMirror,
+        isPrivate,
+        description,
+        name,
+        url,
+
+        forks: forkCount,
+        assignableUsers{
+          totalCount
+        }
+        issues {
+          totalCount
+        },
+        commitComments {
+          totalCount
+        },
+        releases {
+          totalCount
+        },
+        stargazers {
+          totalCount
+        },
+        watchers {
+          totalCount
+        }
+      }
+    }
+  }
+}

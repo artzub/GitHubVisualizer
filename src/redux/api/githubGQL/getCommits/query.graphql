@@ -1,0 +1,24 @@
+query($owner:String!, $repo:String!, $branch: String!, $perPage: Int!, ${this.cursorArgument}) {
+  rateLimit{
+    cost
+    remaining
+    resetAt
+  }
+  repository(owner: $owner, name: $repo) {
+    ref(qualifiedName: $branch) {
+      target {
+        ... on Commit {
+          history(first: $perPage, ${this.after}) {
+            nodes {
+              oid
+            }
+            pageInfo {
+              nextPage: endCursor,
+              hasNextPage
+            }
+          }
+        }
+      }
+    }
+  }
+}
