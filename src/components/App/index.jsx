@@ -1,11 +1,11 @@
 import 'typeface-roboto';
 
 import React from 'react';
-import { ThemeProvider } from 'styled-components';
-import { StylesProvider, ThemeProvider as MuiThemeProvider } from '@material-ui/core/styles';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import { getTheme } from '@/themes';
 import AppRouter from '@/routes';
+import { getTheme } from '@/themes';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import { StylesProvider, ThemeProvider as MuiThemeProvider } from '@material-ui/core/styles';
+import { ThemeProvider } from 'styled-components';
 
 const App = () => {
   const { theme, GlobalStyle } = getTheme('dark');

@@ -1,11 +1,11 @@
 import React, { useCallback, useState } from 'react';
-import Stepper from '@material-ui/core/Stepper';
-import StepUser from './StepUser';
-import StepRepo from './StepRepo';
-import StepShow from './StepShow';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
+import Stepper from '@material-ui/core/Stepper';
 import styled from 'styled-components';
+import StepRepo from './StepRepo';
+import StepShow from './StepShow';
+import StepUser from './StepUser';
 
 const steps = [{
   key: 'user',
@@ -48,7 +48,7 @@ const Index = () => {
 
   return (
     <StepperStyled nonLinear activeStep={active}>
-      {steps.map(({key, component: Component}, index) => (
+      {steps.map(({ key, component: Component }, index) => (
         <Step
           key={key}
           onMouseEnter={onOpenBy(index)}

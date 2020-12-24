@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
-import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
-import Collapse from '@material-ui/core/Collapse';
-import { withStyles } from '@material-ui/core/styles';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import Collapse from '@material-ui/core/Collapse';
+import Paper from '@material-ui/core/Paper';
+import { withStyles } from '@material-ui/core/styles';
+import PropTypes from 'prop-types';
 
 const PaperStyled = withStyles(() => ({
   root: {

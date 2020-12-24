@@ -1,14 +1,14 @@
 import React, { useCallback, useState } from 'react';
-import styled from 'styled-components';
 import IconButton from '@material-ui/core/IconButton';
-import AccountCircle from '@material-ui/icons/AccountCircle';
-import GitHub from '@material-ui/icons/GitHub';
-import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import AccountCircle from '@material-ui/icons/AccountCircle';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import GitHub from '@material-ui/icons/GitHub';
 import { Link } from 'react-router-dom';
+import styled from 'styled-components';
 
 const Container = styled.div`
 `;

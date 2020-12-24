@@ -1,7 +1,7 @@
-import { createGlobalStyle } from 'styled-components';
-import light from './light';
-import dark from './dark';
 import { createMuiTheme } from '@material-ui/core/styles';
+import { createGlobalStyle } from 'styled-components';
+import dark from './dark';
+import light from './light';
 
 const themes = {};
 export const addTheme = (name, theme) => {

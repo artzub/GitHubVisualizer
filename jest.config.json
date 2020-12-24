@@ -18,9 +18,10 @@
   ],
   "testEnvironment": "jest-environment-jsdom-fourteen",
   "transform": {
+    "^.*\\.graphql$": "jest-raw-loader",
     "^.+\\.(js|jsx|ts|tsx)$": "<rootDir>/node_modules/babel-jest",
     "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
-    "^(?!.*\\.(js|jsx|ts|tsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
+    "^(?!.*\\.(js|jsx|ts|tsx|css|json|graphql)$)": "<rootDir>/config/jest/fileTransform.js"
   },
   "transformIgnorePatterns": [
     "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$",
@@ -29,7 +30,8 @@
   "modulePaths": [],
   "moduleNameMapper": {
     "^react-native$": "react-native-web",
-    "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy"
+    "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy",
+    "^@/(.*)$": "<rootDir>/src/$1"
   },
   "moduleFileExtensions": [
     "web.js",

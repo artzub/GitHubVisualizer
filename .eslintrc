@@ -13,7 +13,8 @@
     "react-redux",
     "security",
     "unicorn",
-    "promise"
+    "promise",
+    "import"
   ],
 
   "settings": {
@@ -67,7 +68,7 @@
       "aspects": [ "noHref", "invalidHref", "preferButton" ]
     }],
     "max-len": ["error", {"code": 180, "ignoreRegExpLiterals": true, "tabWidth": 2}],
-    "no-console": ["error", { "allow": ["debug"] }],
+    "no-console": ["warn"],
     "no-underscore-dangle": "off",
     "object-curly-newline": ["error", {
       "ImportDeclaration": {"multiline": true, "consistent": true, "minProperties": 6}
@@ -77,6 +78,23 @@
     "react/destructuring-assignment": "off",
     "react/no-danger": "off",
     "react-hooks/rules-of-hooks": "error",
-    "max-classes-per-file": "off"
+    "max-classes-per-file": "off",
+    "react/jsx-curly-spacing": [2, {"when": "never"}],
+    "object-curly-spacing": ["warn", "always", { "objectsInObjects": true }],
+    "import/order": ["warn", {
+      "groups": ["builtin", "external", "internal"],
+      "pathGroups": [
+        {
+          "pattern": "react",
+          "group": "external",
+          "position": "before"
+        }
+      ],
+      "pathGroupsExcludedImportTypes": ["react"],
+      "alphabetize": {
+        "order": "asc",
+        "caseInsensitive": true
+      }
+    }]
   }
 }

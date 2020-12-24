@@ -3,16 +3,16 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import Button from '@material-ui/core/Button';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormGroup from '@material-ui/core/FormGroup';
-import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
-import Checkbox from '@material-ui/core/Checkbox';
-import Step, { propTypes } from './Step';
-import Panel from './Panel';
 import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
 import BarChartIcon from '@material-ui/icons/BarChart';
+import Panel from './Panel';
+import Step, { propTypes } from './Step';
 
 const StepRepo = (props) => {
   const { onClickAway, open } = props;

@@ -382,6 +382,9 @@ module.exports = function(webpackEnv) {
                       },
                     },
                   ],
+                  '@babel/plugin-proposal-object-rest-spread',
+                  '@babel/plugin-proposal-nullish-coalescing-operator',
+                  '@babel/plugin-proposal-optional-chaining',
                 ],
                 // This is a feature of `babel-loader` for webpack (not Babel itself).
                 // It enables caching results in ./node_modules/.cache/babel-loader/
@@ -485,6 +488,10 @@ module.exports = function(webpackEnv) {
                 'sass-loader'
               ),
             },
+            {
+              test: /\.graphql$/,
+              loader: require.resolve('raw-loader'),
+            },
             // "file" loader makes sure those assets get served by WebpackDevServer.
             // When you `import` an asset, you get its (virtual) filename.
             // In production, they would get copied to the `build` folder.
@@ -496,7 +503,7 @@ module.exports = function(webpackEnv) {
               // its runtime that would otherwise be processed through "file" loader.
               // Also exclude `html` and `json` extensions so they get processed
               // by webpacks internal loaders.
-              exclude: [/\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.json$/],
+              exclude: [/\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.json$/, /\.graphql$/],
               options: {
                 name: 'static/media/[name].[hash:8].[ext]',
               },

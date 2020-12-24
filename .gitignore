@@ -24,6 +24,9 @@ test/
 .env.test.local
 .env.production.local
 
+*.local
+.graphqlconfig
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

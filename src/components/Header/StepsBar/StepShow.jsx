@@ -1,21 +1,21 @@
 import React, { useCallback, useMemo, useState } from 'react';
+import Panel from '@/components/Header/StepsBar/Panel';
+import Step, { propTypes } from '@/components/Header/StepsBar/Step';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
-import PlayIcon from '@material-ui/icons/PlayArrow';
-import StopIcon from '@material-ui/icons/Stop';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import PauseIcon from '@material-ui/icons/Pause';
-import ReplayIcon from '@material-ui/icons/Replay';
-import Step, { propTypes } from '@/components/Header/StepsBar/Step';
-import Panel from '@/components/Header/StepsBar/Panel';
-import FormControl from '@material-ui/core/FormControl';
-import FormLabel from '@material-ui/core/FormLabel';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import FormControl from '@material-ui/core/FormControl';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormLabel from '@material-ui/core/FormLabel';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import PauseIcon from '@material-ui/icons/Pause';
+import PlayIcon from '@material-ui/icons/PlayArrow';
+import ReplayIcon from '@material-ui/icons/Replay';
+import StopIcon from '@material-ui/icons/Stop';
 
 const StepShow = (props) => {
   const { onClickAway, open } = props;

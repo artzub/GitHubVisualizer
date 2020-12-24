@@ -1,9 +1,9 @@
 import React from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
+import styled from 'styled-components';
 import StepsBar from './StepsBar';
 import UserBar from './UserBar';
-import styled from 'styled-components';
 
 const Stretcher = styled.div`
     flex-grow: 1;
