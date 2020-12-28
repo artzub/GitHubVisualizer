@@ -4,7 +4,7 @@
     "allowSyntheticDefaultImports": false,
     "baseUrl": "src",
     "paths": {
-      "@/*": ["*"],
+      "@/*": ["*"]
     }
   },
   "exclude": ["node_modules", "build"]

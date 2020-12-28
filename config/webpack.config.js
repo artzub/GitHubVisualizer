@@ -371,6 +371,8 @@ module.exports = function(webpackEnv) {
                 ),
 
                 plugins: [
+                  'react-hot-loader/babel',
+                  'babel-plugin-styled-components',
                   [
                     require.resolve('babel-plugin-named-asset-import'),
                     {
