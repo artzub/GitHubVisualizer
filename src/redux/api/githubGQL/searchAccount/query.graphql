@@ -26,6 +26,7 @@ fragment profileData on ProfileOwner {
 }
 
 fragment repositoriesData on RepositoryOwner {
+  avatarUrl(size: 128)
   all: repositories {
     totalCount
   },

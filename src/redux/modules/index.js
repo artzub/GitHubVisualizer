@@ -1,14 +1,17 @@
 import { all } from 'redux-saga/effects';
+import profiles from "./profiles";
 
 // Put modules that have their reducers nested in other (root) reducers here
 const nestedSlices = [];
 
 // Put modules whose reducers you want in the root tree in this array.
-const rootSlices = [];
+const rootSlices = [
+  profiles,
+];
 
-const sagas = rootSlices.concat(nestedSlices)
+const sagas = [...rootSlices, ...nestedSlices]
   .map((slice) => slice.sagas)
-  .reduce((acc, arr) => acc.concat(arr));
+  .reduce((acc, sagas) => [...acc, ...sagas]);
 
 export function* rootSaga() {
   yield all(sagas.map((saga) => saga()));
