@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-
+import FetchTopUser from "@/components/Header/FetchTopUser";
+import User from "@/components/Header/User";
+import UserSearch from "@/components/Header/UserSearch";
+import Collapse from "@material-ui/core/Collapse";
+import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import { withStyles } from "@material-ui/core/styles";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
-import { Collapse, Grid } from "@material-ui/core";
-import User from "@/components/Header/User";
-import UserSearch from "@/components/Header/UserSearch";
-import FetchTopUser from "@/components/Header/FetchTopUser";
+
 
 const PaperStyled = withStyles(() => ({
   root: {

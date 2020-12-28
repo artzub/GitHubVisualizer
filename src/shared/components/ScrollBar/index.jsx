@@ -1,6 +1,6 @@
 import 'react';
-import styled from 'styled-components';
 import Scroll from 'react-smooth-scrollbar';
+import styled from 'styled-components';
 
 // background: ${(props) => props.theme.scrollBackgroundColor};
 

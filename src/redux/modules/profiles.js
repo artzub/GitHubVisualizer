@@ -1,6 +1,6 @@
-import { call, put } from 'redux-saga/effects';
-import { createSlice, startFetching, stopFetching } from "@/redux/utils";
 import { getProfile, searchAccount } from '@/redux/api/github';
+import { createSlice, startFetching, stopFetching } from "@/redux/utils";
+import { call, put } from 'redux-saga/effects';
 
 const initialState = {
   isFetching: false,
