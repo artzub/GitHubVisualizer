@@ -61,7 +61,7 @@ const TopHeader = (
   </ListSubheader>
 );
 
-const UserSearch = () => {
+const Body = () => {
   const dispatch = useDispatch();
   const inputRef = useRef();
   const [search, setSearch] = useState('');
@@ -171,4 +171,4 @@ const UserSearch = () => {
   );
 };
 
-export default UserSearch;
+export default Body;

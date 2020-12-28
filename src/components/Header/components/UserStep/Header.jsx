@@ -1,7 +1,7 @@
 import React from 'react';
 import slice from '@/redux/modules/profiles';
 import { Avatar } from "@material-ui/core";
-import { default as LinkOrigin } from "@material-ui/core/Link";
+import LinkOrigin from "@material-ui/core/Link";
 import GithubIcon from "mdi-react/GithubIcon";
 import LinkVariantIcon from "mdi-react/LinkVariantIcon";
 import SourceRepositoriesIcon from "mdi-react/SourceRepositoriesIcon";
@@ -79,7 +79,7 @@ const PropertyValue = styled.div`
   margin-left: 2px;
 `;
 
-const User = (props) => {
+const Header = (props) => {
   const { profile } = useSelector(slice.selectors.getState);
 
   return (
@@ -119,4 +119,4 @@ const User = (props) => {
   );
 };
 
-export default User;
+export default Header;

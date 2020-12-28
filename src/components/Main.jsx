@@ -1,5 +1,5 @@
 import React from 'react';
-import { default as ContainerOriginal } from '@material-ui/core/Container';
+import ContainerOriginal from '@material-ui/core/Container';
 import { withStyles } from '@material-ui/core/styles';
 
 const Container = withStyles({

@@ -1,7 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import FetchTopUser from "@/components/Header/FetchTopUser";
-import User from "@/components/Header/User";
-import UserSearch from "@/components/Header/UserSearch";
 import { StageTypes } from "@/models/StageTypes";
 import { useUIProperty } from "@/shared/hooks";
 import Collapse from "@material-ui/core/Collapse";
@@ -10,6 +7,9 @@ import Paper from "@material-ui/core/Paper";
 import { withStyles } from "@material-ui/core/styles";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
+import UserStepBody from "./components/UserStep/Body";
+import FetchTopUser from "./components/UserStep/FetchTopUser";
+import UserStepHeader from "./components/UserStep/Header";
 
 const PaperStyled = withStyles(() => ({
   root: {
@@ -21,7 +21,7 @@ const PaperStyled = withStyles(() => ({
 }))(Paper);
 
 const StepBodies = {
-  [StageTypes.user]: UserSearch,
+  [StageTypes.user]: UserStepBody,
 };
 
 const Header = () => {
@@ -59,7 +59,7 @@ const Header = () => {
         <Tab label="Show" />
       </Tabs>
       <Grid container>
-        <User onClick={onClick(StageTypes.user)} />
+        <UserStepHeader onClick={onClick(StageTypes.user)} />
         <div>
           Repository
         </div>
