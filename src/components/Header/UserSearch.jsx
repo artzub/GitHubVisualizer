@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import slice from '@/redux/modules/profiles';
+import Highlight from "@/shared/components/Highlight";
 import LoadingOverlay from "@/shared/components/LoadingOverlay";
 import ScrollBar from "@/shared/components/ScrollBar";
 import {
@@ -120,7 +121,7 @@ const UserSearch = () => {
                     <Avatar src={user.avatar_url} />
                   </ListItemAvatar>
                   <ListItemText
-                    primary={user.login}
+                    primary={<Highlight search={search} text={user.login} />}
                     secondary={user.type}
                   />
                 </ListItem>
