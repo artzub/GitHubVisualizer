@@ -1,12 +1,7 @@
 import { createSlice as createToolkitSlice } from '@reduxjs/toolkit';
-import capitalize from 'lodash.capitalize';
-import map from 'lodash.map';
-import throttle from 'lodash.throttle';
 import { call, put, race, take, takeEvery } from 'redux-saga/effects';
 
 const getCancelType = (type, token) => `${type}${token ? `_${token}` : ''}`;
-// eslint-disable-next-line no-console
-const throttleWarn = throttle(console.warn.bind(console), 5000);
 
 const wrapWithNamespace = (cancelType, module) => {
   return {
@@ -95,15 +90,15 @@ const wrapWithNamespace = (cancelType, module) => {
 
   https://redux.js.org/redux-toolkit/overview
 */
-export const createSlice = ({ sagas, ...sliceOpts }) => {
-  const hasCancel = !!sliceOpts.reducers.cancel;
+export const createSlice = ({ sagas, reducers, selectors, ...sliceOpts }) => {
+  const hasCancel = !!reducers?.cancel;
 
   const stateIdentity = (s) => s;
   const sliceWithCancel = {
     ...sliceOpts,
     reducers: {
-      ...sliceOpts.reducers,
-      cancel: sliceOpts.reducers.cancel || stateIdentity,
+      ...(reducers || {}),
+      cancel: reducers?.cancel || stateIdentity,
     },
   };
 
@@ -113,29 +108,21 @@ export const createSlice = ({ sagas, ...sliceOpts }) => {
 
   // Add default selector
   const getState = (state) => state[sliceOpts.name];
-  const getStateDeprecated = (deprecatedName) => (state) => {
-    throttleWarn(`${deprecatedName} is deprecated. Please use getState instead`);
-    return getState(state);
-  };
-  const deprecatedName = `get${capitalize(sliceOpts.name)}`;
-
-  const scopedSelectors = sliceOpts.selectors ? sliceOpts.selectors(getState) : {};
+  const scopedSelectors = selectors?.(getState) || {};
 
   const newSlice = {
     ...wrappedSlice,
     selectors: {
       getState,
-      [deprecatedName]: getStateDeprecated(deprecatedName),
       ...scopedSelectors,
     },
   };
 
   // Handle Sagas option for slice
-  let outputSagas = [];
   if (sagas) {
     const sagasWithContext = sagas(newSlice.actions, newSlice.selectors);
 
-    outputSagas = map(sagasWithContext, (sagaObj, actionType) => {
+    newSlice.sagas = Object.entries(sagasWithContext).map(([actionType, sagaObj]) => {
       let saga;
       let taker;
 
@@ -179,10 +166,7 @@ export const createSlice = ({ sagas, ...sliceOpts }) => {
     });
   }
 
-  return {
-    ...newSlice,
-    sagas: outputSagas,
-  };
+  return newSlice;
 };
 
 export default createSlice;
