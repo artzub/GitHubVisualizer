@@ -1,8 +1,9 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import slice from '@/redux/modules/profiles';
 import Highlight from "@/shared/components/Highlight";
 import LoadingOverlay from "@/shared/components/LoadingOverlay";
 import ScrollBar from "@/shared/components/ScrollBar";
+import { useUIProperty } from "@/shared/hooks";
 import {
   Avatar, ListItem as ListItemOrigin,
   ListItemAvatar, ListSubheader,
@@ -62,9 +63,11 @@ const TopHeader = (
 
 const UserSearch = () => {
   const dispatch = useDispatch();
+  const inputRef = useRef();
   const [search, setSearch] = useState('');
   const [neverChange, setNeverChange] = useState(true);
   const { isFetching, searched, top } = useSelector(slice.selectors.getState);
+  const [bodyOpen, setBodyOpen] = useUIProperty('bodyOpen');
 
   const onChange = useCallback(
     (event) => {
@@ -77,9 +80,10 @@ const UserSearch = () => {
   const onClick = useCallback(
     (user) => () => {
       dispatch(slice.actions.setProfile(user));
+      setBodyOpen(false);
       dispatch(slice.actions.fetchProfile(user.login));
     },
-    [dispatch],
+    [setBodyOpen, dispatch],
   );
 
   useDebounce(
@@ -96,12 +100,23 @@ const UserSearch = () => {
     [search, dispatch],
   );
 
+  useDebounce(
+    () => {
+      if (inputRef.current && bodyOpen) {
+        inputRef.current.querySelector('input').focus();
+      }
+    },
+    100,
+    [bodyOpen],
+  );
+
   return (
     <Container>
       <TextField
         label="Username"
         placeholder="Type username"
         onChange={onChange}
+        ref={inputRef}
       />
       <LoadingOverlay loading={isFetching}>
         <ListContainer>

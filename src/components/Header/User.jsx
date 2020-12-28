@@ -31,6 +31,10 @@ const Container = styled.button`
   &:hover {
     background: rgba(255, 255, 255, 0.1);
   }
+
+  &:active {
+    background: rgba(255, 255, 255, 0.2);
+  }
 `;
 
 const InfoContainer = styled.div`
@@ -75,11 +79,11 @@ const PropertyValue = styled.div`
   margin-left: 2px;
 `;
 
-const User = () => {
+const User = (props) => {
   const { profile } = useSelector(slice.selectors.getState);
 
   return (
-    <Container>
+    <Container {...props}>
       <Avatar src={profile?.avatar_url} />
       <InfoContainer>
         {!profile && <div>Find a user</div>}
