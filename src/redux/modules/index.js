@@ -1,5 +1,6 @@
 import { all } from 'redux-saga/effects';
 import profiles from "./profiles";
+import progress from "./progress";
 import ui from './ui';
 
 // Put modules that have their reducers nested in other (root) reducers here
@@ -9,6 +10,7 @@ const nestedSlices = [];
 const rootSlices = [
   profiles,
   ui,
+  progress,
 ];
 
 const sagas = [...rootSlices, ...nestedSlices]
