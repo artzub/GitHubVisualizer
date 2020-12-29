@@ -1,17 +1,17 @@
 import { getProfile, searchAccount } from '@/redux/api/github';
 import { createSlice, startFetching, stopFetching } from "@/redux/utils";
-import { call, put } from 'redux-saga/effects';
+import { call, cancelled, put } from 'redux-saga/effects';
 
 const initialState = {
   isFetching: false,
-  profile: null,
-  searched: [],
+  selected: null,
+  items: [],
   top: [],
   error: null,
 };
 
-const setProfile = (state, profile) => {
-  state.profile = profile;
+const setProfile = (state, selected) => {
+  state.selected = selected;
 };
 
 export default createSlice({
@@ -31,13 +31,15 @@ export default createSlice({
     search: startFetching,
     searchSuccess: (state, { payload }) => {
       stopFetching(state);
-      state.searched = Array.isArray(payload) ? payload : [];
+      state.items = Array.isArray(payload) ? payload : [];
     },
     fetchTop: startFetching,
     fetchTopSuccess: (state, { payload }) => {
       stopFetching(state);
       state.top = Array.isArray(payload) ? payload : [];
     },
+
+    stopFetching,
 
     fail: (state, { payload: { message } }) => {
       stopFetching(state);
@@ -53,6 +55,9 @@ export default createSlice({
           yield put(actions.fetchProfileSuccess(data));
         } catch (error) {
           yield put(actions.fail(error));
+          if (yield cancelled()) {
+            yield put(actions.stopFetching());
+          }
         }
       },
     },
@@ -64,6 +69,9 @@ export default createSlice({
           yield put(actions.searchSuccess(data));
         } catch (error) {
           yield put(actions.fail(error));
+          if (yield cancelled()) {
+            yield put(actions.stopFetching());
+          }
         }
       },
     },
@@ -75,6 +83,9 @@ export default createSlice({
           yield put(actions.fetchTopSuccess(data));
         } catch (error) {
           yield put(actions.fail(error));
+          if (yield cancelled()) {
+            yield put(actions.stopFetching());
+          }
         }
       },
     },
