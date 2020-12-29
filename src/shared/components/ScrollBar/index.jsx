@@ -1,53 +1,40 @@
 import 'react';
-import Scroll from 'react-smooth-scrollbar';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-// background: ${(props) => props.theme.scrollBackgroundColor};
-
-const ScrollBar = styled(Scroll)`
-  .scrollbar-track {
-    background: transparent;
-    transition: opacity 0.3s;
-  }
-  &:hover .scrollbar-track {
-    opacity: 1;
+export const ScrollBarMixin = css`
+  border-color: rgba(0, 0, 0, 0.0);
+  transition: border-color 0.5s;
+  :hover {
+    border-color: rgba(0, 0, 0, 0.2);
   }
 
-  .scrollbar-track-x {
-    height: 8px;
-  }
-  .scrollbar-track-y {
-    width: 8px;
+  ::-webkit-scrollbar-thumb,
+  ::-webkit-scrollbar-corner {
+    /* add border to act as background-color */
+    border-right-style: inset;
+    /* sum viewport dimensions to guarantee border will fill scrollbar */
+    border-right-width: calc(100vw + 100vh);
+    /* inherit border-color to inherit transitions */
+    border-color: inherit;
   }
 
-  .scrollbar-thumb {
-    // TODO background scrollBackgroundColor
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
   }
-
-  .scrollbar-thumb-x {
-    height: 4px;
-    top: 50%;
-    margin-top: -2px;
-
-    transition: height 0.3s, margin-top 0.3s;
-    &:hover,
-    &:active {
-      height: 8px;
-      margin-top: -4px;
-    }
+  ::-webkit-scrollbar-thumb {
+    border-radius: 8px;
   }
-  .scrollbar-thumb-y {
-    width: 4px;
-    left: 50%;
-    margin-left: -2px;
-
-    transition: width 0.3s, margin-left 0.3s;
-    &:hover,
-    &:active {
-      width: 8px;
-      margin-left: -4px;
-    }
+  ::-webkit-scrollbar-thumb:hover {
+    border-color: rgba(0, 0, 0, 0.3);
   }
+  ::-webkit-scrollbar-thumb:active {
+    border-color: rgba(0, 0, 0, 0.4);
+  }
+`;
+
+const ScrollBar = styled.div`
+  ${ScrollBarMixin}
 `;
 
 export default ScrollBar;
