@@ -25,6 +25,10 @@ const wrapWithNamespace = (cancelType, module) => {
   };
 };
 
+const clearState = (initialState) => () => {
+  return initialState;
+};
+
 /**
   Function to create a redux "duck" module by reusing redux toolkit's
   createSlice. Motivation behind "duck" is to reduce unnecessary redux
@@ -99,6 +103,7 @@ export const createSlice = ({ sagas, reducers, selectors, ...sliceOpts }) => {
     reducers: {
       ...(reducers || {}),
       cancel: reducers?.cancel || stateIdentity,
+      clear: reducers?.clear || clearState(sliceOpts.initialState ?? {}),
     },
   };
 
