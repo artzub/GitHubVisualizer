@@ -1,4 +1,4 @@
-import { addCursorAfter } from "@/redux/api/githubGQL/utils";
+import { addCursorAfter, parsePageInfo } from "@/redux/api/githubGQL/utils";
 import { withCancellation } from "@/redux/utils";
 import getClient from '../getClient';
 import query from './query.graphql';
@@ -29,7 +29,7 @@ export const getBranches = ({ owner, repo, page = '', perPage = 10 }) =>
 
     return {
       data: data?.repository?.refs?.nodes,
-      pageInfo: data?.repository?.refs?.pageInfo,
+      pageInfo: parsePageInfo(data?.repository?.refs),
       rateLimit: data?.rateLimit,
     };
   });
