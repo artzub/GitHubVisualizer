@@ -30,11 +30,5 @@ export default createSlice({
     toggle: (state, { payload }) => {
       state.show = payload ?? !state.show;
     },
-
-    clear() {
-      return {
-        ...initialState,
-      };
-    },
   },
 });
