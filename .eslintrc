@@ -95,6 +95,7 @@
         "order": "asc",
         "caseInsensitive": true
       }
-    }]
+    }],
+    "react/forbid-component-props": [0]
   }
 }
