@@ -1,6 +1,6 @@
 import { withCancellation } from "@/redux/utils";
 import getClient from '../getClient';
-import { addCursorAfter } from "../utils";
+import { addCursorAfter, parsePageInfo } from "../utils";
 import query from './query.graphql';
 
 /**
@@ -27,7 +27,7 @@ export const getRepositories = ({ owner, page = '', perPage = 10 }) =>
 
     return {
       data: data?.profile?.repositories?.nodes,
-      pageInfo: data?.profile?.repositories?.pageInfo,
+      pageInfo: parsePageInfo(data?.profile?.repositories),
       rateLimit: data?.rateLimit,
     };
   });

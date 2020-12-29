@@ -13,3 +13,8 @@ export const parseRateLimit = ({ cost, remaining, resetAt } = {}) => ({
   cost,
   resetAt: resetAt && +(new Date(resetAt)),
 });
+
+export const parsePageInfo = ({ pageInfo, totalCount } = {}) => ({
+  ...(pageInfo || {}),
+  total: totalCount ?? 0,
+});

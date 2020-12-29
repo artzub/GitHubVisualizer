@@ -6,6 +6,7 @@ query($owner: String!, $perPage: Int!, ${this.cursorArgument}) {
   }
   profile: repositoryOwner(login: $owner) {
     repositories(first: $perPage, ${this.after}) {
+      totalCount
       pageInfo {
         nextPage: endCursor,
         hasNextPage

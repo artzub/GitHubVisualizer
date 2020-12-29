@@ -12,6 +12,7 @@ query($owner:String!, $repo:String!, $branch: String!, $perPage: Int!, ${this.cu
             nodes {
               oid
             }
+            totalCount
             pageInfo {
               nextPage: endCursor,
               hasNextPage

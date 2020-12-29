@@ -1,6 +1,6 @@
 import { withCancellation } from "@/redux/utils";
 import getClient from '../getClient';
-import { addCursorAfter } from "../utils";
+import { addCursorAfter, parsePageInfo } from "../utils";
 import query from './query.graphql';
 
 /**
@@ -29,7 +29,9 @@ export const getCommits = ({ owner, repo, branch, page = '', perPage = 10 }) =>
       },
     });
 
-    const ids = data?.repository?.ref?.target?.history?.nodes?.map(({ oid }) => oid) || [];
+    const history = data?.repository?.ref?.target?.history || {};
+
+    const ids = history.nodes?.map(({ oid }) => oid) || [];
 
     const commits = await Promise.all(ids.map(async (ref) => {
       const d = await client.repos.getCommit({
@@ -45,7 +47,7 @@ export const getCommits = ({ owner, repo, branch, page = '', perPage = 10 }) =>
 
     return {
       data: commits,
-      pageInfo: data?.repository?.ref?.target?.history?.pageInfo,
+      pageInfo: parsePageInfo(history),
       rateLimit: data?.rateLimit,
     };
   });
