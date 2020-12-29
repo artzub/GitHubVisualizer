@@ -80,34 +80,38 @@ const PropertyValue = styled.div`
 `;
 
 const Header = (props) => {
-  const { profile } = useSelector(slice.selectors.getState);
+  const { selected } = useSelector(slice.selectors.getState);
+  const {
+    avatar_url, name, login,
+    html_url, public_repos, blog,
+  } = selected || {};
 
   return (
     <Container {...props}>
-      <Avatar src={profile?.avatar_url} />
+      <Avatar src={avatar_url} />
       <InfoContainer>
-        {!profile && <div>Find a user</div>}
-        {profile && (
+        {!selected && <div>Find a user</div>}
+        {selected && (
           <React.Fragment>
-            <Title>{profile.name || profile.login}</Title>
+            <Title>{name || login}</Title>
             <Properties>
               <Property>
                 <GithubIcon size={16} />
                 <PropertyValue>
-                  <Link href={profile.html_url}>{profile.login}</Link>
+                  <Link target="_blank" href={html_url}>{login}</Link>
                 </PropertyValue>
               </Property>
             </Properties>
             <Properties>
               <Property title="Amount of repositories">
                 <SourceRepositoriesIcon size={16} />
-                <PropertyValue>{profile.public_repos}</PropertyValue>
+                <PropertyValue>{public_repos}</PropertyValue>
               </Property>
-              {profile.blog && (
+              {blog && (
                 <Property title="Web site">
                   <LinkVariantIcon size={16} />
                   <PropertyValue>
-                    <Link href={profile.blog}>blog</Link>
+                    <Link target="_blank" href={blog}>blog</Link>
                   </PropertyValue>
                 </Property>
               )}

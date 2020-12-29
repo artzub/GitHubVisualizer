@@ -67,7 +67,7 @@ const Body = () => {
   const inputRef = useRef();
   const [search, setSearch] = useState('');
   const [neverChange, setNeverChange] = useState(true);
-  const { isFetching, searched, top } = useSelector(slice.selectors.getState);
+  const { isFetching, items, top } = useSelector(slice.selectors.getState);
   const [bodyOpen, setBodyOpen] = useUIProperty('bodyOpen');
 
   const onChange = useCallback(
@@ -126,8 +126,8 @@ const Body = () => {
               dense
               subheader={SearchHeader}
             >
-              {!searched.length && <NotData />}
-              {(searched || []).map((user) => (
+              {!items.length && <NotData />}
+              {(items || []).map((user) => (
                 <ListItem
                   alignItems="center"
                   key={user.login}
