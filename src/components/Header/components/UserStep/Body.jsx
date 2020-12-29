@@ -26,6 +26,7 @@ const Container = styled.div`
 
 const ListContainer = styled(ScrollBar)`
   max-height: 300px;
+  overflow: auto;
 `;
 
 const ListItem = styled(ListItemOrigin)`
@@ -50,13 +51,13 @@ const NotData = styled(({ className }) => (
 `;
 
 const SearchHeader = (
-  <ListSubheader component="div">
+  <ListSubheader component="li" disableSticky>
     Search results
   </ListSubheader>
 );
 
 const TopHeader = (
-  <ListSubheader component="div">
+  <ListSubheader component="li" disableSticky>
     Top users
   </ListSubheader>
 );
