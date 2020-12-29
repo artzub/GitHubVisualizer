@@ -45,12 +45,10 @@ const Header = () => {
 
   return (
     <PaperStyled square>
-      <FetchTopUser />
       <Tabs
         value={value}
         indicatorColor="primary"
         textColor="primary"
-        // variant="fullWidth"
         centered
         onChange={handleChange}
       >
