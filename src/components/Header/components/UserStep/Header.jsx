@@ -7,35 +7,7 @@ import LinkVariantIcon from "mdi-react/LinkVariantIcon";
 import SourceRepositoriesIcon from "mdi-react/SourceRepositoriesIcon";
 import { useSelector } from "react-redux";
 import styled from "styled-components";
-
-const Container = styled.button`
-  display: flex;
-  box-sizing: border-box;
-  padding: 5px;
-  font-size: 0.8em;
-  align-items: center;
-  flex: 1 1 0;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  color: inherit;
-  cursor: pointer;
-  
-  transition: background 0.3s;
-  outline: 0;
-  
-  &:focus-visible {
-    outline: -webkit-focus-ring-color auto 1px;
-  }
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  &:active {
-    background: rgba(255, 255, 255, 0.2);
-  }
-`;
+import HeaderContainer from '../shared/HeaderContainer';
 
 const InfoContainer = styled.div`
   display: flex;
@@ -72,6 +44,7 @@ const Property = styled.div`
   }
   &:last-child {
     border-right: 0;
+    padding-right: 0;
   }
 `;
 
@@ -87,7 +60,7 @@ const Header = (props) => {
   } = selected || {};
 
   return (
-    <Container {...props}>
+    <HeaderContainer {...props}>
       <Avatar src={avatar_url} />
       <InfoContainer>
         {!selected && <div>Find a user</div>}
@@ -119,7 +92,7 @@ const Header = (props) => {
           </React.Fragment>
         )}
       </InfoContainer>
-    </Container>
+    </HeaderContainer>
   );
 };
 
