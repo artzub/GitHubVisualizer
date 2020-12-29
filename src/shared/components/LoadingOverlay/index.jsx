@@ -18,6 +18,7 @@ const Overlay = styled.div`
   background: rgba(0, 0, 0, 0.1);
   justify-content: center;
   align-items: center;
+  z-index: 1;
 `;
 
 const Loading = ({ className, loading, ...rest }) => (
