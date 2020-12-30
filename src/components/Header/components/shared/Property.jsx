@@ -6,6 +6,7 @@ const Property = styled.span`
   margin-left: 5px;
   padding-right: 5px;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
 
   &:first-child {
     margin-left: 0;
