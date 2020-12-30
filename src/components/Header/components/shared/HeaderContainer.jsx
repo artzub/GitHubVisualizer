@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from 'styled-components';
 
 const HeaderContainer = styled.button`
   display: flex;
@@ -12,6 +12,7 @@ const HeaderContainer = styled.button`
   border-radius: 0;
   color: inherit;
   cursor: pointer;
+  overflow: hidden;
   
   transition: background 0.3s, opacity 0.5s;
   outline: 0;

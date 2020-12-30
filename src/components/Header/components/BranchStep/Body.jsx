@@ -1,19 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import slice from '@/redux/modules/repositories';
+import slice from '@/redux/modules/branches';
+import repositoriesSlice from '@/redux/modules/repositories';
 import Highlight from '@/shared/components/Highlight';
 import LoadingOverlay from '@/shared/components/LoadingOverlay';
 import { ScrollBarMixin } from '@/shared/components/ScrollBar';
 import { useUIProperty } from '@/shared/hooks';
-import {
-  Avatar, ListItem as ListItemOrigin,
-  ListItemAvatar, ListSubheader, TextField,
-} from '@material-ui/core';
+import { Avatar, ListItem as ListItemOrigin, ListItemAvatar, ListSubheader, TextField } from '@material-ui/core';
 import List from '@material-ui/core/List';
 import ListItemText from '@material-ui/core/ListItemText';
 import debounce from 'lodash.debounce';
-import BookIcon from 'mdi-react/BookIcon';
-import BookLockIcon from 'mdi-react/BookLockIcon';
-import SourceRepositoryIcon from 'mdi-react/SourceRepositoryIcon';
+import SourceBranchIcon from 'mdi-react/SourceBranchIcon';
 import { useDispatch, useSelector } from 'react-redux';
 import { useDebounce } from 'react-use';
 import { FixedSizeList } from 'react-window';
@@ -50,7 +46,7 @@ const ListItem = styled(ListItemOrigin)`
 
 const NotData = styled(({ className }) => (
   <div className={className}>
-    <div>Repositories not found</div>
+    <div>Branches not found</div>
   </div>
 ))`
   display: flex;
@@ -74,6 +70,8 @@ const Body = () => {
   const { isFetching, items } = useSelector(slice.selectors.getState);
   const [bodyOpen, setBodyOpen] = useUIProperty('bodyOpen');
   const [filtered, setFiltered] = useState(items);
+  const { selected: repository } = useSelector(repositoriesSlice.selectors.getState);
+  const { default_branch } = repository || {};
 
   const changeSearch = useMemo(
     () => debounce(
@@ -101,7 +99,7 @@ const Body = () => {
   const ListHeader = useMemo(
     () => (
       <ListSubheader component="div">
-        Repositories: {filtered.length || 0} of {items.length || 0}
+        Branches: {filtered.length || 0} of {items.length || 0}
       </ListSubheader>
     ),
     [filtered.length, items.length],
@@ -110,7 +108,7 @@ const Body = () => {
   const Item = useCallback(
     ({ index, style }) => {
       const item = filtered[index];
-      const title = (item.private ? 'Private' : item.fork ? 'Fork' : 'Public');
+      const isDefault = default_branch === item.name;
 
       return (
         <ListItem
@@ -118,20 +116,17 @@ const Body = () => {
           key={item.name}
           onClick={onClick(item)}
           style={style}
-          title={`${title} | ${item.name}`}
+          title={item.name}
         >
           <ListItemAvatar>
             <Avatar>
-              {item.private ? <BookLockIcon /> : (
-                item.fork ? <SourceRepositoryIcon /> : <BookIcon />
-              )}
+              <SourceBranchIcon />
             </Avatar>
           </ListItemAvatar>
           <ListItemText
             primary={(
               <Primary>
-                {item.private && <Marker>private</Marker>}
-                {item.fork && <Marker>fork</Marker>}
+                {isDefault && <Marker>default</Marker>}
                 <Highlight search={search} text={item.name} />
               </Primary>
             )}
@@ -140,7 +135,7 @@ const Body = () => {
         </ListItem>
       );
     },
-    [onClick, search, filtered],
+    [filtered, default_branch, onClick, search],
   );
 
   useEffect(
@@ -163,13 +158,12 @@ const Body = () => {
   return (
     <Container>
       <TextField
-        label="Repository"
-        placeholder="Type repository name"
+        label="Branch"
+        placeholder="Type branch name"
         onChange={onChange}
         ref={inputRef}
       />
       <LoadingOverlay loading={isFetching}>
-        {/*<ListContainer>*/}
         <List
           dense
           subheader={ListHeader}
@@ -183,7 +177,6 @@ const Body = () => {
             {Item}
           </ListItems>
         </List>
-        {/*</ListContainer>*/}
       </LoadingOverlay>
     </Container>
   );

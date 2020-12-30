@@ -1,26 +1,18 @@
 import React from 'react';
 import slice from '@/redux/modules/profiles';
-import { Avatar } from "@material-ui/core";
-import LinkOrigin from "@material-ui/core/Link";
-import GithubIcon from "mdi-react/GithubIcon";
-import LinkVariantIcon from "mdi-react/LinkVariantIcon";
-import SourceRepositoriesIcon from "mdi-react/SourceRepositoriesIcon";
-import { useSelector } from "react-redux";
-import styled from "styled-components";
+import { Avatar } from '@material-ui/core';
+import LinkOrigin from '@material-ui/core/Link';
+import BookMultipleIcon from 'mdi-react/BookMultipleIcon';
+import GithubIcon from 'mdi-react/GithubIcon';
+import LinkVariantIcon from 'mdi-react/LinkVariantIcon';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
 import HeaderContainer from '../shared/HeaderContainer';
-
-const InfoContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-left: 5px;
-`;
-
-const Title = styled.div`
-  font-weight: bold;
-  display: flex;
-  flex-wrap: nowrap;
-  white-space: nowrap;
-`;
+import InfoContainer from '../shared/InfoContainer';
+import PropertiesOrigin from '../shared/Properties';
+import Property from '../shared/Property';
+import PropertyValue from '../shared/PropertyValue';
+import Title from '../shared/Title';
 
 const Link = styled(LinkOrigin)`
   display: flex;
@@ -28,29 +20,11 @@ const Link = styled(LinkOrigin)`
   flex-wrap: nowrap;
 `;
 
-const Properties = styled.div`
-  display: flex;
-  align-items: center;
+const Properties = styled(PropertiesOrigin)`
+  font-size: 1em;
 `;
 
-const Property = styled.div`
-  display: flex;
-  align-items: center;
-  padding-right: 5px;
-  margin-left: 5px;
-  border-right: 1px solid;
-  &:first-child {
-    margin-left: 0;
-  }
-  &:last-child {
-    border-right: 0;
-    padding-right: 0;
-  }
-`;
-
-const PropertyValue = styled.div`
-  margin-left: 2px;
-`;
+const onClick = (event) => event.stopPropagation();
 
 const Header = (props) => {
   const { selected } = useSelector(slice.selectors.getState);
@@ -66,25 +40,37 @@ const Header = (props) => {
         {!selected && <div>Find a user</div>}
         {selected && (
           <React.Fragment>
-            <Title>{name || login}</Title>
+            <Title title={name || login}>{name || login}</Title>
             <Properties>
               <Property>
                 <GithubIcon size={16} />
                 <PropertyValue>
-                  <Link target="_blank" href={html_url}>{login}</Link>
+                  <Link
+                    target="_blank"
+                    onClick={onClick}
+                    href={html_url}
+                  >
+                    {login}
+                  </Link>
                 </PropertyValue>
               </Property>
             </Properties>
             <Properties>
               <Property title="Amount of repositories">
-                <SourceRepositoriesIcon size={16} />
+                <BookMultipleIcon size={16} />
                 <PropertyValue>{public_repos}</PropertyValue>
               </Property>
               {blog && (
                 <Property title="Web site">
                   <LinkVariantIcon size={16} />
                   <PropertyValue>
-                    <Link target="_blank" href={blog}>blog</Link>
+                    <Link
+                      target="_blank"
+                      onClick={onClick}
+                      href={blog}
+                    >
+                      site
+                    </Link>
                   </PropertyValue>
                 </Property>
               )}
