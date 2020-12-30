@@ -1,34 +1,43 @@
 import React from 'react';
 import slice from '@/redux/modules/repositories';
-import SourceRepositoryIcon from "mdi-react/SourceRepositoryIcon";
-import { useSelector } from "react-redux";
-import styled from "styled-components";
+import Link from '@material-ui/core/Link';
+import BookIcon from 'mdi-react/BookIcon';
+import BookLockIcon from 'mdi-react/BookLockIcon';
+import LinkIcon from 'mdi-react/LinkIcon';
+import SourceRepositoryIcon from 'mdi-react/SourceRepositoryIcon';
+import { useSelector } from 'react-redux';
 import Container from '../shared/HeaderContainer';
+import InfoContainer from '../shared/InfoContainer';
+import Title from '../shared/Title';
 
-const InfoContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-left: 5px;
-`;
-
-const Title = styled.div`
-  font-weight: bold;
-  display: flex;
-  flex-wrap: nowrap;
-  white-space: nowrap;
-`;
+const onClick = (event) => event.stopPropagation();
 
 const Header = (props) => {
   const { selected } = useSelector(slice.selectors.getState);
-  const { name } = selected || {};
+  const { name, private: locked, fork, html_url } = selected || {};
 
   return (
     <Container {...props}>
-      <SourceRepositoryIcon />
+      {locked ? <BookLockIcon size={20} /> : (
+        fork
+          ? <SourceRepositoryIcon size={20} />
+          : <BookIcon size={20} />
+      )}
       <InfoContainer>
-        {!selected && <div>Choice a repository</div>}
+        {!selected && <div>Choose a repository</div>}
         {selected && (
-          <Title>{name}</Title>
+          <Title title={name}>
+            <Link
+              target="_blank"
+              onClick={onClick}
+              href={html_url}
+              title="On github"
+              style={{ verticalAlign: 'middle', marginRight: '3px' }}
+            >
+              <LinkIcon size={16} />
+            </Link>
+            {name}
+          </Title>
         )}
       </InfoContainer>
     </Container>

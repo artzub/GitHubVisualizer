@@ -1,13 +1,16 @@
-import React from "react";
-import GithubEmoji from "@/shared/components/GithubEmoje";
-import capitalize from "@material-ui/core/utils/capitalize";
-import AlertCircleOutlineIcon from "mdi-react/AlertCircleOutlineIcon";
-import CodeTagsIcon from "mdi-react/CodeTagsIcon";
-import EyeOutlineIcon from "mdi-react/EyeOutlineIcon";
-import SourceForkIcon from "mdi-react/SourceForkIcon";
-import StarIcon from "mdi-react/StarIcon";
+import React from 'react';
+import GithubEmoji from '@/shared/components/GithubEmoje';
+import capitalize from '@material-ui/core/utils/capitalize';
+import AlertCircleOutlineIcon from 'mdi-react/AlertCircleOutlineIcon';
+import CodeTagsIcon from 'mdi-react/CodeTagsIcon';
+import EyeOutlineIcon from 'mdi-react/EyeOutlineIcon';
+import SourceForkIcon from 'mdi-react/SourceForkIcon';
+import StarIcon from 'mdi-react/StarIcon';
 import PropTypes from 'prop-types';
-import styled from "styled-components";
+import styled from 'styled-components';
+import Properties from '../shared/Properties';
+import Property from '../shared/Property';
+import PropertyValue from '../shared/PropertyValue';
 
 const SecondaryContainer = styled.span`
   display: flex;
@@ -18,35 +21,6 @@ const Description = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-`;
-
-const Properties = styled.span`
-  display: flex;
-  align-items: center;
-  font-size: 0.8em;
-`;
-
-const Property = styled.span`
-  display: flex;
-  align-items: center;
-  margin-left: 5px;
-  padding-right: 5px;
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
-
-  &:first-child {
-    margin-left: 0;
-  }
-
-  &:last-child {
-    border-right: 0;
-    padding-right: 0;
-  }
-
-  color: #fff;
-`;
-
-const PropertyValue = styled.span`
-  margin-left: 5px;
 `;
 
 const Secondary = ({ item }) => (

@@ -1,19 +1,19 @@
 import React, { useCallback, useRef, useState } from 'react';
 import slice from '@/redux/modules/profiles';
-import Highlight from "@/shared/components/Highlight";
-import LoadingOverlay from "@/shared/components/LoadingOverlay";
-import ScrollBar from "@/shared/components/ScrollBar";
-import { useUIProperty } from "@/shared/hooks";
+import Highlight from '@/shared/components/Highlight';
+import LoadingOverlay from '@/shared/components/LoadingOverlay';
+import ScrollBar from '@/shared/components/ScrollBar';
+import { useUIProperty } from '@/shared/hooks';
 import {
   Avatar, ListItem as ListItemOrigin,
   ListItemAvatar, ListSubheader,
   TextField,
-} from "@material-ui/core";
-import List from "@material-ui/core/List";
-import ListItemText from "@material-ui/core/ListItemText";
-import { useDispatch, useSelector } from "react-redux";
-import { useDebounce } from "react-use";
-import styled from "styled-components";
+} from '@material-ui/core';
+import List from '@material-ui/core/List';
+import ListItemText from '@material-ui/core/ListItemText';
+import { useDispatch, useSelector } from 'react-redux';
+import { useDebounce } from 'react-use';
+import styled from 'styled-components';
 
 const Container = styled.div`
   min-height: 100px;
@@ -80,7 +80,7 @@ const Body = () => {
 
   const onClick = useCallback(
     (user) => () => {
-      dispatch(slice.actions.setProfile(user));
+      dispatch(slice.actions.setSelected(user));
       setBodyOpen(false);
       dispatch(slice.actions.fetchProfile(user.login));
     },
