@@ -1,10 +1,10 @@
 import React, { useCallback, useState } from 'react';
 import { StageTypes } from '@/models/StageTypes';
+import branchesSlice from '@/redux/modules/branches';
 import profilesSlice from '@/redux/modules/profiles';
 import repositoriesSlice from '@/redux/modules/repositories';
 import { useUIProperty } from '@/shared/hooks';
 import Collapse from '@material-ui/core/Collapse';
-import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { withStyles } from '@material-ui/core/styles';
 import Tab from '@material-ui/core/Tab';
@@ -13,16 +13,25 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import BranchStepBody from './components/BranchStep/Body';
 import BranchStepHeader from './components/BranchStep/Header';
+import CommitsStepBody from './components/CommitsStep/Body';
+import CommitsStepHeader from './components/CommitsStep/Header';
 import RepoStepBody from './components/RepositoryStep/Body';
 import RepoStepHeader from './components/RepositoryStep/Header';
 import UserStepBody from './components/UserStep/Body';
 import UserStepHeader from './components/UserStep/Header';
 
+const Container = styled.div`
+  display: flex;
+  position: relative;
+  flex-wrap: nowrap;
+  width: 100%;
+`;
+
 const RepoBranchContainer = styled.div`
   display: flex;
   flex-direction: column;
-  flex: 1 1 0;
   overflow: hidden;
+  flex: 1 1 0;
   
   & > * {
     width: 100%;
@@ -43,6 +52,7 @@ const StepBodies = {
   [StageTypes.user]: UserStepBody,
   [StageTypes.repository]: RepoStepBody,
   [StageTypes.branch]: BranchStepBody,
+  [StageTypes.commits]: CommitsStepBody,
 };
 
 const Header = () => {
@@ -51,6 +61,7 @@ const Header = () => {
   const [value, setValue] = useState(0);
   const { selected: profile } = useSelector(profilesSlice.selectors.getState);
   const { selected: repository } = useSelector(repositoriesSlice.selectors.getState);
+  const { selected: branch } = useSelector(branchesSlice.selectors.getState);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -79,8 +90,11 @@ const Header = () => {
         <Tab label="Repository" />
         <Tab label="Show" />
       </Tabs>
-      <Grid container>
-        <UserStepHeader onClick={onClick(StageTypes.user)} />
+      <Container>
+        <UserStepHeader
+          onClick={onClick(StageTypes.user)}
+          divider
+        />
         <RepoBranchContainer>
           <RepoStepHeader
             onClick={onClick(StageTypes.repository)}
@@ -91,10 +105,15 @@ const Header = () => {
             disabled={!repository}
           />
         </RepoBranchContainer>
+        <CommitsStepHeader
+          onClick={onClick(StageTypes.commits)}
+          disabled={!branch}
+          divider
+        />
         <div>
           Show
         </div>
-      </Grid>
+      </Container>
       {StepBody && (
         <Collapse in={bodyOpen}>
           <StepBody />

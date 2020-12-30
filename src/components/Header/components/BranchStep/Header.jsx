@@ -26,7 +26,7 @@ const Header = (props) => {
         {!selected && <div>Choose a branch</div>}
         {selected && (
           <Properties>
-            <Property>
+            <Property style={{ overflow: 'hidden' }}>
               <Title title={name}>{name}</Title>
             </Property>
             <Property title="Commits">
