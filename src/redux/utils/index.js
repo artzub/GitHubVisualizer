@@ -20,3 +20,27 @@ export const stopFetching = (state) => {
   state._requests = Math.max(0, (state._requests ?? 1) - 1);
   state.isFetching = !!state._requests;
 };
+
+/**
+ * Appends data into items if append is true, else override items by data
+ * @param state
+ * @param {Array} data
+ * @param {boolean} append
+ */
+export const incrementFetching = (state, { payload: { data, append } }) => {
+  const fixed = Array.isArray(data) ? data : [];
+  state.items = append ? [
+    ...state.items,
+    ...fixed,
+  ] : fixed;
+};
+
+/**
+ * Stops fetching and set error message into state
+ * @param {*} state
+ * @param {Error} payload
+ */
+export const fail = (state, { payload: { message } }) => {
+  stopFetching(state);
+  state.error = message;
+};

@@ -1,5 +1,5 @@
 import { getProfile, searchAccount } from '@/redux/api/github';
-import { createSlice, startFetching, stopFetching } from '@/redux/utils';
+import { createSlice, startFetching, stopFetching, fail } from '@/redux/utils';
 import { call, cancelled, put } from 'redux-saga/effects';
 
 const initialState = {
@@ -40,11 +40,7 @@ export default createSlice({
     },
 
     stopFetching,
-
-    fail: (state, { payload: { message } }) => {
-      stopFetching(state);
-      state.error = message;
-    },
+    fail,
   },
 
   sagas: (actions) => ({

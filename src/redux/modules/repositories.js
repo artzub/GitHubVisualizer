@@ -1,5 +1,9 @@
 import { getRepositories } from '@/redux/api/github';
-import { createSlice, startFetching, stopFetching } from '@/redux/utils';
+import {
+  createSlice, incrementFetching,
+  startFetching, stopFetching,
+  fail,
+} from '@/redux/utils';
 import { put, call, cancelled, delay } from 'redux-saga/effects';
 import slice from './progress';
 
@@ -18,25 +22,15 @@ export default createSlice({
       state.selected = payload;
     },
 
-    fetchRepositories: startFetching,
-    fetchRepositoriesSuccess: (state, { payload: { data, append } }) => {
-      const fixed = Array.isArray(data) ? data : [];
-      state.items = append ? [
-        ...state.items,
-        ...fixed,
-      ] : fixed;
-    },
+    fetch: startFetching,
+    fetchSuccess: incrementFetching,
 
     stopFetching,
-
-    fail: (state, { payload: { message } }) => {
-      stopFetching(state);
-      state.error = message;
-    },
+    fail,
   },
 
   sagas: (actions) => ({
-    [actions.fetchRepositories]: {
+    [actions.fetch]: {
       * saga({ payload: { owner, amount } }) {
         try {
           if (!amount || !owner) {
@@ -61,7 +55,7 @@ export default createSlice({
               page: page,
             });
 
-            yield put(actions.fetchRepositoriesSuccess({ data, append: page > 0 }));
+            yield put(actions.fetchSuccess({ data, append: page > 0 }));
 
             page = pageInfo.nextPage;
             next = pageInfo.hasNextPage;
