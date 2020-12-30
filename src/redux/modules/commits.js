@@ -1,4 +1,4 @@
-import { getBranches } from '@/redux/api/github';
+import { getCommits } from '@/redux/api/github';
 import slice from '@/redux/modules/progress';
 import {
   createSlice, incrementFetching,
@@ -8,37 +8,32 @@ import {
 import { call, cancelled, delay, put } from 'redux-saga/effects';
 
 const initialState = {
-  selected: null,
   items: [],
-  error: null,
 };
 
 export default createSlice({
-  name: 'branches',
+  name: 'commits',
   initialState,
   reducers: {
     fetch: startFetching,
+    stopFetching,
+
     fetchSuccess: incrementFetching,
 
-    setSelected: (state, { payload }) => {
-      state.selected = payload;
-    },
-
-    stopFetching,
     fail,
   },
 
   sagas: (actions) => ({
     [actions.fetch]: {
-      * saga({ payload: { owner, repo } }) {
+      * saga({ payload: { owner, repo, branch, amount } }) {
         try {
-          if (!owner || !repo) {
+          if (!owner || !repo || !branch || !amount) {
             yield put(actions.stopFetching());
             return;
           }
 
           yield put(slice.actions.change({
-            max: 100,
+            max: amount,
             value: 0,
             valueBuffer: 0,
             show: true,
@@ -46,23 +41,28 @@ export default createSlice({
 
           let next = true;
           let page = 0;
+          let total = amount || 0;
+          let nextPart = Math.min(amount, 100);
 
           while (next) {
-            const { data, pageInfo } = yield call(getBranches, {
+            const { data, pageInfo } = yield call(getCommits, {
               owner,
               repo,
-              perPage: 100,
+              perPage: nextPart,
               page: page,
             });
 
             yield put(actions.fetchSuccess({ data, append: page > 0 }));
 
             page = pageInfo.nextPage;
-            next = pageInfo.hasNextPage;
+            total -= data.length;
+            nextPart = Math.min(total, 100);
 
-            yield put(slice.actions.change({ max: pageInfo.total || 100 }));
+            next = pageInfo.hasNextPage && nextPart > 0;
+
+            yield put(slice.actions.change({ max: Math.min(pageInfo.total || amount, amount) }));
             yield put(slice.actions.incValue(data.length));
-            yield put(slice.actions.incValueBuffer(data.length + 100));
+            yield put(slice.actions.incValueBuffer(data.length + nextPart));
           }
 
           yield put(actions.stopFetching());

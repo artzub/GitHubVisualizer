@@ -1,5 +1,6 @@
 import { all } from 'redux-saga/effects';
 import branches from './branches';
+import commits from './commits';
 import emojis from './emojis';
 import profiles from './profiles';
 import progress from './progress';
@@ -12,6 +13,7 @@ const nestedSlices = [];
 // Put modules whose reducers you want in the root tree in this array.
 const rootSlices = [
   branches,
+  commits,
   emojis,
   profiles,
   ui,

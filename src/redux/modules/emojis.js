@@ -1,5 +1,5 @@
 import { getEmojis } from '@/redux/api/github/getEmojis';
-import { createSlice, startFetching, stopFetching } from '@/redux/utils';
+import { createSlice, startFetching, stopFetching, fail } from '@/redux/utils';
 import { call, put } from 'redux-saga/effects';
 
 const initialState = {
@@ -16,10 +16,7 @@ export default createSlice({
       state.items = payload;
     },
 
-    fail: (state, { payload: { message } }) => {
-      stopFetching(state);
-      state.error = message;
-    },
+    fail,
   },
 
   sagas: (actions) => ({
