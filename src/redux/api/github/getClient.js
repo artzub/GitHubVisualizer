@@ -1,4 +1,4 @@
-import { createOAuthAppAuth } from "@octokit/auth-oauth-app";
+import { createOAuthAppAuth } from '@octokit/auth-oauth-app';
 import { Octokit } from '@octokit/rest';
 
 let instance;

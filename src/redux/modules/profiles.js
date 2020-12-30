@@ -1,5 +1,5 @@
 import { getProfile, searchAccount } from '@/redux/api/github';
-import { createSlice, startFetching, stopFetching } from "@/redux/utils";
+import { createSlice, startFetching, stopFetching } from '@/redux/utils';
 import { call, cancelled, put } from 'redux-saga/effects';
 
 const initialState = {
@@ -10,7 +10,7 @@ const initialState = {
   error: null,
 };
 
-const setProfile = (state, selected) => {
+const setSelected = (state, selected) => {
   state.selected = selected;
 };
 
@@ -21,11 +21,11 @@ export default createSlice({
     fetchProfile: startFetching,
     fetchProfileSuccess: (state, { payload }) => {
       stopFetching(state);
-      setProfile(state, payload);
+      setSelected(state, payload);
     },
 
-    setProfile: (state, { payload }) => {
-      setProfile(state, payload);
+    setSelected: (state, { payload }) => {
+      setSelected(state, payload);
     },
 
     search: startFetching,
@@ -54,10 +54,11 @@ export default createSlice({
           const { data } = yield call(getProfile, payload);
           yield put(actions.fetchProfileSuccess(data));
         } catch (error) {
-          yield put(actions.fail(error));
           if (yield cancelled()) {
-            yield put(actions.stopFetching());
+            yield put(actions.stopFetching);
+            return;
           }
+          yield put(actions.fail(error));
         }
       },
     },
@@ -68,10 +69,11 @@ export default createSlice({
           const { data } = yield call(searchAccount, payload);
           yield put(actions.searchSuccess(data));
         } catch (error) {
-          yield put(actions.fail(error));
           if (yield cancelled()) {
-            yield put(actions.stopFetching());
+            yield put(actions.stopFetching);
+            return;
           }
+          yield put(actions.fail(error));
         }
       },
     },
@@ -82,16 +84,13 @@ export default createSlice({
           const { data } = yield call(searchAccount, 'followers:>1000');
           yield put(actions.fetchTopSuccess(data));
         } catch (error) {
-          yield put(actions.fail(error));
           if (yield cancelled()) {
-            yield put(actions.stopFetching());
+            yield put(actions.stopFetching);
+            return;
           }
+          yield put(actions.fail(error));
         }
       },
     },
-  }),
-
-  selectors: (selector) => ({
-
   }),
 });

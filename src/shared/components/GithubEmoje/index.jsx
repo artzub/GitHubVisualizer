@@ -1,9 +1,9 @@
-import React from "react";
+import React from 'react';
 import slice from '@/redux/modules/emojis';
-import { makeId } from "@/shared/utils";
+import { makeId } from '@/shared/utils';
 import PropTypes from 'prop-types';
-import { useSelector } from "react-redux";
-import styled from "styled-components";
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
 
 const Image = styled.img`
   height: 1em;

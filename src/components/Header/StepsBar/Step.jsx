@@ -9,7 +9,7 @@ import PropTypes from 'prop-types';
 const PaperStyled = withStyles(() => ({
   root: {
     padding: '0 16px',
-    boxShadow: `2px 3px 3px 0px rgba(0,0,0,0.12), -2px 3px 3px 0px rgba(0,0,0,0.12)`,
+    boxShadow: '2px 3px 3px 0px rgba(0,0,0,0.12), -2px 3px 3px 0px rgba(0,0,0,0.12)',
     position: 'absolute',
     top: '100%',
     left: '-40px',

@@ -1,7 +1,7 @@
-import { withCancellation } from "@/redux/utils";
+import { withCancellation } from '@/redux/utils';
 
 import getClient from './getClient';
-import { parseRateLimit } from "./utils";
+import { parseRateLimit } from './utils';
 
 /**
  * Searches accounts by text

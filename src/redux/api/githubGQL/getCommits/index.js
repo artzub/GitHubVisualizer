@@ -1,6 +1,6 @@
-import { withCancellation } from "@/redux/utils";
+import { withCancellation } from '@/redux/utils';
 import getClient from '../getClient';
-import { addCursorAfter, parsePageInfo } from "../utils";
+import { addCursorAfter, parsePageInfo } from '../utils';
 import query from './query.graphql';
 
 /**

@@ -9,9 +9,7 @@ const Container = withStyles({
 })(ContainerOriginal);
 
 const Main = () => (
-  <Container disableGutters fixed>
-    Sometext
-  </Container>
+  <Container disableGutters fixed />
 );
 
 export default Main;
