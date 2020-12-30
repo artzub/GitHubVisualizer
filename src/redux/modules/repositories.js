@@ -1,6 +1,6 @@
-import { getRepositories } from "@/redux/api/github";
-import { createSlice, startFetching, stopFetching } from "@/redux/utils";
-import { put, call, cancelled, delay } from "redux-saga/effects";
+import { getRepositories } from '@/redux/api/github';
+import { createSlice, startFetching, stopFetching } from '@/redux/utils';
+import { put, call, cancelled, delay } from 'redux-saga/effects';
 import slice from './progress';
 
 const initialState = {
@@ -14,7 +14,7 @@ export default createSlice({
   name: 'repositories',
   initialState,
   reducers: {
-    setRepository: (state, { payload }) => {
+    setSelected: (state, { payload }) => {
       state.selected = payload;
     },
 
@@ -37,10 +37,10 @@ export default createSlice({
 
   sagas: (actions) => ({
     [actions.fetchRepositories]: {
-      * saga({ payload: { login, amount } }) {
+      * saga({ payload: { owner, amount } }) {
         try {
-          if (!amount) {
-            yield put(actions.stopFetching({ message: null }));
+          if (!amount || !owner) {
+            yield put(actions.stopFetching());
             return;
           }
 
@@ -56,7 +56,7 @@ export default createSlice({
 
           while (next) {
             const { data, pageInfo } = yield call(getRepositories, {
-              owner: login,
+              owner,
               perPage: 100,
               page: page,
             });
@@ -73,10 +73,11 @@ export default createSlice({
 
           yield put(actions.stopFetching());
         } catch (error) {
-          yield put(actions.fail(error));
           if (yield cancelled()) {
             yield put(actions.stopFetching);
+            return;
           }
+          yield put(actions.fail(error));
         } finally {
           yield delay(500);
           yield put(slice.actions.toggle(false));

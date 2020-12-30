@@ -96,6 +96,7 @@
         "caseInsensitive": true
       }
     }],
-    "react/forbid-component-props": [0]
+    "react/forbid-component-props": [0],
+    "quotes": ["error", "single", { "avoidEscape": true }]
   }
 }

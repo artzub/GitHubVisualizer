@@ -1,18 +1,33 @@
 import React, { useCallback, useState } from 'react';
-import { StageTypes } from "@/models/StageTypes";
+import { StageTypes } from '@/models/StageTypes';
 import profilesSlice from '@/redux/modules/profiles';
-import { useUIProperty } from "@/shared/hooks";
-import Collapse from "@material-ui/core/Collapse";
-import Grid from "@material-ui/core/Grid";
-import Paper from "@material-ui/core/Paper";
-import { withStyles } from "@material-ui/core/styles";
-import Tab from "@material-ui/core/Tab";
-import Tabs from "@material-ui/core/Tabs";
-import { useSelector } from "react-redux";
-import RepoStepBody from "./components/RepositoryStep/Body";
-import RepoStepHeader from "./components/RepositoryStep/Header";
-import UserStepBody from "./components/UserStep/Body";
-import UserStepHeader from "./components/UserStep/Header";
+import repositoriesSlice from '@/redux/modules/repositories';
+import { useUIProperty } from '@/shared/hooks';
+import Collapse from '@material-ui/core/Collapse';
+import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
+import { withStyles } from '@material-ui/core/styles';
+import Tab from '@material-ui/core/Tab';
+import Tabs from '@material-ui/core/Tabs';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+import BranchStepBody from './components/BranchStep/Body';
+import BranchStepHeader from './components/BranchStep/Header';
+import RepoStepBody from './components/RepositoryStep/Body';
+import RepoStepHeader from './components/RepositoryStep/Header';
+import UserStepBody from './components/UserStep/Body';
+import UserStepHeader from './components/UserStep/Header';
+
+const RepoBranchContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  overflow: hidden;
+  
+  & > * {
+    width: 100%;
+  }
+`;
 
 const PaperStyled = withStyles(() => ({
   root: {
@@ -27,6 +42,7 @@ const PaperStyled = withStyles(() => ({
 const StepBodies = {
   [StageTypes.user]: UserStepBody,
   [StageTypes.repository]: RepoStepBody,
+  [StageTypes.branch]: BranchStepBody,
 };
 
 const Header = () => {
@@ -34,6 +50,7 @@ const Header = () => {
   const [bodyOpen, setBodyOpen] = useUIProperty('bodyOpen');
   const [value, setValue] = useState(0);
   const { selected: profile } = useSelector(profilesSlice.selectors.getState);
+  const { selected: repository } = useSelector(repositoriesSlice.selectors.getState);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -64,7 +81,16 @@ const Header = () => {
       </Tabs>
       <Grid container>
         <UserStepHeader onClick={onClick(StageTypes.user)} />
-        <RepoStepHeader onClick={onClick(StageTypes.repository)} disabled={!profile} />
+        <RepoBranchContainer>
+          <RepoStepHeader
+            onClick={onClick(StageTypes.repository)}
+            disabled={!profile}
+          />
+          <BranchStepHeader
+            onClick={onClick(StageTypes.branch)}
+            disabled={!repository}
+          />
+        </RepoBranchContainer>
         <div>
           Show
         </div>

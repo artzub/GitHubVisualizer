@@ -1,4 +1,4 @@
-import { CANCEL } from "redux-saga";
+import { CANCEL } from 'redux-saga';
 import { withCancellation } from './index';
 
 const mock = (singal) => Promise.resolve(singal);

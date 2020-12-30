@@ -1,5 +1,5 @@
-import { parseRateLimit, parsePageInfo } from "@/redux/api/github/utils";
-import { withCancellation } from "@/redux/utils";
+import { parseRateLimit, parsePageInfo } from '@/redux/api/github/utils';
+import { withCancellation } from '@/redux/utils';
 import getClient from './getClient';
 
 /**

@@ -1,4 +1,4 @@
-import { createSlice } from "@/redux/utils";
+import { createSlice } from '@/redux/utils';
 
 const initialState = {
   max: 100,

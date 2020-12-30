@@ -1,6 +1,6 @@
-import { withCancellation } from "@/redux/utils";
+import { withCancellation } from '@/redux/utils';
 import getClient from './getClient';
-import { parsePageInfo, parseRateLimit } from "./utils";
+import { parsePageInfo, parseRateLimit } from './utils';
 
 const reg = /page=(\d+)>; rel="last"/;
 const getCount = (link, defValue = 0) =>

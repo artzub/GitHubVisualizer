@@ -1,5 +1,5 @@
-import { StageTypes } from "@/models/StageTypes";
-import { createSlice } from "@/redux/utils";
+import { StageTypes } from '@/models/StageTypes';
+import { createSlice } from '@/redux/utils';
 
 const initialState = {
   step: StageTypes.user,

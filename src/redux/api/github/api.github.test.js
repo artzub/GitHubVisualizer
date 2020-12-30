@@ -5,7 +5,6 @@ import {
   getBranches,
   getCommits,
 } from './index';
-import { CANCEL } from "redux-saga";
 
 describe('Github Rest API', () => {
   it('should search accounts', async () => {

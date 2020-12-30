@@ -1,5 +1,5 @@
-import { getEmojis } from "@/redux/api/github/getEmojis";
-import { createSlice, startFetching, stopFetching } from "@/redux/utils";
+import { getEmojis } from '@/redux/api/github/getEmojis';
+import { createSlice, startFetching, stopFetching } from '@/redux/utils';
 import { call, put } from 'redux-saga/effects';
 
 const initialState = {
