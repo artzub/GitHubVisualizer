@@ -1,4 +1,4 @@
-import { createSlice } from '@/redux/utils';
+import { createSlice, startFetching, stopFetching } from '@/redux/utils';
 
 const initialState = {
   max: 100,
@@ -13,10 +13,20 @@ export default createSlice({
   initialState,
   reducers: {
     change: (state, { payload }) => {
-      return {
+      const { show, ...rest } = payload;
+
+      const newState = {
         ...state,
-        ...payload,
+        ...rest,
       };
+
+      if (show) {
+        startFetching(newState, { payload: 'show' });
+      } else if (show === false) {
+        stopFetching(newState, { payload: 'show' });
+      }
+
+      return newState;
     },
 
     incValue: (state, { payload }) => {
@@ -28,7 +38,12 @@ export default createSlice({
     },
 
     toggle: (state, { payload }) => {
-      state.show = payload ?? !state.show;
+      const show = payload ?? !state.show;
+      if (show) {
+        startFetching(state, { payload: 'show' });
+      } else {
+        stopFetching(state, { payload: 'show' });
+      }
     },
   },
 });

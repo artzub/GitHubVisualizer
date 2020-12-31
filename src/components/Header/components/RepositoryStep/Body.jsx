@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { UrlPratTypes } from '@/models/UrlPartTypes';
 import slice from '@/redux/modules/repositories';
 import Highlight from '@/shared/components/Highlight';
 import LoadingOverlay from '@/shared/components/LoadingOverlay';
 import { ScrollBarMixin } from '@/shared/components/ScrollBar';
 import { useUIProperty } from '@/shared/hooks';
+import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
 import {
   Avatar, ListItem as ListItemOrigin,
   ListItemAvatar, ListSubheader, TextField,
@@ -68,6 +70,7 @@ const bySearch = (search) => (item) => {
 };
 
 const Body = () => {
+  const redirectTo = useRedirectTo(UrlPratTypes.repository);
   const dispatch = useDispatch();
   const inputRef = useRef();
   const [search, setSearch] = useState('');
@@ -92,10 +95,10 @@ const Body = () => {
 
   const onClick = useCallback(
     (item) => () => {
-      dispatch(slice.actions.setSelected(item));
       setBodyOpen(false);
+      redirectTo(item.name);
     },
-    [setBodyOpen, dispatch],
+    [setBodyOpen, redirectTo],
   );
 
   const ListHeader = useMemo(

@@ -1,9 +1,11 @@
 import React, { useCallback, useRef, useState } from 'react';
+import { UrlPratTypes } from '@/models/UrlPartTypes';
 import slice from '@/redux/modules/profiles';
 import Highlight from '@/shared/components/Highlight';
 import LoadingOverlay from '@/shared/components/LoadingOverlay';
 import ScrollBar from '@/shared/components/ScrollBar';
 import { useUIProperty } from '@/shared/hooks';
+import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
 import {
   Avatar, ListItem as ListItemOrigin,
   ListItemAvatar, ListSubheader,
@@ -64,6 +66,7 @@ const TopHeader = (
 
 const Body = () => {
   const dispatch = useDispatch();
+  const redirectTo = useRedirectTo(UrlPratTypes.profile);
   const inputRef = useRef();
   const [search, setSearch] = useState('');
   const [neverChange, setNeverChange] = useState(true);
@@ -80,11 +83,10 @@ const Body = () => {
 
   const onClick = useCallback(
     (user) => () => {
-      dispatch(slice.actions.setSelected(user));
       setBodyOpen(false);
-      dispatch(slice.actions.fetchProfile(user.login));
+      redirectTo(user.login);
     },
-    [setBodyOpen, dispatch],
+    [redirectTo, setBodyOpen],
   );
 
   useDebounce(

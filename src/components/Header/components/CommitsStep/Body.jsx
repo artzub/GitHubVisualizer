@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { UrlPratTypes } from '@/models/UrlPartTypes';
 import branchesSlice from '@/redux/modules/branches';
+import commitsSlice from '@/redux/modules/commits';
 import { useUIProperty } from '@/shared/hooks';
+import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import Input from '@material-ui/core/Input';
@@ -9,7 +12,7 @@ import Typography from '@material-ui/core/Typography';
 import HistoryIcon from 'mdi-react/HistoryIcon';
 import PlayArrowIcon from 'mdi-react/PlayArrowIcon';
 import StopIcon from 'mdi-react/StopIcon';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 const Container = styled.div`
@@ -38,9 +41,11 @@ const SliderContainer = styled(Grid)`
 const valueLabelFormat = (value) => -value;
 
 const Body = () => {
+  const dispatch = useDispatch();
+  const redirectTo = useRedirectTo(UrlPratTypes.commits);
   const [, setBodyOpen] = useUIProperty('bodyOpen');
-  const [isAnalysing, setIsAnalysing] = useUIProperty('isAnalysing');
-
+  const [, setRefreshKey] = useUIProperty('refreshKey');
+  const { isFetching } = useSelector(commitsSlice.selectors.getState);
   const { selected: branch } = useSelector(branchesSlice.selectors.getState);
   const { commits = 0 } = branch || {};
   const [storedValue, setStoredValue] = useUIProperty('commitsCount', Math.min(100, commits));
@@ -85,10 +90,17 @@ const Body = () => {
         return;
       }
 
-      setIsAnalysing((prev) => !prev);
       setBodyOpen(false);
+      setRefreshKey(Date.now());
+      redirectTo(-value);
     },
-    [setBodyOpen, setIsAnalysing, value],
+    [redirectTo, setBodyOpen, setRefreshKey, value],
+  );
+  const onStop = useCallback(
+    () => {
+      dispatch(commitsSlice.actions.cancel());
+    },
+    [dispatch],
   );
 
   useEffect(
@@ -118,7 +130,7 @@ const Body = () => {
               step: 1,
               type: 'number',
             }}
-            disabled={isAnalysing}
+            disabled={isFetching}
           />
         </Grid>
         <Grid item>
@@ -138,16 +150,16 @@ const Body = () => {
             valueLabelFormat={valueLabelFormat}
             valueLabelDisplay="on"
             track="inverted"
-            disabled={isAnalysing}
+            disabled={isFetching}
           />
         </SliderContainer>
         <Grid item>
           <Button
             variant="outlined"
-            color={isAnalysing ? 'secondary' : ''}
-            onClick={onClick}
+            color={isFetching ? 'secondary' : 'default'}
+            onClick={isFetching ? onStop : onClick}
           >
-            {isAnalysing ? <StopIcon /> : <PlayArrowIcon />}
+            {isFetching ? <StopIcon /> : <PlayArrowIcon />}
           </Button>
         </Grid>
       </GridStyled>
