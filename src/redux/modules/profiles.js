@@ -50,11 +50,11 @@ export default createSlice({
           const { data } = yield call(getProfile, payload);
           yield put(actions.fetchProfileSuccess(data));
         } catch (error) {
-          if (yield cancelled()) {
-            yield put(actions.stopFetching);
-            return;
-          }
           yield put(actions.fail(error));
+        } finally {
+          if (yield cancelled()) {
+            yield put(actions.stopFetching());
+          }
         }
       },
     },
@@ -65,11 +65,11 @@ export default createSlice({
           const { data } = yield call(searchAccount, payload);
           yield put(actions.searchSuccess(data));
         } catch (error) {
-          if (yield cancelled()) {
-            yield put(actions.stopFetching);
-            return;
-          }
           yield put(actions.fail(error));
+        } finally {
+          if (yield cancelled()) {
+            yield put(actions.stopFetching());
+          }
         }
       },
     },
@@ -80,11 +80,11 @@ export default createSlice({
           const { data } = yield call(searchAccount, 'followers:>1000');
           yield put(actions.fetchTopSuccess(data));
         } catch (error) {
-          if (yield cancelled()) {
-            yield put(actions.stopFetching);
-            return;
-          }
           yield put(actions.fail(error));
+        } finally {
+          if (yield cancelled()) {
+            yield put(actions.stopFetching());
+          }
         }
       },
     },

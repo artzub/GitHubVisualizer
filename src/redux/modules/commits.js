@@ -67,12 +67,12 @@ export default createSlice({
 
           yield put(actions.stopFetching());
         } catch (error) {
-          if (yield cancelled()) {
-            yield put(actions.stopFetching);
-            return;
-          }
           yield put(actions.fail(error));
         } finally {
+          if (yield cancelled()) {
+            yield put(actions.stopFetching());
+          }
+
           yield delay(500);
           yield put(slice.actions.toggle(false));
         }
