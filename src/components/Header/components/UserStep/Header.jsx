@@ -14,6 +14,12 @@ import Property from '../shared/Property';
 import PropertyValue from '../shared/PropertyValue';
 import Title from '../shared/Title';
 
+const Container = styled(HeaderContainer)`
+  & > div:first-child {
+    padding-left: 8px;
+  }
+`;
+
 const Link = styled(LinkOrigin)`
   display: flex;
   align-items: center;
@@ -34,7 +40,7 @@ const Header = (props) => {
   } = selected || {};
 
   return (
-    <HeaderContainer {...props}>
+    <Container {...props}>
       <Avatar src={avatar_url} />
       <InfoContainer>
         {!selected && <div>Find a user</div>}
@@ -78,7 +84,7 @@ const Header = (props) => {
           </React.Fragment>
         )}
       </InfoContainer>
-    </HeaderContainer>
+    </Container>
   );
 };
 

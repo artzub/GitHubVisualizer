@@ -21,8 +21,12 @@ const Container = styled.button`
   &:focus-visible {
     outline: -webkit-focus-ring-color auto 1px;
   }
-  
+
   &:disabled {
+    pointer-events: none;
+  }
+  
+  &.notAction {
     cursor: default;
   }
 `;
@@ -37,6 +41,11 @@ const Children = styled.div`
   transition: background 0.3s, opacity 0.5s;
   flex: 1 1 0;
   overflow: hidden;
+  background: transparent;
+  
+  ${Container}.notAction &:not(#fake_id_hack) {
+    background: transparent;
+  }
 
   ${Container}:hover:not(:disabled) & {
     background: rgba(255, 255, 255, 0.1);

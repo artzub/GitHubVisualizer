@@ -9,6 +9,8 @@ import { useDispatch, useSelector } from 'react-redux';
 export const useStageCommits = (amount) => {
   const dispatch = useDispatch();
   const [, setStoredValue] = useUIProperty('commitsCount');
+  const [, setStart] = useUIProperty('start');
+  const [, setPause] = useUIProperty('pause');
   const [refreshKey] = useUIProperty('refreshKey');
 
   const { selected: repository } = useSelector(repositoriesSlice.selectors.getState);
@@ -21,12 +23,16 @@ export const useStageCommits = (amount) => {
 
   useEffect(
     () => {
-      dispatch(commitsSlice.actions.clear());
       const fixedAmount = +amount;
 
       if (!branch || !owner || !repo || !fixedAmount || fixedAmount < 1) {
         return undefined;
       }
+
+      setStart(false);
+      setPause(false);
+
+      dispatch(commitsSlice.actions.clear());
 
       setStoredValue(fixedAmount);
 
@@ -41,6 +47,10 @@ export const useStageCommits = (amount) => {
         dispatch(commitsSlice.actions.cancel());
       };
     },
-    [branch, owner, repo, dispatch, amount, setStoredValue, refreshKey],
+    [
+      branch, owner, repo,
+      dispatch, amount, setStoredValue,
+      refreshKey, setStart, setPause,
+    ],
   );
 };
