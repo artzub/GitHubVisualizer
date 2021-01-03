@@ -1,5 +1,5 @@
 export const StageTypes = {
-  user: 'user',
+  profile: 'profile',
   repository: 'repository',
   branch: 'branch',
   commits: 'commits',
