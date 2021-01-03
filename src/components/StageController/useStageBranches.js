@@ -19,7 +19,7 @@ export const useStageBranches = (name) => {
   const { selected, items } = useSelector(branchesSlice.selectors.getState);
 
   const { login: owner } = profile || {};
-  const { name: repo, default_branch: defaultBranch } = repository || {};
+  const { name: repo, defaultBranch } = repository || {};
   const { name: branch } = selected || {};
 
   useEffect(

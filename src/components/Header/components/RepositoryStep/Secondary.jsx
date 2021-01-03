@@ -48,7 +48,7 @@ const Secondary = ({ item }) => (
       <Property title="Stars">
         <StarIcon size={16} />
         <PropertyValue>
-          {item.stargazers_count}
+          {item.stars}
         </PropertyValue>
       </Property>
       <Property title="Watchers">
@@ -60,7 +60,7 @@ const Secondary = ({ item }) => (
       <Property title="Opened issues">
         <AlertCircleOutlineIcon size={16} />
         <PropertyValue>
-          {item.open_issues}
+          {item.openIssues}
         </PropertyValue>
       </Property>
     </Properties>

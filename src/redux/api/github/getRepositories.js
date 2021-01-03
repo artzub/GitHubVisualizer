@@ -1,6 +1,7 @@
 import { parseRateLimit, parsePageInfo } from '@/redux/api/github/utils';
 import { withCancellation } from '@/redux/utils';
 import getClient from './getClient';
+import { repository } from './transforms';
 
 /**
  * Gets repositories of an owner
@@ -23,7 +24,7 @@ export const getRepositories = ({ owner, perPage = 10, page }) =>
     });
 
     return {
-      data: data?.data || [],
+      data: (data?.data || []).map(repository),
       pageInfo: parsePageInfo(data?.headers),
       rateLimit: parseRateLimit(data?.headers),
     };

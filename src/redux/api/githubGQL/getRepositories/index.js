@@ -25,6 +25,8 @@ export const getRepositories = ({ owner, page = '', perPage = 10 }) =>
       },
     });
 
+    // TODO add transforms/repository
+
     return {
       data: data?.profile?.repositories?.nodes,
       pageInfo: parsePageInfo(data?.profile?.repositories),
