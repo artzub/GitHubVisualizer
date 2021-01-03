@@ -125,16 +125,16 @@ const Body = () => {
         >
           <ListItemAvatar>
             <Avatar>
-              {item.private ? <BookLockIcon /> : (
-                item.fork ? <SourceRepositoryIcon /> : <BookIcon />
+              {item.isPrivate ? <BookLockIcon /> : (
+                item.isFork ? <SourceRepositoryIcon /> : <BookIcon />
               )}
             </Avatar>
           </ListItemAvatar>
           <ListItemText
             primary={(
               <Primary>
-                {item.private && <Marker>private</Marker>}
-                {item.fork && <Marker>fork</Marker>}
+                {item.isPrivate && <Marker>private</Marker>}
+                {item.isFork && <Marker>fork</Marker>}
                 <Highlight search={search} text={item.name} />
               </Primary>
             )}

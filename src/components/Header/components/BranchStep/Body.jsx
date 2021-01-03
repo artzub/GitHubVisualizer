@@ -74,7 +74,7 @@ const Body = () => {
   const [bodyOpen, setBodyOpen] = useUIProperty('bodyOpen');
   const [filtered, setFiltered] = useState(items);
   const { selected: repository } = useSelector(repositoriesSlice.selectors.getState);
-  const { default_branch } = repository || {};
+  const { defaultBranch } = repository || {};
 
   const changeSearch = useMemo(
     () => debounce(
@@ -111,7 +111,7 @@ const Body = () => {
   const Item = useCallback(
     ({ index, style }) => {
       const item = filtered[index];
-      const isDefault = default_branch === item.name;
+      const isDefault = defaultBranch === item.name;
 
       return (
         <ListItem
@@ -138,7 +138,7 @@ const Body = () => {
         </ListItem>
       );
     },
-    [filtered, default_branch, onClick, search],
+    [filtered, defaultBranch, onClick, search],
   );
 
   useEffect(
