@@ -61,7 +61,7 @@ const Header = (props) => {
     <HeaderContainer
       {...props}
       tabIndex={-1}
-      className="notAction"
+      button={false}
     >
       <ButtonContainer>
         <IconButton size="small" onClick={onClick(isRun ? 'pause' : 'start')}>

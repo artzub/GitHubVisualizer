@@ -2,8 +2,8 @@ import { StageTypes } from '@/models/StageTypes';
 import { createSlice } from '@/redux/utils';
 
 const initialState = {
-  step: StageTypes.user,
-  view: StageTypes.repository,
+  step: StageTypes.profile,
+  view: StageTypes.profile,
   bodyOpen: false,
 };
 

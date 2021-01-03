@@ -2,7 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
-const Container = styled.button`
+const Button = styled.button.attrs({
+  type: 'button',
+})`
   position: relative;
   display: flex;
   box-sizing: border-box;
@@ -31,6 +33,17 @@ const Container = styled.button`
   }
 `;
 
+const Div = styled.div.attrs({
+  className: `${Button}`,
+})`
+  outline: 0 !important;
+  
+  ${({ disabled }) => disabled && `
+    pointer-events: none;
+    opacity: 0.4;
+  `}
+`;
+
 const Children = styled.div`
   position: relative;
   display: flex;
@@ -43,19 +56,19 @@ const Children = styled.div`
   overflow: hidden;
   background: transparent;
   
-  ${Container}.notAction &:not(#fake_id_hack) {
+  ${Button}.notAction &:not(#fake_id_hack) {
     background: transparent;
   }
 
-  ${Container}:hover:not(:disabled) & {
+  ${Button}:hover:not(:disabled) & {
     background: rgba(255, 255, 255, 0.1);
   }
 
-  ${Container}:active:not(:disabled) & {
+  ${Button}:active:not(:disabled) & {
     background: rgba(255, 255, 255, 0.2);
   }
 
-  ${Container}:disabled & {
+  ${Button}:disabled & {
     opacity: 0.4;
   }
 `;
@@ -84,21 +97,22 @@ const Divider = styled.div`
     transition: background 0.3s;
   }
 
-  ${Container}:hover:not(:disabled) &:after {
+  ${Button}:hover:not(:disabled) &:after {
     background: rgba(255, 255, 255, 0.1);
   }
 
-  ${Container}:active:not(:disabled) &:after {
+  ${Button}:active:not(:disabled) &:after {
     background: rgba(255, 255, 255, 0.2);
   }
 `;
 
-const HeaderContainer = ({ divider, children, ...rest }) => {
+const HeaderContainer = ({ divider, button, children, ...rest }) => {
+  const Component = button ? Button : Div;
   return (
-    <Container type="button" {...rest}>
+    <Component {...rest}>
       <Children>{children}</Children>
       {divider && <Divider />}
-    </Container>
+    </Component>
   );
 };
 
@@ -108,9 +122,11 @@ HeaderContainer.propTypes = {
     PropTypes.node,
   ]),
   divider: PropTypes.bool,
+  button: PropTypes.bool,
 };
 
 HeaderContainer.defaultProps = {
+  button: true,
   children: [],
   divider: false,
 };
