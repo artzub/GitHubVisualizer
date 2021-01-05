@@ -10,6 +10,7 @@ import { scaleLinear, scaleLog, scaleOrdinal } from 'd3-scale';
 import * as PIXI from 'pixi.js';
 import forceCluster from './forceCluster';
 import forceCollide from './forceCollide';
+import BackgroundGrid from '@/components/Visualization/shared/BackgroundGrid';
 
 const groupDefault = (node) => node.language;
 const radiusDefault = (node) => node.stars;
@@ -106,6 +107,11 @@ class Application {
 
     container.append(this._instance.view);
     this._instance.queueResize();
+
+    this._grid = new BackgroundGrid(70);
+    this._grid.alpha = 0.4;
+
+    this._instance.stage.addChild(this._grid);
 
     this._group = new PIXI.Container();
 
@@ -468,6 +474,8 @@ class Application {
   _resize(width, height) {
     this._group.x = width * 0.5;
     this._group.y = height * 0.5;
+
+    this._grid.resize(width, height);
   }
 
   _draw() {
