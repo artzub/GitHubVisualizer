@@ -14,12 +14,12 @@ const onClick = (event) => event.stopPropagation();
 
 const Header = (props) => {
   const { selected } = useSelector(slice.selectors.getState);
-  const { name, private: locked, fork, html_url } = selected || {};
+  const { name, isPrivate, isFork, url } = selected || {};
 
   return (
     <Container {...props}>
-      {locked ? <BookLockIcon size={20} /> : (
-        fork
+      {isPrivate ? <BookLockIcon size={20} /> : (
+        isFork
           ? <SourceRepositoryIcon size={20} />
           : <BookIcon size={20} />
       )}
@@ -30,7 +30,7 @@ const Header = (props) => {
             <Link
               target="_blank"
               onClick={onClick}
-              href={html_url}
+              href={url}
               title="On github"
               style={{ verticalAlign: 'middle', marginRight: '3px' }}
             >

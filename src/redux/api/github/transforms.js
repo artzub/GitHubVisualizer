@@ -10,7 +10,7 @@ export const repository = (item) => Repository({
   isFork: item.fork,
   isArchived: item.archived,
   isLocked: item.disabled,
-  updateAt: Date.parse(item.update_at),
-  createAt: Date.parse(item.create_at),
+  updatedAt: Date.parse(item.updated_at),
+  createdAt: Date.parse(item.created_at),
   pushedAt: Date.parse(item.pushed_at),
 });
