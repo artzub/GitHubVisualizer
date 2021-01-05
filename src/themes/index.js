@@ -21,6 +21,25 @@ const GlobalStyle = createGlobalStyle`
     overflow: hidden;
   }
 
+  *:not(#id_fake_for_hack) {
+    -webkit-font-feature-settings: "liga" on, "calt" on;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  
+  .hovered {
+    cursor: pointer;
+  }
+  
+  .draggable {
+    cursor: grab;
+  }
+  
+  .dragging {
+    cursor: grabbing;
+  }
+
   //body {
   //  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
   //    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
