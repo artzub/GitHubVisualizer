@@ -11,7 +11,11 @@ const order = [
   UrlPratTypes.commits,
 ];
 
-export const useRedirectTo = (partType) => {
+/**
+ * @param {UrlPratTypes} urlPartType
+ * @return {function(string): void}
+ */
+export const useRedirectTo = (urlPartType) => {
   const history = useHistory();
   const {
     service,
@@ -32,7 +36,7 @@ export const useRedirectTo = (partType) => {
 
   return useCallback(
     (part) => {
-      const index = order.indexOf(partType);
+      const index = order.indexOf(urlPartType);
       if (index < 0) {
         return;
       }
@@ -42,6 +46,6 @@ export const useRedirectTo = (partType) => {
 
       history.push(`${url}/${part}`);
     },
-    [hash, history, partType],
+    [hash, history, urlPartType],
   );
 };
