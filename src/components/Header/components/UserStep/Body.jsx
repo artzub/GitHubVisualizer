@@ -68,6 +68,7 @@ const Body = () => {
   const dispatch = useDispatch();
   const redirectTo = useRedirectTo(UrlPratTypes.profile);
   const inputRef = useRef();
+  const listRef = useRef();
   const [search, setSearch] = useState('');
   const [neverChange, setNeverChange] = useState(true);
   const { isFetching, items, top } = useSelector(slice.selectors.getState);
@@ -77,6 +78,9 @@ const Body = () => {
     (event) => {
       setNeverChange(false);
       setSearch(event.target.value);
+      if (listRef.current) {
+        listRef.current.scrollIntoViewIfNeeded();
+      }
     },
     [],
   );
@@ -125,6 +129,7 @@ const Body = () => {
         <ListContainer>
           {!neverChange && (
             <List
+              ref={listRef}
               dense
               subheader={SearchHeader}
             >
