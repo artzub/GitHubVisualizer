@@ -172,5 +172,8 @@
   ],
   "lint-staged": {
     "*.{js,jsx}": "eslint"
+  },
+  "dependencies": {
+    "use-sound": "^2.0.1"
   }
 }
