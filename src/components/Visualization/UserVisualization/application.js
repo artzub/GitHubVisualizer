@@ -7,16 +7,19 @@ import {
  forceManyBody, forceX, forceY,
 } from 'd3-force';
 import { scaleLinear, scaleLog, scaleOrdinal } from 'd3-scale';
+import gsap from 'gsap';
 import * as PIXI from 'pixi.js';
+import BackgroundGrid from '../shared/BackgroundGrid';
+import Locator from '../shared/Locator';
 import forceCluster from './forceCluster';
 import forceCollide from './forceCollide';
-import BackgroundGrid from '@/components/Visualization/shared/BackgroundGrid';
 
 const groupDefault = (node) => node.language;
 const radiusDefault = (node) => node.stars;
 const alphaDefault = (node) => +node.updatedAt;
 const keyDefault = (node) => node.id;
 
+//d3.scaleSequential(d3.interpolateRainbow)
 const colorIndexes = [100, 200, 300, 500, 600, 700];
 const ignoreColors = ['common', 'grey', 'brown'];
 const colors = Object.entries(palettes)
@@ -41,7 +44,7 @@ const textStyle = {
 
   dropShadow: true,
   dropShadowColor: '#000000',
-  dropShadowBlur: 2,
+  dropShadowBlur: 1,
   dropShadowAngle: 0,
   dropShadowDistance: 1,
 };
@@ -104,20 +107,27 @@ class Application {
     });
 
     this._instance.renderer.on('resize', this._resize.bind(this));
+    this._instance.renderer.plugins.interaction.cursorStyles.default = 'none';
 
     container.append(this._instance.view);
     this._instance.queueResize();
 
     this._grid = new BackgroundGrid(70);
     this._grid.alpha = 0.4;
-
     this._instance.stage.addChild(this._grid);
 
     this._group = new PIXI.Container();
-
     this._instance.stage.addChild(this._group);
 
+    this._locator = new Locator();
+    this._locator.x = -10;
+    this._locator.y = -10;
+    this._instance.stage.addChild(this._locator);
+
     this._simulation.on('tick', this._draw.bind(this));
+
+    this._group.interactive = true;
+    this._group.on('pointermove', this._locator.onPointerMove);
   }
 
   destroy() {
@@ -225,11 +235,13 @@ class Application {
     const node = event.currentTarget;
     this._event.call('itemOver', node, event, node);
 
-    node.cursor = 'pointer';
+    this._group.cursor = 'pointer';
 
     if (!node) {
       return;
     }
+
+    this._locator.focused(node);
 
     const item = node.__data__;
     if (!item) {
@@ -248,11 +260,12 @@ class Application {
     }
 
     this._hovered = null;
+    this._locator.focused(null);
 
     const node = event.currentTarget;
     this._event.call('itemOut', node, event, node);
 
-    node.cursor = 'default';
+    this._group.cursor = 'none';
 
     if (!node) {
       return;
@@ -295,7 +308,7 @@ class Application {
       this._dragging = Math.hypot(nx - x, ny - y) > 0;
 
       if (this._dragging) {
-        node.cursor = 'grabbing';
+        this._group.cursor = 'grabbing';
         this._event.call('dragStart', node, event, node);
       }
     }
@@ -304,6 +317,8 @@ class Application {
     if (!this._dragging || !item) {
       return;
     }
+
+    this._locator.onPointerMove(event);
 
     item.fx = nx;
     item.fy = ny;
@@ -327,11 +342,7 @@ class Application {
       }
     } else {
       this._event.call('dragEnd', node, event, node);
-
-      if (item) {
-        delete item.fx;
-        delete item.fy;
-      }
+      this._group.cursor = 'pointer';
     }
 
     this._dragging = false;
@@ -436,7 +447,7 @@ class Application {
     if (!text) {
       text = new PIXI.Text(item.name, {
         ...textStyle,
-        fill: PIXI.utils.string2hex(color.brighter(2).formatHex()),
+        fill: PIXI.utils.string2hex(color.brighter(1.5).formatHex()),
       });
       // text.roundPixels = true;
       text.anchor.set(0.5);
@@ -476,6 +487,43 @@ class Application {
     this._group.y = height * 0.5;
 
     this._grid.resize(width, height);
+    this._locator.resize(width, height);
+  }
+
+  _updateFocused() {
+    this._group.children.find((node) => {
+      const key = this._keyOfItem(node.__data__);
+      if (key === this._hovered || key === this._selected) {
+        node.filters = [filterBrightness];
+        gsap.to(node.children[0], {
+          alpha: key === this._hovered ? 0.8 : 0.9,
+          duration: 0.2,
+        });
+        return true;
+      }
+
+      return false;
+    });
+  }
+
+  get _selected() {
+    return this.__selected;
+  }
+  set _selected(value) {
+    this.__selected = value;
+    if (value) {
+      this._updateFocused();
+    }
+  }
+
+  get _hovered() {
+    return this.__hovered;
+  }
+  set _hovered(value) {
+    this.__hovered = value;
+    if (value) {
+      this._updateFocused();
+    }
   }
 
   _draw() {
@@ -491,16 +539,16 @@ class Application {
 
       const key = this._keyOfItem(item);
 
-      if (key === this._hovered || key === this._selected) {
-        node.filters = [filterBrightness];
-        node.children[0].alpha = key === this._hovered ? 0.8 : 0.9;
-      } else if(node.filters) {
-        node.filters = null;
-        node.children[0].alpha = this._alphaOfItem(item);
+      if (!(key === this._hovered || key === this._selected) && node.filters) {
+        node.filters = [];
+        gsap.to(node.children[0], {
+          alpha: this._alphaOfItem(item),
+          duration: 0.2,
+        });
       }
 
-      node.x = item.x;
-      node.y = item.y;
+      node.x = item.x + (item.x % 2 ? 0 : 0.5);
+      node.y = item.y + (item.y % 2 ? 0 : 0.5);
     });
   }
 }
