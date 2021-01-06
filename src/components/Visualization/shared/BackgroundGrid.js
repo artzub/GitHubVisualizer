@@ -6,7 +6,7 @@ const cross = (size) => {
   const sizeHalf = size * 0.5;
   const item = new PIXI.Graphics();
   item.roundPixels = true;
-  item.lineStyle(1, 0xffffff, 0.15);
+  item.lineStyle(1, 0xffffff, 0.15, 0.5);
   item.moveTo(sizeHalf - 1.5, -sizeHalf);
   item.lineTo(sizeHalf - 1.5, size);
   item.moveTo(-sizeHalf, sizeHalf - 2);
@@ -49,28 +49,28 @@ class BackgroundGrid extends PIXI.Container {
     const stickSizeBorder = 26;
 
     item = new PIXI.Graphics();
-    item.lineStyle(2, 0xffffff);
+    item.lineStyle(2, 0xffffff, 1, 0.5);
     item.moveTo(stickSizeBorder, pad);
     item.lineTo(pad, pad);
     item.lineTo(pad, stickSizeBorder);
     children.push(item);
 
     item = new PIXI.Graphics();
-    item.lineStyle(2, 0xffffff);
+    item.lineStyle(2, 0xffffff, 1, 0.5);
     item.moveTo(width - stickSizeBorder, pad);
     item.lineTo(width - pad, pad);
     item.lineTo(width - pad, stickSizeBorder);
     children.push(item);
 
     item = new PIXI.Graphics();
-    item.lineStyle(2, 0xffffff);
+    item.lineStyle(2, 0xffffff, 1, 0.5);
     item.moveTo(stickSizeBorder, height - pad);
     item.lineTo(pad, height - pad);
     item.lineTo(pad, height - stickSizeBorder);
     children.push(item);
 
     item = new PIXI.Graphics();
-    item.lineStyle(2, 0xffffff);
+    item.lineStyle(2, 0xffffff, 1, 0.5);
     item.moveTo(width - stickSizeBorder, height - pad);
     item.lineTo(width - pad, height - pad);
     item.lineTo(width - pad, height - stickSizeBorder);
@@ -118,6 +118,8 @@ class BackgroundGrid extends PIXI.Container {
 
     this.removeChildren();
     this.addChild(...children);
+
+    return this;
   }
 }
 
