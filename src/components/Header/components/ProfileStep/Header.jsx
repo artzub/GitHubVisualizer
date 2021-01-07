@@ -15,6 +15,8 @@ import PropertyValue from '../shared/PropertyValue';
 import Title from '../shared/Title';
 
 const Container = styled(HeaderContainer)`
+  min-width: 165px;
+  max-width: 165px;
   & > div:first-child {
     padding-left: 8px;
   }
@@ -35,15 +37,15 @@ const onClick = (event) => event.stopPropagation();
 const Header = (props) => {
   const { selected } = useSelector(slice.selectors.getState);
   const {
-    avatar_url, name, login,
-    html_url, public_repos, blog,
+    avatar, name, login,
+    url, publicRepos, site,
   } = selected || {};
 
   return (
     <Container {...props}>
-      <Avatar src={avatar_url} />
+      <Avatar src={avatar} />
       <InfoContainer>
-        {!selected && <div>Find a user</div>}
+        {!selected && <div>Find a profile</div>}
         {selected && (
           <React.Fragment>
             <Title title={name || login}>{name || login}</Title>
@@ -54,7 +56,7 @@ const Header = (props) => {
                   <Link
                     target="_blank"
                     onClick={onClick}
-                    href={html_url}
+                    href={url}
                   >
                     {login}
                   </Link>
@@ -64,16 +66,16 @@ const Header = (props) => {
             <Properties>
               <Property title="Amount of repositories">
                 <BookMultipleIcon size={16} />
-                <PropertyValue>{public_repos}</PropertyValue>
+                <PropertyValue>{publicRepos}</PropertyValue>
               </Property>
-              {blog && (
+              {site && (
                 <Property title="Web site">
                   <LinkVariantIcon size={16} />
                   <PropertyValue>
                     <Link
                       target="_blank"
                       onClick={onClick}
-                      href={blog}
+                      href={site}
                     >
                       site
                     </Link>

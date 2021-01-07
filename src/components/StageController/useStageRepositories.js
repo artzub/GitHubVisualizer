@@ -12,7 +12,7 @@ export const useStageRepositories = (name) => {
   const { selected, items } = useSelector(repositoriesSlice.selectors.getState);
   const { selected: profile } = useSelector(profilesSlice.selectors.getState);
 
-  const { login: owner, public_repos: amount = 0 } = profile || {};
+  const { login: owner, publicRepos: amount = 0 } = profile || {};
   const { name: repository } = selected || {};
 
   useEffect(

@@ -1,5 +1,6 @@
 import { withCancellation } from '@/redux/utils';
 import getClient from './getClient';
+import { profile } from './transforms';
 import { parseRateLimit } from './utils';
 
 /**
@@ -19,7 +20,7 @@ export const getProfile = (login) =>
     });
 
     return {
-      data: data?.data,
+      data: data?.data && profile(data?.data),
       rateLimit: parseRateLimit(data?.headers),
     };
   });

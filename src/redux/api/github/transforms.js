@@ -1,4 +1,13 @@
+import { Profile } from '@/models/Profile';
 import { Repository } from '@/models/Repository';
+
+export const profile = (item) => Profile({
+  ...item,
+  avatar: item.avatar_url,
+  url: item.html_url,
+  publicRepos: item.public_repos,
+  site: item.blog,
+});
 
 export const repository = (item) => Repository({
   ...item,
