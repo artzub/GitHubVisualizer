@@ -1,5 +1,5 @@
 import gsap from 'gsap';
-import * as PIXI from 'pixi.js';
+import * as PIXI from 'pixi.js-legacy';
 import { drawDashedPolygon } from '../shared/drawDashedPolygon';
 
 class Locator extends PIXI.Container {
@@ -19,6 +19,7 @@ class Locator extends PIXI.Container {
       const [x, y] = this._linesRates[i];
       item.x = x * 12;
       item.y = y * 12;
+      item.name = `locator_line_${i + 1}`;
       return item;
     });
     this.addChild(...this._lines);
@@ -53,6 +54,8 @@ class Locator extends PIXI.Container {
 
         item.x = sx;
         item.y = sy;
+
+        item.name = `locator_border_${i + 1}`;
 
         return item;
       });
@@ -122,17 +125,11 @@ class Locator extends PIXI.Container {
 
     const pos = this._focused.getGlobalPosition(undefined, true);
 
-    if (this._tweenRoot) {
-      this._tweenRoot.kill();
-    }
-
-    this._tweenRoot = gsap.to(this.position, {
+    gsap.to(this.position, {
       x: pos.x,
       y: pos.y,
       duration: 0.2,
-      onComplete: () => {
-        this._tweenRoot = null;
-      },
+      overwrite: true,
     });
 
     const w2 = width * 0.5;
@@ -144,6 +141,7 @@ class Locator extends PIXI.Container {
         x: x * Math.max(w2 + 4, 12),
         y: y * Math.max(h2 + 4, 12),
         duration: 0.2,
+        overwrite: true,
       });
     });
 
@@ -153,22 +151,19 @@ class Locator extends PIXI.Container {
         x: Math.sign(x) * -1 * Math.max(w2 + 4, 12),
         y: Math.sign(y) * -1 * Math.max(h2 + 4, 12),
         duration: 0.2,
+        overwrite: true,
       });
     });
   }
 
   _stopAnimation() {
-    if (this._tweenRoot) {
-      this._tweenRoot.kill();
-      this._tweenRoot = null;
-    }
-
     this._lines.forEach((item, i) => {
       const [x, y] = this._linesRates[i];
       gsap.to(item.position, {
         x: x * 12,
         y: y * 12,
         duration: 0.2,
+        overwrite: true,
       });
     });
 
@@ -178,6 +173,7 @@ class Locator extends PIXI.Container {
         x,
         y,
         duration: 0.2,
+        overwrite: true,
       });
     });
   }
