@@ -8,7 +8,7 @@ import {
 } from 'd3-force';
 import { scaleLinear, scaleLog, scaleOrdinal } from 'd3-scale';
 import gsap from 'gsap';
-import * as PIXI from 'pixi.js';
+import * as PIXI from 'pixi.js-legacy';
 import BackgroundGrid from '../shared/BackgroundGrid';
 import Locator from '../shared/Locator';
 import forceCluster from './forceCluster';
@@ -80,6 +80,7 @@ class Application {
 
     this._simulation = forceSimulation()
       .velocityDecay(0.05)
+      .alphaMin(0.01)
       .force('x', forceX(0).strength(0.05))
       .force('y', forceY(0).strength(0.05))
       .force('charge', forceManyBody())
@@ -96,13 +97,9 @@ class Application {
       'dragStart', 'dragEnd',
     );
 
-    if (process.env.NODE_ENV === 'production') {
-      PIXI.utils.skipHello();
-    }
-
     this._instance = new PIXI.Application({
       antialias: true,
-      transparent: true,
+      backgroundAlpha: 0,
       resizeTo: container,
     });
 
@@ -151,7 +148,7 @@ class Application {
     this._calcAlphaDomain(data);
     this._simulation
       .nodes(data)
-      .alphaTarget(0.3)
+      .alphaTarget(0.5)
       .restart()
     ;
     this._data();
@@ -498,6 +495,7 @@ class Application {
         gsap.to(node.children[0], {
           alpha: key === this._hovered ? 0.8 : 0.9,
           duration: 0.2,
+          overwrite: true,
         });
         return true;
       }
@@ -539,11 +537,12 @@ class Application {
 
       const key = this._keyOfItem(item);
 
-      if (!(key === this._hovered || key === this._selected) && node.filters) {
+      if (!(key === this._hovered || key === this._selected) && node.filters?.length) {
         node.filters = [];
         gsap.to(node.children[0], {
           alpha: this._alphaOfItem(item),
           duration: 0.2,
+          overwrite: true,
         });
       }
 
