@@ -1,3 +1,4 @@
+import * as PIXI from 'pixijs';
 import * as palettes from '@material-ui/core/colors';
 import { extent } from 'd3-array';
 import { color as d3color } from 'd3-color';
@@ -8,7 +9,6 @@ import {
 } from 'd3-force';
 import { scaleLinear, scaleLog, scaleOrdinal } from 'd3-scale';
 import gsap from 'gsap';
-import * as PIXI from 'pixi.js-legacy';
 import BackgroundGrid from '../shared/BackgroundGrid';
 import Locator from '../shared/Locator';
 import forceCluster from './forceCluster';

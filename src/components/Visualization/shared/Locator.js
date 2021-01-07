@@ -1,5 +1,5 @@
+import * as PIXI from 'pixijs';
 import gsap from 'gsap';
-import * as PIXI from 'pixi.js-legacy';
 import { drawDashedPolygon } from '../shared/drawDashedPolygon';
 
 class Locator extends PIXI.Container {
