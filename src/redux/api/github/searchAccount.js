@@ -1,6 +1,6 @@
 import { withCancellation } from '@/redux/utils';
-
 import getClient from './getClient';
+import { profile } from './transforms';
 import { parseRateLimit } from './utils';
 
 /**
@@ -20,7 +20,7 @@ export const searchAccount = (search) => withCancellation(async (signal) => {
   });
 
   return {
-    data: data?.data?.items || [],
+    data: (data?.data?.items || []).map(profile),
     rateLimit: parseRateLimit(data?.headers),
   };
 });

@@ -51,16 +51,16 @@ const Tab = styled(Container)`
   transform: translate3d(100%, 0, 0);
   
   animation-name: ${({ $active, $prev, $dir }) => {
-  if ($active) {
-    return $dir > 0 ? right : left;
-  }
-
-  if ($prev) {
-    return $dir > 0 ? leftRev : rightRev;
-  }
-
-  return 'none';
-}};
+    if ($active) {
+      return $dir > 0 ? right : left;
+    }
+  
+    if ($prev) {
+      return $dir > 0 ? leftRev : rightRev;
+    }
+  
+    return 'none';
+  }};
   animation-timing-function: ease-in;
   animation-duration: 1s;
   animation-fill-mode: forwards;

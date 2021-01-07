@@ -7,6 +7,7 @@ const Container = styled.div`
   right: 0;
   bottom: 0;
   overflow: hidden;
+  z-index: 1;
 `;
 
 export default Container;

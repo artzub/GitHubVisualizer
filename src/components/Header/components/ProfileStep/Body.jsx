@@ -60,7 +60,7 @@ const SearchHeader = (
 
 const TopHeader = (
   <ListSubheader component="li" disableSticky>
-    Top users
+    Top profiles
   </ListSubheader>
 );
 
@@ -86,9 +86,9 @@ const Body = () => {
   );
 
   const onClick = useCallback(
-    (user) => () => {
+    (profile) => () => {
       setBodyOpen(false);
-      redirectTo(user.login);
+      redirectTo(profile.login);
     },
     [redirectTo, setBodyOpen],
   );
@@ -120,8 +120,8 @@ const Body = () => {
   return (
     <Container>
       <TextField
-        label="Username"
-        placeholder="Type username"
+        label="Profile name"
+        placeholder="Type profile name"
         onChange={onChange}
         ref={inputRef}
       />
@@ -134,18 +134,18 @@ const Body = () => {
               subheader={SearchHeader}
             >
               {!items.length && <NotData />}
-              {(items || []).map((user) => (
+              {(items || []).map((profile) => (
                 <ListItem
                   alignItems="center"
-                  key={user.login}
-                  onClick={onClick(user)}
+                  key={profile.login}
+                  onClick={onClick(profile)}
                 >
                   <ListItemAvatar>
-                    <Avatar src={user.avatar_url} />
+                    <Avatar src={profile.avatar_url} />
                   </ListItemAvatar>
                   <ListItemText
-                    primary={<Highlight search={search} text={user.login} />}
-                    secondary={user.type}
+                    primary={<Highlight search={search} text={profile.login} />}
+                    secondary={profile.type}
                   />
                 </ListItem>
               ))}
@@ -156,18 +156,18 @@ const Body = () => {
               dense
               subheader={TopHeader}
             >
-              {(top || []).map((user) => (
+              {(top || []).map((profile) => (
                 <ListItem
                   alignItems="center"
-                  key={user.login}
-                  onClick={onClick(user)}
+                  key={profile.login}
+                  onClick={onClick(profile)}
                 >
                   <ListItemAvatar>
-                    <Avatar src={user.avatar_url} />
+                    <Avatar src={profile.avatar_url} />
                   </ListItemAvatar>
                   <ListItemText
-                    primary={user.login}
-                    secondary={user.type}
+                    primary={profile.login}
+                    secondary={profile.type}
                   />
                 </ListItem>
               ))}
