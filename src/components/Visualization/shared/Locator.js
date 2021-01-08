@@ -89,8 +89,8 @@ class Locator extends PIXI.Container {
           y: -0.5,
         },
         {
-          x: i % 2 && (i === 3 ? 1 : -1) * width,
-          y: i % 2 ? 0 : (i === 2 ? 1 : -1) * height,
+          x: i % 2 && (i === 3 ? 1 : -1) * width * 3,
+          y: i % 2 ? 0 : (i === 2 ? 1 : -1) * height * 3,
         },
       ];
       drawDashedPolygon(item, points, 0, 0, 0, 6, 18, 0);
@@ -110,8 +110,7 @@ class Locator extends PIXI.Container {
   }
 
   onPointerMove(event) {
-    if ((this._focused && event?.currentTarget !== this._focused)
-      || !event?.data?.global) {
+    if ((this._focused && event?.currentTarget !== this._focused) || !event?.data?.global) {
       return;
     }
 

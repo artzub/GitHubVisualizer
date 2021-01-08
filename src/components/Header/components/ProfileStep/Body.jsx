@@ -141,7 +141,7 @@ const Body = () => {
                   onClick={onClick(profile)}
                 >
                   <ListItemAvatar>
-                    <Avatar src={profile.avatar_url} />
+                    <Avatar src={profile.avatar} />
                   </ListItemAvatar>
                   <ListItemText
                     primary={<Highlight search={search} text={profile.login} />}
@@ -163,7 +163,7 @@ const Body = () => {
                   onClick={onClick(profile)}
                 >
                   <ListItemAvatar>
-                    <Avatar src={profile.avatar_url} />
+                    <Avatar src={profile.avatar} />
                   </ListItemAvatar>
                   <ListItemText
                     primary={profile.login}

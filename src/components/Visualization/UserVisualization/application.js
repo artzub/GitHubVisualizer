@@ -80,7 +80,7 @@ class Application {
 
     this._simulation = forceSimulation()
       .velocityDecay(0.05)
-      .alphaMin(0.01)
+      .alphaTarget(0.1)
       .force('x', forceX(0).strength(0.05))
       .force('y', forceY(0).strength(0.05))
       .force('charge', forceManyBody())
@@ -146,11 +146,9 @@ class Application {
 
     this._calcRadiusDomain(data);
     this._calcAlphaDomain(data);
-    this._simulation
-      .nodes(data)
-      .alphaTarget(0.5)
-      .restart()
-    ;
+    this._simulation.nodes(data);
+    this._restartSimulation();
+
     this._data();
 
     return this;
@@ -164,6 +162,7 @@ class Application {
     this._radiusGetter = getter || radiusDefault;
     this._calcRadiusDomain(this._simulation.nodes());
     this._group.children.forEach(this._updateNodes);
+    this._restartSimulation();
 
     return this;
   }
@@ -176,6 +175,7 @@ class Application {
     this._alphaGetter = getter || alphaDefault;
     this._calcAlphaDomain(this._simulation.nodes());
     this._group.children.forEach(this._updateNodes);
+    this._restartSimulation();
 
     return this;
   }
@@ -188,6 +188,7 @@ class Application {
     this._groupGetter = getter || groupDefault;
     this._colors = scaleOrdinal(colors);
     this._group.children.forEach(this._updateNodes);
+    this._restartSimulation();
 
     return this;
   }
@@ -207,6 +208,14 @@ class Application {
     }
 
     this._selected = key;
+    this._simulation.restart();
+  }
+
+  _restartSimulation() {
+    this._simulation
+      .alpha(0.5)
+      .restart()
+    ;
   }
 
   _bindMethods() {
@@ -229,6 +238,13 @@ class Application {
       return;
     }
 
+    event.stopPropagation();
+
+    this._simulation
+      .velocityDecay(0.05)
+      .alpha(0.5)
+      .restart();
+
     const node = event.currentTarget;
     this._event.call('itemOver', node, event, node);
 
@@ -238,14 +254,13 @@ class Application {
       return;
     }
 
+    this._hovered = node;
     this._locator.focused(node);
 
     const item = node.__data__;
     if (!item) {
       return;
     }
-
-    this._hovered = this._keyOfItem(item);
 
     item.fx = item.x;
     item.fy = item.y;
@@ -255,6 +270,8 @@ class Application {
     if (this._dragging) {
       return;
     }
+
+    event.stopPropagation();
 
     this._hovered = null;
     this._locator.focused(null);
@@ -273,12 +290,12 @@ class Application {
       return;
     }
 
-    node.children[0].alpha = this._alphaOfItem(item);
     delete item.fx;
     delete item.fy;
   }
 
   _onPointerDown(event) {
+    event.stopPropagation();
     if (event.data.originalEvent.ctrlKey || event.data.originalEvent.button) {
       return;
     }
@@ -297,6 +314,7 @@ class Application {
   }
 
   _onPointerMove(event) {
+    event.stopPropagation();
     const node = this._dragNode;
     const { x, y } = this._dragPrevPoint;
     const { x: nx, y: ny } = event.data.getLocalPosition(this._dragNode.parent);
@@ -322,6 +340,7 @@ class Application {
   }
 
   _onPointerUp(event) {
+    event.stopPropagation();
     const node = this._dragNode;
     const item = node?.__data__;
     const key = this._keyOfItem(item || {});
@@ -343,6 +362,10 @@ class Application {
     }
 
     this._dragging = false;
+
+    if (event.type === 'pointerupoutside') {
+      this._onPointerOut(event);
+    }
 
     if (!node) {
       return;
@@ -403,6 +426,8 @@ class Application {
 
       this._updateNodes(node);
     });
+
+    this._simulation.restart();
   }
 
   _updateNodes(node) {
@@ -414,12 +439,15 @@ class Application {
 
     const color = d3color(this._colorOfItem(item));
     const radius = +this._radiusOfItem(item);
-    const alpha = +this._alphaOfItem(item);
+    let alpha = +this._alphaOfItem(item);
 
     let [circle, border] = node.children;
     if (!circle) {
       circle = new PIXI.Graphics();
       node.addChild(circle);
+
+      node._focused = true;
+      alpha = 1;
     } else {
       circle.clear();
     }
@@ -487,20 +515,21 @@ class Application {
     this._locator.resize(width, height);
   }
 
-  _updateFocused() {
-    this._group.children.find((node) => {
+  _updateFocused(nodes) {
+    const items = nodes || this._group.children.filter((node) => {
       const key = this._keyOfItem(node.__data__);
-      if (key === this._hovered || key === this._selected) {
-        node.filters = [filterBrightness];
-        gsap.to(node.children[0], {
-          alpha: key === this._hovered ? 0.8 : 0.9,
-          duration: 0.2,
-          overwrite: true,
-        });
-        return true;
-      }
+      return node === this._hovered || key === this._selected;
+    });
 
-      return false;
+    items.forEach((node) => {
+      const key = this._keyOfItem(node.__data__);
+      node._focused = true;
+      node.filters = [filterBrightness];
+      gsap.to(node.children[0], {
+        alpha: key === this._hovered ? 0.9 : 0.8,
+        duration: 0.2,
+        overwrite: true,
+      });
     });
   }
 
@@ -509,9 +538,7 @@ class Application {
   }
   set _selected(value) {
     this.__selected = value;
-    if (value) {
-      this._updateFocused();
-    }
+    this._updateFocused();
   }
 
   get _hovered() {
@@ -519,14 +546,18 @@ class Application {
   }
   set _hovered(value) {
     this.__hovered = value;
-    if (value) {
-      this._updateFocused();
-    }
+    this._updateFocused();
   }
 
   _draw() {
     if (this._destroyed) {
       return this;
+    }
+
+    const alpha = this._simulation.alpha();
+    const alphaTarget = this._simulation.alphaTarget();
+    if (!this._hovered && +alpha.toFixed(15) === alphaTarget) {
+      this._simulation.stop();
     }
 
     this._group.children.forEach((node) => {
@@ -537,13 +568,23 @@ class Application {
 
       const key = this._keyOfItem(item);
 
-      if (!(key === this._hovered || key === this._selected) && node.filters?.length) {
-        node.filters = [];
+      if (!(node === this._hovered || key === this._selected) && node._focused) {
+        node._focused = false;
         gsap.to(node.children[0], {
           alpha: this._alphaOfItem(item),
-          duration: 0.2,
+          delay: 0.3,
+          duration: 0.5,
           overwrite: true,
+          onComplete: () => {
+            node.filters = null;
+          },
         });
+
+        if (node !== this._hovered) {
+          this._locator.focused(null);
+          delete item.fx;
+          delete item.fy;
+        }
       }
 
       node.x = item.x + (item.x % 2 ? 0 : 0.5);
