@@ -32,10 +32,13 @@ const Tab = styled.button`
   &:active:not(:disabled) {
     color: ${({ $active }) => teal[$active ? 200 : 100]};
   }
+
+  pointer-events: ${({ $active }) => $active ? 'none' : null};
   
   &:disabled {
     color: #888888;
     cursor: default;
+    pointer-events: none;
   }
   
   &:before {
@@ -163,6 +166,7 @@ const Tabs = () => {
         style={{ maxWidth: '165px', minWidth: '165px' }}
         title="Screen profile"
         ref={view === StageTypes.profile ? setRef : null}
+        tabIndex={view === StageTypes.profile ? -1 : 0}
       >
         <span>Profile</span>
       </Tab>
@@ -173,6 +177,7 @@ const Tabs = () => {
         disabled={!items?.length}
         title="Screen repository"
         ref={view === StageTypes.repository ? setRef : null}
+        tabIndex={view === StageTypes.repository ? -1 : 0}
       >
         <span>Repository</span>
       </Tab>
@@ -185,6 +190,7 @@ const Tabs = () => {
         disabled
         title="Screen show"
         ref={view === StageTypes.show ? setRef : null}
+        tabIndex={view === StageTypes.show ? -1 : 0}
       >
         <span>Show</span>
       </Tab>
