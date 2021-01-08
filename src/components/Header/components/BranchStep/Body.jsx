@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useDebounce } from 'react-use';
 import { FixedSizeList } from 'react-window';
 import styled from 'styled-components';
+import ListItemButton from '../shared/ListItemButton';
 import Marker from '../shared/Marker';
 import Secondary from './Secondary';
 
@@ -115,11 +116,13 @@ const Body = () => {
 
       return (
         <ListItem
+          component={ListItemButton}
           alignItems="center"
           key={item.name}
           onClick={onClick(item)}
           style={style}
           title={item.name}
+          tabIndex="0"
         >
           <ListItemAvatar>
             <Avatar>
