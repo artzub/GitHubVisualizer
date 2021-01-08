@@ -6,16 +6,13 @@ import LoadingOverlay from '@/shared/components/LoadingOverlay';
 import ScrollBar from '@/shared/components/ScrollBar';
 import { useUIProperty } from '@/shared/hooks';
 import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
-import {
-  Avatar, ListItem as ListItemOrigin,
-  ListItemAvatar, ListSubheader,
-  TextField,
-} from '@material-ui/core';
+import { Avatar, ListItem as ListItemOrigin, ListItemAvatar, ListSubheader, TextField } from '@material-ui/core';
 import List from '@material-ui/core/List';
 import ListItemText from '@material-ui/core/ListItemText';
 import { useDispatch, useSelector } from 'react-redux';
 import { useDebounce } from 'react-use';
 import styled from 'styled-components';
+import ListItemButton from '../shared/ListItemButton';
 
 const Container = styled.div`
   min-height: 100px;
@@ -115,6 +112,27 @@ const Body = () => {
     [bodyOpen],
   );
 
+  const Item = useCallback(
+    (profile) => (
+      <ListItem
+        component={ListItemButton}
+        alignItems="center"
+        key={profile.login}
+        onClick={onClick(profile)}
+        tabIndex="0"
+      >
+        <ListItemAvatar>
+          <Avatar src={profile.avatar} />
+        </ListItemAvatar>
+        <ListItemText
+          primary={<Highlight search={search} text={profile.login} />}
+          secondary={profile.type}
+        />
+      </ListItem>
+    ),
+    [search, onClick],
+  );
+
   return (
     <Container>
       <TextField
@@ -127,48 +145,22 @@ const Body = () => {
         <ListContainer>
           {!neverChange && (
             <List
+              component="div"
               ref={listRef}
               dense
               subheader={SearchHeader}
             >
               {!items.length && <NotData />}
-              {(items || []).map((profile) => (
-                <ListItem
-                  alignItems="center"
-                  key={profile.login}
-                  onClick={onClick(profile)}
-                >
-                  <ListItemAvatar>
-                    <Avatar src={profile.avatar} />
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={<Highlight search={search} text={profile.login} />}
-                    secondary={profile.type}
-                  />
-                </ListItem>
-              ))}
+              {(items || []).map(Item)}
             </List>
           )}
           {!!top.length && (
             <List
+              component="div"
               dense
               subheader={TopHeader}
             >
-              {(top || []).map((profile) => (
-                <ListItem
-                  alignItems="center"
-                  key={profile.login}
-                  onClick={onClick(profile)}
-                >
-                  <ListItemAvatar>
-                    <Avatar src={profile.avatar} />
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={profile.login}
-                    secondary={profile.type}
-                  />
-                </ListItem>
-              ))}
+              {(top || []).map(Item)}
             </List>
           )}
         </ListContainer>

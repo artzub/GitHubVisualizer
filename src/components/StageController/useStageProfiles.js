@@ -32,10 +32,10 @@ export const useStageProfiles = (service, profile) => {
         return;
       }
 
-      dispatch(profilesSlice.actions.fetchProfile(profile));
+      dispatch(profilesSlice.actions.fetchProfile(profile, 'profile'));
 
       return () => {
-        dispatch(profilesSlice.actions.cancel());
+        dispatch(profilesSlice.actions.cancel('profile'));
       };
     },
     [profile, login, dispatch],

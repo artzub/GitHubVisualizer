@@ -4,6 +4,7 @@ import { IconButton } from '@material-ui/core';
 import PauseIcon from 'mdi-react/PauseIcon';
 import PlayArrowIcon from 'mdi-react/PlayArrowIcon';
 import ReplayIcon from 'mdi-react/ReplayIcon';
+import PropTypes from 'prop-types';
 import { useEvent } from 'react-use';
 import styled from 'styled-components';
 import HeaderContainer from '../shared/HeaderContainer';
@@ -29,6 +30,7 @@ const ButtonContainer = styled.div`
 
 
 const Header = (props) => {
+  const { disabled, ...rest } = props;
   const [start, setStart] = useUIProperty('start');
   const [pause, setPause] = useUIProperty('pause');
 
@@ -59,23 +61,39 @@ const Header = (props) => {
 
   return (
     <HeaderContainer
-      {...props}
-      tabIndex={-1}
+      {...rest}
+      tabIndex="-1"
       button={false}
     >
       <ButtonContainer>
-        <IconButton size="small" onClick={onClick(isRun ? 'pause' : 'start')}>
+        <IconButton
+          size="small"
+          onClick={onClick(isRun ? 'pause' : 'start')}
+          disabled={disabled}
+        >
           {isRun && <PauseIcon size={24} />}
           {!isRun && <PlayArrowIcon size={24} />}
         </IconButton>
         {start && pause && (
-          <IconButton size="small" onClick={onClick('replay')}>
+          <IconButton
+            size="small"
+            onClick={onClick('replay')}
+            disabled={disabled}
+          >
             <ReplayIcon size={24} />
           </IconButton>
         )}
       </ButtonContainer>
     </HeaderContainer>
   );
+};
+
+Header.propTypes = {
+  disabled: PropTypes.bool,
+};
+
+Header.defaultProps = {
+  disabled: false,
 };
 
 export default Header;
