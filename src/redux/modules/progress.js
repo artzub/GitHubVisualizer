@@ -21,10 +21,11 @@ export default createSlice({
       };
 
       if (show) {
-        startFetching(newState, { payload: 'show' });
+        startFetching(newState);
       } else if (show === false) {
-        stopFetching(newState, { payload: 'show' });
+        stopFetching(newState);
       }
+      state.show = state.isFetching;
 
       return newState;
     },
@@ -40,10 +41,11 @@ export default createSlice({
     toggle: (state, { payload }) => {
       const show = payload ?? !state.show;
       if (show) {
-        startFetching(state, { payload: 'show' });
+        startFetching(state);
       } else {
-        stopFetching(state, { payload: 'show' });
+        stopFetching(state);
       }
+      state.show = state.isFetching;
     },
   },
 });

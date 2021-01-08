@@ -5,11 +5,9 @@ export * from './withCancellation';
 /**
  * incs counter of request and set isFetching to true
  * @param state
- * @param {String} payload - name of property
  */
-export const startFetching = (state, { payload } = {}) => {
-  const prop = typeof payload === 'string' ? payload : 'isFetching';
-  state[prop] = true;
+export const startFetching = (state) => {
+  state.isFetching = true;
   state._requests = (state._requests ?? 0) + 1;
   state.error = '';
 };
@@ -17,12 +15,10 @@ export const startFetching = (state, { payload } = {}) => {
 /**
  * decs counter of request and set isFetching to false if counter less than 1.
  * @param state
- * @param {String} [payload] - name of property
  */
-export const stopFetching = (state, { payload } = {}) => {
-  const prop = typeof payload === 'string' ? payload : 'isFetching';
+export const stopFetching = (state) => {
   state._requests = Math.max(0, (state._requests ?? 1) - 1);
-  state[prop] = !!state._requests;
+  state.isFetching = !!state._requests;
 };
 
 /**

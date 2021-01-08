@@ -95,13 +95,11 @@ const Body = () => {
 
   useDebounce(
     () => {
+      dispatch(slice.actions.cancel());
+
       if (search) {
         dispatch(slice.actions.search(search));
       }
-
-      return () => {
-        dispatch(slice.actions.cancel());
-      };
     },
     300,
     [search, dispatch],
