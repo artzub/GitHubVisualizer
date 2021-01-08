@@ -25,7 +25,7 @@ export default createSlice({
       } else if (show === false) {
         stopFetching(newState);
       }
-      state.show = state.isFetching;
+      newState.show = newState.isFetching;
 
       return newState;
     },
