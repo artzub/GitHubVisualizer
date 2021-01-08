@@ -1,7 +1,7 @@
 import React, { useMemo, useRef } from 'react';
 import { StageTypes } from '@/models/StageTypes';
 import { useUIProperty } from '@/shared/hooks';
-import UserVisualization from './Profile';
+import Profile from './Profile';
 import Container from './shared/Container';
 
 const Order = {
@@ -28,7 +28,7 @@ const Visualization = () => {
 
   return (
     <Container>
-      <UserVisualization
+      <Profile
         $active={stage === StageTypes.profile}
         $prev={from === StageTypes.profile}
         $dir={dir}
