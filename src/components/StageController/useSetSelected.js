@@ -28,9 +28,9 @@ export const useSetSelected = ({ name, selected, items, action, skipCondition, p
 
       const found = items.find((item) => item.name === name);
 
-      if (!found) {
-        return;
-      }
+      // if (!found) {
+      //   return;
+      // }
 
       dispatch(action(found));
     },
