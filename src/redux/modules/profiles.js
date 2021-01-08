@@ -68,7 +68,6 @@ export default createSlice({
           yield put(actions.fail(error));
         } finally {
           if (yield cancelled()) {
-            console.log('cancelled');
             yield put(actions.stopFetching());
           }
         }

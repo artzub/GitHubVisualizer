@@ -28,6 +28,10 @@ const GlobalStyle = createGlobalStyle`
     font-family: 'JetBrains Mono', monospace;
   }
   
+  button:not(#id_fake_for_hack) {
+    outline: 0;
+  }
+  
   .hovered {
     cursor: pointer;
   }
