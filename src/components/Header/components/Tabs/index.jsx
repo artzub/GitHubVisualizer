@@ -103,11 +103,8 @@ const Tabs = () => {
   const [left, setLeft] = useState(0);
   const [opacity, setOpacity] = useState(0);
 
-  console.log(view);
-
   const onClick = useCallback(
     (event) => {
-      console.log(event.target.dataset.key);
       setView(event.target.dataset.key);
     },
     [setView],
