@@ -71,6 +71,7 @@ const Inside = styled(Border).attrs(({ $x, $y, $width, $height }) => ({
     transform: $x != null && $y != null ? `translate3d(${$x}px, ${$y}px, 1px)` : null,
   },
 }))`
+  display: none;
   z-index: 1;
   transition: transform 0.1s, width 0.1s, height 0.1s;
   border-color: rgba(255, 255, 255, 0.1); 
@@ -119,13 +120,13 @@ const FocusOverlay = ({ globalListener }) => {
           return;
         }
 
-        if (current) {
-          current.removeEventListener('pointerdown', onDown, true);
-          document.removeEventListener('pointerup', onUp, true);
-          ro.current.unobserve(current);
-        }
-
         if (event?.target?.tabIndex > -1) {
+          if (current) {
+            current.removeEventListener('pointerdown', onDown, true);
+            document.removeEventListener('pointerup', onUp, true);
+            ro.current.unobserve(current);
+          }
+
           if (current !== event.target) {
             current = event.target;
             show(current);
@@ -156,8 +157,8 @@ const FocusOverlay = ({ globalListener }) => {
         }
         // event?.target?.tabIndex > -1 &&
         if (event?.target === current) {
-          ro.current.unobserve(current);
           if (current) {
+            ro.current.unobserve(current);
             current.removeEventListener('pointerdown', onDown, true);
             document.removeEventListener('pointerup', onUp, true);
           }
