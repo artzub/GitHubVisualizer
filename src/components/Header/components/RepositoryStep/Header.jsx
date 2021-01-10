@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import slice from '@/redux/modules/repositories';
 import Link from '@material-ui/core/Link';
 import BookIcon from 'mdi-react/BookIcon';
@@ -12,12 +12,12 @@ import Title from '../shared/Title';
 
 const onClick = (event) => event.stopPropagation();
 
-const Header = (props) => {
+const Header = forwardRef((props, ref) => {
   const { selected } = useSelector(slice.selectors.getState);
   const { name, isPrivate, isFork, url } = selected || {};
 
   return (
-    <Container {...props}>
+    <Container {...props} ref={ref}>
       {isPrivate ? <BookLockIcon size={20} /> : (
         isFork
           ? <SourceRepositoryIcon size={20} />
@@ -42,6 +42,8 @@ const Header = (props) => {
       </InfoContainer>
     </Container>
   );
-};
+});
+
+Header.displayName = 'Header';
 
 export default Header;

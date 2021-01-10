@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
@@ -106,15 +106,18 @@ const Divider = styled.div`
   }
 `;
 
-const HeaderContainer = ({ divider, button, children, ...rest }) => {
+const HeaderContainer = forwardRef((props, ref) => {
+  const { divider, button, children, ...rest } = props;
   const Component = button ? Button : Div;
   return (
-    <Component {...rest}>
+    <Component {...rest} ref={ref}>
       <Children>{children}</Children>
       {divider && <Divider />}
     </Component>
   );
-};
+});
+
+HeaderContainer.displayName = 'HeaderContainer';
 
 HeaderContainer.propTypes = {
   children: PropTypes.oneOfType([
