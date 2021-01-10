@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import slice from '@/redux/modules/branches';
 import HistoryIcon from 'mdi-react/HistoryIcon';
 import SourceBranchIcon from 'mdi-react/SourceBranchIcon';
@@ -15,12 +15,12 @@ const Properties = styled(PropertiesOrigin)`
   font-size: 1em;
 `;
 
-const Header = (props) => {
+const Header = forwardRef((props, ref) => {
   const { selected } = useSelector(slice.selectors.getState);
   const { name, commits } = selected || {};
 
   return (
-    <Container {...props}>
+    <Container {...props} ref={ref}>
       <SourceBranchIcon size={20} />
       <InfoContainer>
         {!selected && <div>Choose a branch</div>}
@@ -40,6 +40,8 @@ const Header = (props) => {
       </InfoContainer>
     </Container>
   );
-};
+});
+
+Header.displayName = 'Header';
 
 export default Header;

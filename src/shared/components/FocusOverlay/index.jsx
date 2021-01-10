@@ -1,8 +1,13 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import Portal from '@/shared/components/Portal';
 import PropTypes from 'prop-types';
+import { install, ResizeObserver } from 'resize-observer';
 import styled from 'styled-components';
 import Context from './Context';
+
+if (!window.ResizeObserver) {
+  install();
+}
 
 const PortalContainer = styled.div.attrs(({ $visible }) => ({
   style: {
@@ -19,24 +24,20 @@ const PortalContainer = styled.div.attrs(({ $visible }) => ({
   transition: opacity 0.1s;
 `;
 
-const Border = styled.div.attrs(({ $x, $y, $visible }) => ({
+const Border = styled.div.attrs(({ $x, $y }) => ({
   style: {
     transform: $x != null && $y != null ? `translate3d(${$x}px, ${$y}px, 1px)` : null,
-    // transitionDelay: $visible ? null : '2s',
-    // transitionDuration: $visible ? null : '2s',
   },
 }))`
   position: absolute;
   top: -5px;
   left: -5px;
   transform: translate3d(-20px, -20px, 1px);
-  transition: transform;
-  transition-duration: 0.1s;
-  border-style: solid;
-  border-width: 1px;
-  border-color: transparent;
+  transition: transform 0.1s;
+  border: 1px solid transparent;
   width: 10px;
   height: 10px;
+  z-index: 2;
 `;
 
 const BorderLeftTop = styled(Border)`
@@ -63,15 +64,36 @@ const BorderRightBottom = styled(Border)`
   border-right-color: white;
 `;
 
+const Inside = styled(Border).attrs(({ $x, $y, $width, $height }) => ({
+  style: {
+    width: `${$width ?? 0}px`,
+    height: `${$height ?? 0}px`,
+    transform: $x != null && $y != null ? `translate3d(${$x}px, ${$y}px, 1px)` : null,
+  },
+}))`
+  z-index: 1;
+  transition: transform 0.1s, width 0.1s, height 0.1s;
+  border-color: rgba(255, 255, 255, 0.1); 
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
+`;
+
 const FocusOverlay = ({ globalListener }) => {
   const {
     visible, show, hide, rect,
     press, release, pressed,
   } = useContext(Context) || {};
+  const roCallback = useRef();
+  const [inside, setInside] = useState({});
   const [leftTop, setLeftTop] = useState({});
   const [leftBottom, setLeftBottom] = useState({});
   const [rightTop, setRightTop] = useState({});
   const [rightBottom, setRightBottom] = useState({});
+
+  const ro = useRef(new ResizeObserver((...args) => {
+    if (roCallback.current) {
+      roCallback.current(...args);
+    }
+  }));
 
   useEffect(
     () => {
@@ -82,17 +104,35 @@ const FocusOverlay = ({ globalListener }) => {
       let current;
       let _pressed;
 
+      roCallback.current = (entries) => {
+        entries.forEach((entry) => {
+          if (entry.target !== current) {
+            entries.forEach((entry) => ro.current.unobserve(entry.target));
+          } else {
+            show(current);
+          }
+        });
+      };
+
       const onFocus = (event) => {
         if (_pressed) {
           return;
         }
 
-        if (event?.target?.tabIndex > -1 && current !== event.target) {
-          current = event.target;
-          show(current);
-          current.addEventListener('pointerdown', onDown, true);
-          document.addEventListener('pointerup', onUp, true);
-        } else if (current === event.target) {
+        if (current) {
+          current.removeEventListener('pointerdown', onDown, true);
+          document.removeEventListener('pointerup', onUp, true);
+          ro.current.unobserve(current);
+        }
+
+        if (event?.target?.tabIndex > -1) {
+          if (current !== event.target) {
+            current = event.target;
+            show(current);
+          }
+
+          ro.current.observe(current);
+
           current.addEventListener('pointerdown', onDown, true);
           document.addEventListener('pointerup', onUp, true);
         }
@@ -114,13 +154,15 @@ const FocusOverlay = ({ globalListener }) => {
         if (_pressed) {
           return;
         }
-        if (event?.target?.tabIndex > -1) {
+        // event?.target?.tabIndex > -1 &&
+        if (event?.target === current) {
+          ro.current.unobserve(current);
           if (current) {
             current.removeEventListener('pointerdown', onDown, true);
             document.removeEventListener('pointerup', onUp, true);
           }
 
-          current = current.parentNode;
+          current = current?.parentNode;
           while (current && current.tabIndex < 0) {
             current = current.parentNode;
           }
@@ -168,6 +210,12 @@ const FocusOverlay = ({ globalListener }) => {
         return;
       }
 
+      setInside({
+        $x: item.left + (pressed ? 4 : 0),
+        $y: item.top + (pressed ? 4 : 0),
+        $width: rect.width + 10 + (pressed ? -4 : 0),
+        $height: rect.height + 10 + (pressed ? -4 : 0),
+      });
       setLeftTop({
         $x: item.left + (pressed ? 4 : 0),
         $y: item.top + (pressed ? 4 : 0),
@@ -191,10 +239,11 @@ const FocusOverlay = ({ globalListener }) => {
   return (
     <Portal inBody>
       <PortalContainer $visible={visible}>
-        <BorderLeftTop {...leftTop} $visible={visible} />
-        <BorderLeftBottom {...leftBottom} $visible={visible} />
-        <BorderRightTop {...rightTop} $visible={visible} />
-        <BorderRightBottom {...rightBottom} $visible={visible} />
+        <Inside {...inside} />
+        <BorderLeftTop {...leftTop} />
+        <BorderLeftBottom {...leftBottom} />
+        <BorderRightTop {...rightTop} />
+        <BorderRightBottom {...rightBottom} />
       </PortalContainer>
     </Portal>
   );

@@ -1,10 +1,11 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { StageTypes } from '@/models/StageTypes';
 import branchesSlice from '@/redux/modules/branches';
 import profilesSlice from '@/redux/modules/profiles';
 import repositoriesSlice from '@/redux/modules/repositories';
 import { useUIProperty } from '@/shared/hooks';
 import Collapse from '@material-ui/core/Collapse';
+import DividerOriginal from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
 import { useSelector } from 'react-redux';
 import { useClickAway } from 'react-use';
@@ -25,10 +26,9 @@ const PaperStyled = styled(Paper)`
   left: 50%;
   top: 0;
   transform: translate(-50%, 0);
-  max-width: 480px;
-  min-width: 480px;
-  width: 480px;
-  //border-radius: 0 0 20px 20px;
+  max-width: 70vw;
+  min-width: 300px;
+  border-radius: 0 0 10px 10px;
   overflow: hidden;
   z-index: 10;
 `;
@@ -38,6 +38,10 @@ const Container = styled.div`
   position: relative;
   flex-wrap: nowrap;
   width: 100%;
+`;
+
+const Divider = styled(DividerOriginal)`
+  background: rgba(0, 0, 0, 0.2);
 `;
 
 const RepoBranchContainer = styled.div`
@@ -67,6 +71,10 @@ const Header = () => {
   const [step, setStep] = useUIProperty('step');
   const [bodyOpen, setBodyOpen] = useUIProperty('bodyOpen');
   const ref = useRef();
+  const profileRef = useRef();
+  const repositoryRef = useRef();
+  const branchRef = useRef();
+  const commitsRef = useRef();
   const { selected: profile } = useSelector(profilesSlice.selectors.getState);
   const { selected: repository } = useSelector(repositoriesSlice.selectors.getState);
   const { selected: branch } = useSelector(branchesSlice.selectors.getState);
@@ -90,27 +98,62 @@ const Header = () => {
 
   useClickAway(ref, onClickAway);
 
+  useEffect(
+    () => {
+      if (bodyOpen) {
+        return;
+      }
+
+      let element;
+      switch (step) {
+        case StageTypes.profile:
+          element = profileRef.current;
+          break;
+        case StageTypes.repository:
+          element = repositoryRef.current;
+          break;
+        case StageTypes.branch:
+          element = branchRef.current;
+          break;
+        case StageTypes.commits:
+          element = commitsRef.current;
+          break;
+        default:
+          break;
+      }
+
+      if (element) {
+        element.focus();
+      }
+    },
+    [bodyOpen, step],
+  );
+
   return (
     <PaperStyled square ref={ref}>
       <Container>
         <ProfileStepHeader
           onClick={onClick(StageTypes.profile)}
           divider
+          ref={profileRef}
         />
         <RepoBranchContainer>
           <RepoStepHeader
             onClick={onClick(StageTypes.repository)}
             disabled={!profile}
+            ref={repositoryRef}
           />
           <BranchStepHeader
             onClick={onClick(StageTypes.branch)}
             disabled={!repository}
+            ref={branchRef}
           />
         </RepoBranchContainer>
         <CommitsStepHeader
           onClick={onClick(StageTypes.commits)}
           disabled={!branch}
           divider
+          ref={commitsRef}
         />
         <ShowStepHeader disabled />
       </Container>
@@ -119,6 +162,7 @@ const Header = () => {
           <StepBody />
         </Collapse>
       )}
+      {bodyOpen && StepBody && <Divider />}
       <Tabs />
     </PaperStyled>
   );

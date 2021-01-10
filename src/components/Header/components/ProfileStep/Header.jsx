@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import slice from '@/redux/modules/profiles';
 import { Avatar } from '@material-ui/core';
 import LinkOrigin from '@material-ui/core/Link';
@@ -34,7 +34,7 @@ const Properties = styled(PropertiesOrigin)`
 
 const onClick = (event) => event.stopPropagation();
 
-const Header = (props) => {
+const Header = forwardRef((props, ref) => {
   const { selected } = useSelector(slice.selectors.getState);
   const {
     avatar, name, login,
@@ -42,7 +42,7 @@ const Header = (props) => {
   } = selected || {};
 
   return (
-    <Container {...props}>
+    <Container {...props} ref={ref}>
       <Avatar src={avatar} />
       <InfoContainer>
         {!selected && <div>Find a profile</div>}
@@ -88,6 +88,8 @@ const Header = (props) => {
       </InfoContainer>
     </Container>
   );
-};
+});
+
+Header.displayName = 'Header';
 
 export default Header;
