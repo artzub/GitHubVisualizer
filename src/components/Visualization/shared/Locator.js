@@ -24,7 +24,7 @@ class Locator extends PIXI.Container {
     });
     this.addChild(...this._lines);
 
-    const stickSize = 9;
+    const stickSize = 10;
     let points = [
       [stickSize, 0, 0.5, 0, 0.5, stickSize],
       [0.5, stickSize, 0.5, 0, -stickSize + 0.5, 0],
@@ -60,6 +60,19 @@ class Locator extends PIXI.Container {
         return item;
       });
     this.addChild(...this._borders);
+
+    const rect = new PIXI.Graphics();
+    this._rect = {
+      x1: 0,
+      y1: 0,
+      x2: 0,
+      y2: 0,
+      target: rect,
+    };
+    this._drawRect();
+    this.addChild(rect);
+
+    this._drawRect = this._drawRect.bind(this);
   }
 
   focused(node) {
@@ -70,11 +83,29 @@ class Locator extends PIXI.Container {
     this._focused = node;
 
     if (!node) {
-      this._stopAnimation();
+      this._reduce();
     } else {
-      this._startAnimation();
+      this._expand();
     }
 
+    return this;
+  }
+
+  press() {
+    if (!this._focused) {
+      return this;
+    }
+
+    this._expand(true);
+    return this;
+  }
+
+  release() {
+    if (!this._focused) {
+      return this;
+    }
+
+    this._expand(false);
     return this;
   }
 
@@ -119,7 +150,17 @@ class Locator extends PIXI.Container {
     this.y = y;
   }
 
-  _startAnimation() {
+  _drawRect() {
+    // if need rect
+    // const { x1, y1, x2, y2, target } = this._rect;
+    // const width = Math.max(x2 - x1, 0);
+    // const height = Math.max(y2 - y1, 0);
+    // target.clear();
+    // target.lineStyle(1, 0xffffff, 0.1);
+    // target.drawRect(x1 + (width && 0.5), y1 + (height && 0.5), width, height - (height && 0.5));
+  }
+
+  _expand(pressed) {
     const { width, height } = this._focused.getLocalBounds();
 
     const pos = this._focused.getGlobalPosition(undefined, true);
@@ -133,12 +174,13 @@ class Locator extends PIXI.Container {
 
     const w2 = width * 0.5;
     const h2 = height * 0.5;
+    const offset = pressed ? 0 : 5;
 
     this._lines.forEach((item, i) => {
       const [x, y] = this._linesRates[i];
       gsap.to(item.position, {
-        x: x * Math.max(w2 + 4, 12),
-        y: y * Math.max(h2 + 4, 12),
+        x: x * Math.max(w2 + offset, 12),
+        y: y * Math.max(h2 + offset, 12),
         duration: 0.2,
         overwrite: true,
       });
@@ -147,15 +189,26 @@ class Locator extends PIXI.Container {
     this._borders.forEach((item, i) => {
       const [x, y] = this._bordersBasePoints[i];
       gsap.to(item.position, {
-        x: Math.sign(x) * -1 * Math.max(w2 + 4, 12),
-        y: Math.sign(y) * -1 * Math.max(h2 + 4, 12),
+        x: Math.sign(x) * -1 * Math.max(w2 + offset, 12),
+        y: Math.sign(y) * -1 * Math.max(h2 + offset, 12),
         duration: 0.2,
         overwrite: true,
       });
     });
+
+    const [[x1, y1],,[x2, y2]] = this._bordersBasePoints;
+    gsap.to(this._rect, {
+      x1: Math.sign(x1) * -1 * Math.max(w2 + offset, 12),
+      y1: Math.sign(y1) * -1 * Math.max(h2 + offset, 12),
+      x2: Math.sign(x2) * -1 * Math.max(w2 + offset, 12),
+      y2: Math.sign(y2) * -1 * Math.max(h2 + offset, 12),
+      duration: 0.2,
+      overwrite: true,
+      onUpdate: this._drawRect,
+    });
   }
 
-  _stopAnimation() {
+  _reduce() {
     this._lines.forEach((item, i) => {
       const [x, y] = this._linesRates[i];
       gsap.to(item.position, {
@@ -174,6 +227,16 @@ class Locator extends PIXI.Container {
         duration: 0.2,
         overwrite: true,
       });
+    });
+
+    gsap.to(this._rect, {
+      x1: 0,
+      y1: 0,
+      x2: 0,
+      y2: 0,
+      duration: 0.2,
+      overwrite: true,
+      onUpdate: this._drawRect,
     });
   }
 }

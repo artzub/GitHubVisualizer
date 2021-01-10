@@ -4,7 +4,7 @@ import repositoriesSlice from '@/redux/modules/repositories';
 import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
 import { useSelector } from 'react-redux';
 import Tab from '../shared/Tab';
-import Application from './application';
+import Application from './Application';
 
 const merge = (data, newData) => {
   const hash = data.reduce((acc, item) => ({

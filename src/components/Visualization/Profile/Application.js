@@ -300,6 +300,8 @@ class Application {
       return;
     }
 
+    this._locator.press();
+
     const node = event.currentTarget;
     if (!node) {
       return;
@@ -344,6 +346,8 @@ class Application {
     const node = this._dragNode;
     const item = node?.__data__;
     const key = this._keyOfItem(item || {});
+
+    this._locator.release();
 
     this._dragNode = null;
     this._dragPrevPoint = null;
