@@ -93,7 +93,7 @@ class Application {
     this._colors = scaleOrdinal(colors);
 
     this._event = dispatch(
-      'itemOver', 'itemOut', 'selectItem',
+      'overItem', 'outItem', 'selectItem',
       'dragStart', 'dragEnd',
     );
 
@@ -239,7 +239,7 @@ class Application {
       .restart();
 
     const node = event.currentTarget;
-    this._event.call('itemOver', node, event, node);
+    this._event.call('overItem', node, event, node);
 
     this._group.cursor = 'pointer';
 
@@ -270,7 +270,7 @@ class Application {
     cursor.focusOn(null);
 
     const node = event.currentTarget;
-    this._event.call('itemOut', node, event, node);
+    this._event.call('outItem', node, event, node);
 
     this._group.cursor = 'none';
 

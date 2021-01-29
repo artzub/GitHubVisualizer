@@ -1,7 +1,7 @@
-import buttonClickSound from '@/shared/sounds/button-click.mp3';
-import buttonHoverSound from '@/shared/sounds/button-hover.mp3';
+import buttonClickSound from '@/assets/sounds/click.mp3';
+import buttonHoverSound from '@/assets/sounds/hover.mp3';
 
 export const SoundTypes = {
-  'button-hover': buttonHoverSound,
-  'button-click': buttonClickSound,
+  hover: buttonHoverSound,
+  click: buttonClickSound,
 };
