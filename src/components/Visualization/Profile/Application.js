@@ -1,4 +1,4 @@
-import * as PIXI from 'pixijs';
+import * as cursor from '@/services/CursorService';
 import * as palettes from '@material-ui/core/colors';
 import { extent } from 'd3-array';
 import { color as d3color } from 'd3-color';
@@ -8,9 +8,9 @@ import {
  forceManyBody, forceX, forceY,
 } from 'd3-force';
 import { scaleLinear, scaleLog, scaleOrdinal } from 'd3-scale';
+import * as PIXI from 'pixijs';
 import gsap from 'gsap';
 import BackgroundGrid from '../shared/BackgroundGrid';
-import Locator from '../shared/Locator';
 import forceCluster from './forceCluster';
 import forceCollide from './forceCollide';
 
@@ -114,17 +114,10 @@ class Application {
     this._instance.stage.addChild(this._grid);
 
     this._group = new PIXI.Container();
+    this._group.interactive = true;
     this._instance.stage.addChild(this._group);
 
-    this._locator = new Locator();
-    this._locator.x = -10;
-    this._locator.y = -10;
-    this._instance.stage.addChild(this._locator);
-
     this._simulation.on('tick', this._draw.bind(this));
-
-    this._group.interactive = true;
-    this._group.on('pointermove', this._locator.onPointerMove);
   }
 
   destroy() {
@@ -255,7 +248,7 @@ class Application {
     }
 
     this._hovered = node;
-    this._locator.focused(node);
+    cursor.focusOn(node);
 
     const item = node.__data__;
     if (!item) {
@@ -274,7 +267,7 @@ class Application {
     event.stopPropagation();
 
     this._hovered = null;
-    this._locator.focused(null);
+    cursor.focusOn(null);
 
     const node = event.currentTarget;
     this._event.call('itemOut', node, event, node);
@@ -300,7 +293,7 @@ class Application {
       return;
     }
 
-    this._locator.press();
+    cursor.press();
 
     const node = event.currentTarget;
     if (!node) {
@@ -335,7 +328,7 @@ class Application {
       return;
     }
 
-    this._locator.onPointerMove(event);
+    cursor.onPointerMove(event);
 
     item.fx = nx;
     item.fy = ny;
@@ -347,7 +340,7 @@ class Application {
     const item = node?.__data__;
     const key = this._keyOfItem(item || {});
 
-    this._locator.release();
+    cursor.release();
 
     this._dragNode = null;
     this._dragPrevPoint = null;
@@ -516,7 +509,6 @@ class Application {
     this._group.y = height * 0.5;
 
     this._grid.resize(width, height);
-    this._locator.resize(width, height);
   }
 
   _updateFocused(nodes) {
@@ -585,7 +577,7 @@ class Application {
         });
 
         if (node !== this._hovered) {
-          this._locator.focused(null);
+          cursor.focusOn(null);
           delete item.fx;
           delete item.fy;
         }

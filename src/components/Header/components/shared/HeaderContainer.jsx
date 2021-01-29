@@ -24,12 +24,12 @@ const Button = styled.button.attrs({
     outline: -webkit-focus-ring-color auto 1px;
   }
 
-  &:disabled {
-    pointer-events: none;
-  }
-  
   &.notAction {
     cursor: default;
+  }
+
+  &:disabled {
+    pointer-events: none;
   }
 `;
 

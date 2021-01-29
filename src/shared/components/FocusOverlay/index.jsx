@@ -1,94 +1,20 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import Portal from '@/shared/components/Portal';
+import { useEffect, useRef } from 'react';
+import * as cursor from '@/services/CursorService';
+import * as focus from '@/services/FocusService';
 import PropTypes from 'prop-types';
 import { install, ResizeObserver } from 'resize-observer';
-import styled from 'styled-components';
-import Context from './Context';
 
 if (!window.ResizeObserver) {
   install();
 }
 
-const PortalContainer = styled.div.attrs(({ $visible }) => ({
-  style: {
-    opacity: Number($visible ?? 0),
-  },
-}))`
-  pointer-events: none;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  transition: opacity 0.1s;
-`;
-
-const Border = styled.div.attrs(({ $x, $y }) => ({
-  style: {
-    transform: $x != null && $y != null ? `translate3d(${$x}px, ${$y}px, 1px)` : null,
-  },
-}))`
-  position: absolute;
-  top: -5px;
-  left: -5px;
-  transform: translate3d(-20px, -20px, 1px);
-  transition: transform 0.1s;
-  border: 1px solid transparent;
-  width: 10px;
-  height: 10px;
-  z-index: 2;
-`;
-
-const BorderLeftTop = styled(Border)`
-  transform: translate3d(-20px, -20px, 1px);
-  border-top-color: white;
-  border-left-color: white;
-`;
-
-const BorderLeftBottom = styled(Border)`
-  transform: translate3d(-20px, calc(100vh + 20px), 1px);
-  border-bottom-color: white;
-  border-left-color: white;
-`;
-
-const BorderRightTop = styled(Border)`
-  transform: translate3d(calc(100vw + 20px), -20px, 1px);
-  border-top-color: white;
-  border-right-color: white;
-`;
-
-const BorderRightBottom = styled(Border)`
-  transform: translate3d(calc(100vw + 20px), calc(100vh + 20px), 1px);
-  border-bottom-color: white;
-  border-right-color: white;
-`;
-
-const Inside = styled(Border).attrs(({ $x, $y, $width, $height }) => ({
-  style: {
-    width: `${$width ?? 0}px`,
-    height: `${$height ?? 0}px`,
-    transform: $x != null && $y != null ? `translate3d(${$x}px, ${$y}px, 1px)` : null,
-  },
-}))`
-  display: none;
-  z-index: 1;
-  transition: transform 0.1s, width 0.1s, height 0.1s;
-  border-color: rgba(255, 255, 255, 0.1); 
-  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
-`;
+const StateTypes = {
+  hovered: 'hovered',
+  focused: 'focused',
+};
 
 const FocusOverlay = ({ globalListener }) => {
-  const {
-    visible, show, hide, rect,
-    press, release, pressed,
-  } = useContext(Context) || {};
   const roCallback = useRef();
-  const [inside, setInside] = useState({});
-  const [leftTop, setLeftTop] = useState({});
-  const [leftBottom, setLeftBottom] = useState({});
-  const [rightTop, setRightTop] = useState({});
-  const [rightBottom, setRightBottom] = useState({});
 
   const ro = useRef(new ResizeObserver((...args) => {
     if (roCallback.current) {
@@ -102,152 +28,141 @@ const FocusOverlay = ({ globalListener }) => {
         return undefined;
       }
 
-      let current;
-      let _pressed;
+      const state = {
+        [StateTypes.current]: null,
+        [StateTypes.focused]: null,
+      };
 
       roCallback.current = (entries) => {
         entries.forEach((entry) => {
-          if (entry.target !== current) {
+          if (entry.target !== state.current && entry.target !== state.focused) {
             entries.forEach((entry) => ro.current.unobserve(entry.target));
           } else {
-            show(current);
+            if (entry.target === state[StateTypes.hovered]) {
+              cursor.focusOn(state[StateTypes.hovered]);
+            }
+
+            if (entry.target === state[StateTypes.focused]) {
+              focus.focusOn(state[StateTypes.focused]);
+            }
           }
         });
       };
 
+      const onEnter = (event) => {
+        if (event?.target?.tabIndex < 0 || event.target === document) {
+          return;
+        }
+
+        let item = state[StateTypes.hovered];
+
+        if (item) {
+          item.removeEventListener('pointerdown', onDown, true);
+          document.removeEventListener('pointerup', onUp, true);
+          ro.current.unobserve(item);
+        }
+
+        if (item !== event.target) {
+          item = event.target;
+          cursor.focusOn(item);
+        }
+
+        ro.current.observe(item);
+        item.addEventListener('pointerdown', onDown, true);
+        document.addEventListener('pointerup', onUp, true);
+
+        state[StateTypes.hovered] = item;
+      };
+
       const onFocus = (event) => {
-        if (_pressed) {
+        if (event?.target?.tabIndex < 0 || event.target === document) {
           return;
         }
 
-        if (event?.target?.tabIndex > -1) {
-          if (current) {
-            current.removeEventListener('pointerdown', onDown, true);
-            document.removeEventListener('pointerup', onUp, true);
-            ro.current.unobserve(current);
-          }
+        let item = state[StateTypes.focused];
 
-          if (current !== event.target) {
-            current = event.target;
-            show(current);
-          }
-
-          ro.current.observe(current);
-
-          current.addEventListener('pointerdown', onDown, true);
-          document.addEventListener('pointerup', onUp, true);
+        if (item) {
+          ro.current.unobserve(item);
         }
+
+        if (item !== event.target) {
+          item = event.target;
+          focus.focusOn(item);
+        }
+
+        ro.current.observe(item);
+
+        state[StateTypes.focused] = item;
       };
 
-      const onDown = (event) => {
-        press();
-        _pressed = true;
+      const onDown = () => {
+        cursor.press();
       };
 
-      const onUp = (event) => {
-        if (_pressed) {
-          release();
-          _pressed = false;
-        }
+      const onUp = () => {
+        cursor.release();
       };
 
-      const onBlur = (event) => {
-        if (_pressed) {
-          return;
-        }
-        // event?.target?.tabIndex > -1 &&
-        if (event?.target === current) {
-          if (current) {
-            ro.current.unobserve(current);
-            current.removeEventListener('pointerdown', onDown, true);
+      const onLeave = (event) => {
+        let item = state[StateTypes.hovered];
+
+        if (event?.target === item) {
+          if (item) {
+            ro.current.unobserve(item);
+            item.removeEventListener('pointerdown', onDown, true);
             document.removeEventListener('pointerup', onUp, true);
           }
 
-          current = current?.parentNode;
-          while (current && current.tabIndex < 0) {
-            current = current.parentNode;
+          item = item?.parentNode;
+          while (item && item.tabIndex < 0) {
+            item = item.parentNode;
           }
 
-          if (current === document) {
-            current = null;
+          if (item === document) {
+            item = null;
           }
 
-          if (!current && document.activeElement && document.activeElement !== document.body) {
-            current = document.activeElement;
-          }
-
-          if (current) {
-            show(current);
-          } else {
-            hide();
-          }
+          cursor.focusOn(item);
         }
+
+        state[StateTypes.hovered] = item;
+      };
+
+      const onBlur = () => {
+        let item = state[StateTypes.focused];
+
+        if (item) {
+          ro.current.unobserve(item);
+        }
+
+        item = null;
+        focus.focusOn();
+        focus.hide();
+
+        state[StateTypes.focused] = item;
       };
 
       document.addEventListener('focus', onFocus, true);
       document.addEventListener('blur', onBlur, true);
-      document.addEventListener('pointerenter', onFocus, true);
-      document.addEventListener('pointerleave', onBlur, true);
+      document.addEventListener('pointerenter', onEnter, true);
+      document.addEventListener('pointerleave', onLeave, true);
 
       return () => {
-        _pressed = false;
-        if (current) {
-          current.removeEventListener('pointerdown', onDown, true);
+        if (state[StateTypes.hovered]) {
+          state[StateTypes.hovered].removeEventListener('pointerdown', onDown, true);
           document.removeEventListener('pointerup', onUp, true);
         }
+
         document.removeEventListener('focus', onFocus, true);
         document.removeEventListener('blur', onBlur, true);
-        document.removeEventListener('pointerenter', onFocus, true);
-        document.removeEventListener('pointerleave', onBlur, true);
+        document.removeEventListener('pointerenter', onEnter, true);
+        document.removeEventListener('pointerleave', onLeave, true);
       };
     },
-    [show, hide, press, release, globalListener],
+    [globalListener],
   );
 
-  useEffect(
-    () => {
-      const item = rect;
-      if (!item) {
-        return;
-      }
-
-      setInside({
-        $x: item.left + (pressed ? 4 : 0),
-        $y: item.top + (pressed ? 4 : 0),
-        $width: rect.width + 10 + (pressed ? -4 : 0),
-        $height: rect.height + 10 + (pressed ? -4 : 0),
-      });
-      setLeftTop({
-        $x: item.left + (pressed ? 4 : 0),
-        $y: item.top + (pressed ? 4 : 0),
-      });
-      setLeftBottom({
-        $x: item.left + (pressed ? 4 : 0),
-        $y: item.bottom + (pressed ? -4 : 0),
-      });
-      setRightTop({
-        $x: item.right + (pressed ? -4 : 0),
-        $y: item.top + (pressed ? 4 : 0),
-      });
-      setRightBottom({
-        $x: item.right + (pressed ? -4 : 0),
-        $y: item.bottom + (pressed ? -4 : 0),
-      });
-    },
-    [rect, pressed],
-  );
-
-  return (
-    <Portal inBody>
-      <PortalContainer $visible={visible}>
-        <Inside {...inside} />
-        <BorderLeftTop {...leftTop} />
-        <BorderLeftBottom {...leftBottom} />
-        <BorderRightTop {...rightTop} />
-        <BorderRightBottom {...rightBottom} />
-      </PortalContainer>
-    </Portal>
-  );
+  return null;
 };
 
 FocusOverlay.propTypes = {

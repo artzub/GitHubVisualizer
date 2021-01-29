@@ -21,6 +21,7 @@ const Container = styled.div`
   box-sizing: border-box;
   width: 100%;
   padding: 30px 20px 0px;
+  cursor: none;
 `;
 
 const InputStyled = styled(Input)`
