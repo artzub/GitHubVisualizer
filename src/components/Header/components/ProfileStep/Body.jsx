@@ -21,6 +21,7 @@ const Container = styled.div`
   padding: 10px;
   box-sizing: border-box;
   width: 100%;
+  cursor: none;
 `;
 
 const ListContainer = styled(ScrollBar)`

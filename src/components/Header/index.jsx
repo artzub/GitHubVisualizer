@@ -27,7 +27,7 @@ const PaperStyled = styled(Paper)`
   top: 0;
   transform: translate(-50%, 0);
   max-width: 70vw;
-  min-width: 300px;
+  min-width: 375px;
   border-radius: 0 0 10px 10px;
   overflow: hidden;
   z-index: 10;
@@ -38,6 +38,7 @@ const Container = styled.div`
   position: relative;
   flex-wrap: nowrap;
   width: 100%;
+  cursor: none;
 `;
 
 const Divider = styled(DividerOriginal)`

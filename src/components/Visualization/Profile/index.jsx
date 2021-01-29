@@ -20,11 +20,8 @@ const merge = (data, newData) => {
 };
 
 const UserVisualization = (props) => {
-  /**
-   * @type {React.MutableRefObject<Application>}
-   */
-  const [container, setContainer] = useState(null);
   const [app, setApp] = useState(null);
+  const [container, setContainer] = useState(null);
   const dataRef = useRef([]);
   const { selected: repo, items } = useSelector(repositoriesSlice.selectors.getState);
   const { name: selected } = repo || {};

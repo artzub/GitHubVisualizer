@@ -30,6 +30,10 @@ const Link = styled(LinkOrigin)`
 
 const Properties = styled(PropertiesOrigin)`
   font-size: 1em;
+  margin-top: 0.5em;
+  &:first-child {
+    margin-top: 0;
+  }
 `;
 
 const onClick = (event) => event.stopPropagation();

@@ -10,6 +10,7 @@ import styled, { keyframes } from 'styled-components';
 const Container = styled.div`
   display: flex;
   width: 100%;
+  cursor: none;
 `;
 
 const Tab = styled.button`
