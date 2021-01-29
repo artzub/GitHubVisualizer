@@ -37,7 +37,7 @@ export const useRedirectTo = (urlPartType) => {
   return useCallback(
     (part) => {
       const index = order.indexOf(urlPartType);
-      if (index < 0) {
+      if (index < 0 || hash[urlPartType] === part) {
         return;
       }
 
