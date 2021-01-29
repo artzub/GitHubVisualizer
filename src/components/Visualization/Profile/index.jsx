@@ -5,6 +5,8 @@ import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
 import { useSelector } from 'react-redux';
 import Tab from '../shared/Tab';
 import Application from './Application';
+import useSound from 'use-sound';
+import { SoundTypes } from '@/models/SoundTypes';
 
 const merge = (data, newData) => {
   const hash = data.reduce((acc, item) => ({
@@ -27,7 +29,12 @@ const UserVisualization = (props) => {
   const { name: selected } = repo || {};
   const redirectTo = useRedirectTo(UrlPratTypes.repository);
 
+  const [clickSoundPlay, { stop: clickSoundStop }] = useSound(SoundTypes.click, { volume: 0.25 });
+  const [hoverSoundPlay, { stop: hoverSoundStop }] = useSound(SoundTypes.hover, { volume: 0.25 });
+
   const onSelectItem = useRef(null);
+  const onOverItem = useRef(null);
+  const onOutItem = useRef(null);
 
   const data = useMemo(
     () => {
@@ -45,10 +52,30 @@ const UserVisualization = (props) => {
   useEffect(
     () => {
       onSelectItem.current = (_, item) => {
+        clickSoundPlay();
         redirectTo(item?.name || '');
       };
     },
-    [redirectTo],
+    [clickSoundPlay, redirectTo],
+  );
+
+  useEffect(
+    () => {
+      onOverItem.current = () => {
+        clickSoundStop();
+        hoverSoundPlay();
+      };
+    },
+    [hoverSoundPlay, clickSoundStop],
+  );
+
+  useEffect(
+    () => {
+      onOutItem.current = () => {
+        hoverSoundStop();
+      };
+    },
+    [hoverSoundStop],
   );
 
   useEffect(
@@ -59,6 +86,8 @@ const UserVisualization = (props) => {
       const instance = new Application(container);
       instance.key((item) => item.name);
       instance.on('selectItem', (...args) => onSelectItem.current(...args));
+      instance.on('overItem', (...args) => onOverItem.current(...args));
+      instance.on('outItem', (...args) => onOutItem.current(...args));
       setApp(instance);
 
       return () => {

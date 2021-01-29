@@ -148,7 +148,8 @@
     "webpack": "4.41.5",
     "webpack-dev-server": "3.10.2",
     "webpack-manifest-plugin": "2.2.0",
-    "workbox-webpack-plugin": "4.3.1"
+    "workbox-webpack-plugin": "4.3.1",
+    "use-sound": "2.0.1"
   },
   "browserslist": {
     "production": [
@@ -172,8 +173,5 @@
   ],
   "lint-staged": {
     "*.{js,jsx}": "eslint"
-  },
-  "dependencies": {
-    "use-sound": "^2.0.1"
   }
 }

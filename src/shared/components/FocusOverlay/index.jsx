@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react';
+import { SoundTypes } from '@/models/SoundTypes';
 import * as cursor from '@/services/CursorService';
 import * as focus from '@/services/FocusService';
 import PropTypes from 'prop-types';
 import { install, ResizeObserver } from 'resize-observer';
+import useSound from 'use-sound';
 
 if (!window.ResizeObserver) {
   install();
@@ -15,6 +17,8 @@ const StateTypes = {
 
 const FocusOverlay = ({ globalListener }) => {
   const roCallback = useRef();
+  const [clickSoundPlay, { stop: clickSoundStop }] = useSound(SoundTypes.click, { volume: 0.25 });
+  const [hoverSoundPlay, { stop: hoverSoundStop }] = useSound(SoundTypes.hover, { volume: 0.25 });
 
   const ro = useRef(new ResizeObserver((...args) => {
     if (roCallback.current) {
@@ -49,15 +53,23 @@ const FocusOverlay = ({ globalListener }) => {
         });
       };
 
+      const onClick = () => {
+        clickSoundPlay();
+      };
+
       const onEnter = (event) => {
         if (event?.target?.tabIndex < 0 || event.target === document) {
           return;
         }
 
+        hoverSoundStop();
+        clickSoundStop();
+
         let item = state[StateTypes.hovered];
 
         if (item) {
           item.removeEventListener('pointerdown', onDown, true);
+          item.removeEventListener('click', onClick, true);
           document.removeEventListener('pointerup', onUp, true);
           ro.current.unobserve(item);
         }
@@ -67,9 +79,13 @@ const FocusOverlay = ({ globalListener }) => {
           cursor.focusOn(item);
         }
 
-        ro.current.observe(item);
-        item.addEventListener('pointerdown', onDown, true);
-        document.addEventListener('pointerup', onUp, true);
+        if (item) {
+          hoverSoundPlay();
+          ro.current.observe(item);
+          item.addEventListener('pointerdown', onDown, true);
+          item.addEventListener('click', onClick, true);
+          document.addEventListener('pointerup', onUp, true);
+        }
 
         state[StateTypes.hovered] = item;
       };
@@ -78,6 +94,9 @@ const FocusOverlay = ({ globalListener }) => {
         if (event?.target?.tabIndex < 0 || event.target === document) {
           return;
         }
+
+        hoverSoundStop();
+        hoverSoundPlay();
 
         let item = state[StateTypes.focused];
 
@@ -107,9 +126,12 @@ const FocusOverlay = ({ globalListener }) => {
         let item = state[StateTypes.hovered];
 
         if (event?.target === item) {
+          hoverSoundStop();
+
           if (item) {
             ro.current.unobserve(item);
             item.removeEventListener('pointerdown', onDown, true);
+            item.removeEventListener('click', onClick, true);
             document.removeEventListener('pointerup', onUp, true);
           }
 
@@ -159,7 +181,7 @@ const FocusOverlay = ({ globalListener }) => {
         document.removeEventListener('pointerleave', onLeave, true);
       };
     },
-    [globalListener],
+    [clickSoundPlay, clickSoundStop, globalListener, hoverSoundPlay, hoverSoundStop],
   );
 
   return null;
