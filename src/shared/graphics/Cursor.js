@@ -148,11 +148,11 @@ class Cursor extends PIXI.Container {
   }
 
   release() {
+    this._pressed = false;
     if (!this._focused) {
       return this;
     }
 
-    this._pressed = false;
     this._expand();
     return this;
   }

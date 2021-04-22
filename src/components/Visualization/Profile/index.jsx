@@ -1,12 +1,12 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { SoundTypes } from '@/models/SoundTypes';
 import { UrlPratTypes } from '@/models/UrlPartTypes';
 import repositoriesSlice from '@/redux/modules/repositories';
 import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
 import { useSelector } from 'react-redux';
+import useSound from 'use-sound';
 import Tab from '../shared/Tab';
 import Application from './Application';
-import useSound from 'use-sound';
-import { SoundTypes } from '@/models/SoundTypes';
 
 const merge = (data, newData) => {
   const hash = data.reduce((acc, item) => ({

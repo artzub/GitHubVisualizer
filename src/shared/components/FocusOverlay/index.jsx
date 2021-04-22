@@ -70,7 +70,6 @@ const FocusOverlay = ({ globalListener }) => {
         if (item) {
           item.removeEventListener('pointerdown', onDown, true);
           item.removeEventListener('click', onClick, true);
-          document.removeEventListener('pointerup', onUp, true);
           ro.current.unobserve(item);
         }
 
@@ -84,7 +83,6 @@ const FocusOverlay = ({ globalListener }) => {
           ro.current.observe(item);
           item.addEventListener('pointerdown', onDown, true);
           item.addEventListener('click', onClick, true);
-          document.addEventListener('pointerup', onUp, true);
         }
 
         state[StateTypes.hovered] = item;
@@ -119,6 +117,7 @@ const FocusOverlay = ({ globalListener }) => {
       };
 
       const onUp = () => {
+        console.log('release');
         cursor.release();
       };
 
@@ -132,7 +131,6 @@ const FocusOverlay = ({ globalListener }) => {
             ro.current.unobserve(item);
             item.removeEventListener('pointerdown', onDown, true);
             item.removeEventListener('click', onClick, true);
-            document.removeEventListener('pointerup', onUp, true);
           }
 
           item = item?.parentNode;
@@ -168,17 +166,18 @@ const FocusOverlay = ({ globalListener }) => {
       document.addEventListener('blur', onBlur, true);
       document.addEventListener('pointerenter', onEnter, true);
       document.addEventListener('pointerleave', onLeave, true);
+      document.addEventListener('pointerup', onUp, true);
 
       return () => {
         if (state[StateTypes.hovered]) {
           state[StateTypes.hovered].removeEventListener('pointerdown', onDown, true);
-          document.removeEventListener('pointerup', onUp, true);
         }
 
         document.removeEventListener('focus', onFocus, true);
         document.removeEventListener('blur', onBlur, true);
         document.removeEventListener('pointerenter', onEnter, true);
         document.removeEventListener('pointerleave', onLeave, true);
+        document.removeEventListener('pointerup', onUp, true);
       };
     },
     [clickSoundPlay, clickSoundStop, globalListener, hoverSoundPlay, hoverSoundStop],
