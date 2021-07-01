@@ -117,7 +117,6 @@ const FocusOverlay = ({ globalListener }) => {
       };
 
       const onUp = () => {
-        console.log('release');
         cursor.release();
       };
 

@@ -297,7 +297,6 @@ module.exports = function(webpackEnv) {
           'react-dom$': 'react-dom/profiling',
           'scheduler/tracing': 'scheduler/tracing-profiling',
         }),
-        'pixijs': isEnvProduction ? 'pixi.js-legacy' : 'pixi.js',
         ...(modules.webpackAliases || {}),
         '@': path.resolve(__dirname, '../src')
       },

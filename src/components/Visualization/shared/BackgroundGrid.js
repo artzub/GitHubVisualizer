@@ -1,4 +1,4 @@
-import * as PIXI from 'pixijs';
+import * as PIXI from 'pixi.js-legacy';
 
 const defaultCellSize = 100;
 

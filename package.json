@@ -111,7 +111,7 @@
     "mdi-react": "7.4.0",
     "mini-css-extract-plugin": "0.9.0",
     "optimize-css-assets-webpack-plugin": "5.0.3",
-    "pixi.js-legacy": "6.0.0-rc",
+    "pixi.js-legacy": "^6.0.4",
     "pnp-webpack-plugin": "1.6.0",
     "postcss-flexbugs-fixes": "4.1.0",
     "postcss-loader": "3.0.0",
@@ -145,11 +145,11 @@
     "typeface-roboto": "0.0.75",
     "typescript": "3.8.2",
     "url-loader": "2.3.0",
+    "use-sound": "2.0.1",
     "webpack": "4.41.5",
     "webpack-dev-server": "3.10.2",
     "webpack-manifest-plugin": "2.2.0",
-    "workbox-webpack-plugin": "4.3.1",
-    "use-sound": "2.0.1"
+    "workbox-webpack-plugin": "4.3.1"
   },
   "browserslist": {
     "production": [

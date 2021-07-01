@@ -8,8 +8,8 @@ import {
  forceManyBody, forceX, forceY,
 } from 'd3-force';
 import { scaleLinear, scaleLog, scaleOrdinal } from 'd3-scale';
-import * as PIXI from 'pixijs';
 import gsap from 'gsap';
+import * as PIXI from 'pixi.js-legacy';
 import BackgroundGrid from '../shared/BackgroundGrid';
 import forceCluster from './forceCluster';
 import forceCollide from './forceCollide';
@@ -18,6 +18,9 @@ const groupDefault = (node) => node.language;
 const radiusDefault = (node) => node.stars;
 const alphaDefault = (node) => +node.updatedAt;
 const keyDefault = (node) => node.id;
+
+PIXI.settings.PRECISION_FRAGMENT = PIXI.PRECISION.HIGH;
+PIXI.settings.RESOLUTION = window.devicePixelRatio;
 
 //d3.scaleSequential(d3.interpolateRainbow)
 const colorIndexes = [100, 200, 300, 500, 600, 700];
@@ -32,9 +35,6 @@ const colors = Object.entries(palettes)
   .map((item) => PIXI.utils.hex2string(item))
 ;
 
-const filterBrightness = new PIXI.filters.ColorMatrixFilter();
-filterBrightness.brightness(1.2, true);
-
 const textStyle = {
   fontFamily: "'JetBrains Mono', monospace",
   fontSize: 12,
@@ -47,6 +47,25 @@ const textStyle = {
   dropShadowBlur: 1,
   dropShadowAngle: 0,
   dropShadowDistance: 1,
+};
+
+const colorConvert = (color) => PIXI.utils.string2hex(d3color(color || '#000').formatHex());
+
+const textureHash = {};
+const filledCircleTexture = (color, radius) => {
+  const key = `circle_${color}`;
+  if (textureHash[key]?.baseTexture) {
+    return textureHash[key];
+  }
+
+  const texture = new PIXI.Graphics()
+    .beginFill(colorConvert(color))
+    .drawCircle(0, 0, radius)
+    .generateCanvasTexture();
+
+  textureHash[key] = texture;
+
+  return texture;
 };
 
 class Application {
@@ -436,45 +455,64 @@ class Application {
 
     const color = d3color(this._colorOfItem(item));
     const radius = +this._radiusOfItem(item);
+    const diameter = radius * 2;
     let alpha = +this._alphaOfItem(item);
 
     let [circle, border] = node.children;
     if (!circle) {
-      circle = new PIXI.Graphics();
+      circle = new PIXI.Sprite(filledCircleTexture('#fff', 128));
+      circle.anchor.set(0.5);
       node.addChild(circle);
 
       node._focused = true;
       alpha = 1;
-    } else {
-      circle.clear();
     }
 
     if (!border) {
-      border = new PIXI.Graphics();
+      border = new PIXI.Sprite();
+      border.alpha = 0.5;
+      border.anchor.set(0.5);
       node.addChild(border);
-    } else {
-      border.clear();
     }
 
-    border.lineStyle(1, PIXI.utils.string2hex(color.darker(0.1).formatHex()), 0.5);
-    border.drawCircle(0, 0, radius);
-    border.endFill();
+    const circleColor = colorConvert(color);
+    if (circle.tint !== circleColor) {
+      circle.__tint = color;
+      circle.tint = circleColor;
+    }
 
-    circle.beginFill(PIXI.utils.string2hex(color.formatHex()), 1);
-    circle.drawCircle(0, 0, radius);
-    circle.endFill();
+    if (circle.width !== diameter) {
+      circle.width = diameter;
+      circle.height = diameter;
+    }
     circle.alpha = alpha;
+
+    if (border.width !== diameter) {
+      border.texture = new PIXI.Graphics()
+        .lineStyle(1, colorConvert('#fff'))
+        .drawCircle(0, 0, radius)
+        .generateCanvasTexture()
+      ;
+      border.width = diameter;
+      border.height = diameter;
+    }
+
+    const borderColor = colorConvert(color.darker(0.1));
+    if (border.tint !== borderColor) {
+      border.tint = borderColor;
+    }
 
     let [, , text] = node.children;
     if (!text) {
       text = new PIXI.Text(item.name, {
         ...textStyle,
-        fill: PIXI.utils.string2hex(color.brighter(1.5).formatHex()),
+        fill: '#fff',
       });
-      // text.roundPixels = true;
+      text.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
       text.anchor.set(0.5);
       node.addChild(text);
     }
+    text.tint = colorConvert(color.brighter(1.5));
     text.visible = text.width < radius * 4.2;
   }
 
@@ -518,13 +556,20 @@ class Application {
     });
 
     items.forEach((node) => {
-      const key = this._keyOfItem(node.__data__);
       node._focused = true;
-      node.filters = [filterBrightness];
       gsap.to(node.children[0], {
-        alpha: key === this._hovered ? 0.9 : 0.8,
+        alpha: node === this._hovered ? 0.9 : 0.8,
         duration: 0.2,
         overwrite: true,
+        __tint: d3color(this._colorOfItem(node.__data__))
+          .brighter(0.5)
+          .toString(),
+        onUpdate: function () {
+          const [target] = this.targets();
+          gsap.set(target, {
+            tint: colorConvert(target.__tint),
+          });
+        },
       });
     });
   }
@@ -571,8 +616,12 @@ class Application {
           delay: 0.3,
           duration: 0.5,
           overwrite: true,
-          onComplete: () => {
-            node.filters = null;
+          __tint: this._colorOfItem(node.__data__),
+          onUpdate: function () {
+            const [target] = this.targets();
+            gsap.set(target, {
+              tint: colorConvert(target.__tint),
+            });
           },
         });
 
