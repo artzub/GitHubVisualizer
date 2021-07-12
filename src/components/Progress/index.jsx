@@ -6,10 +6,10 @@ import styled from 'styled-components';
 
 const Container = styled.div`
   position: absolute;
-  bottom: 2px;
+  top: 2px;
   left: 0;
   right: 0;
-  z-index: 10;
+  z-index: 100;
 `;
 
 const LinearProgress = styled(LinearProgressOrigin)`
