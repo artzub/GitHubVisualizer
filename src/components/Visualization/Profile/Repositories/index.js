@@ -1,4 +1,4 @@
-import * as cursor from '@/services/CursorService';
+import { cursor } from '@/services/CursorFocusService';
 import { colorConvert, filledCircleTexture } from '@/shared/utils';
 import * as palettes from '@material-ui/core/colors';
 
