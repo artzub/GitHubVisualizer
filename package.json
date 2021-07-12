@@ -173,5 +173,9 @@
   ],
   "lint-staged": {
     "*.{js,jsx}": "eslint"
+  },
+  "dependencies": {
+    "d3-selection": "^3.0.0",
+    "d3-zoom": "^3.0.0"
   }
 }

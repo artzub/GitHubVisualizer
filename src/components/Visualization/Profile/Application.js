@@ -8,6 +8,8 @@ import {
  forceManyBody, forceX, forceY,
 } from 'd3-force';
 import { scaleLinear, scaleLog, scaleOrdinal } from 'd3-scale';
+import { select as d3select } from 'd3-selection';
+import { zoom as d3zoom, zoomIdentity, zoomTransform } from 'd3-zoom';
 import gsap from 'gsap';
 import * as PIXI from 'pixi.js-legacy';
 import BackgroundGrid from '../shared/BackgroundGrid';
@@ -126,6 +128,40 @@ class Application {
     this._instance.renderer.plugins.interaction.cursorStyles.default = 'none';
 
     container.append(this._instance.view);
+
+    this._onlyZoom = true;
+
+    this._zoom = d3zoom()
+      .scaleExtent([1/2, 1])
+      .on('zoom', this._zoomed.bind(this))
+      .on('start', (event) => {
+        if (this._onlyZoom) {
+          return;
+        }
+
+        if (event.sourceEvent?.type === 'mousedown') {
+          this._lastCursor = this._d3view.style('cursor');
+          this._d3view.style('cursor', 'move');
+        }
+      })
+      .on('end', () => {
+        if (this._onlyZoom) {
+          return;
+        }
+
+        this._d3view.style('cursor', this._lastCursor || 'none');
+      })
+      .filter((event) => {
+        if (event.type === 'wheel') {
+          return true;
+        }
+
+        return event.ctrlKey;
+      })
+    ;
+
+    this._d3view = d3select(this._instance.view).call(this._zoom);
+
     this._instance.queueResize();
 
     this._grid = new BackgroundGrid(70);
@@ -221,6 +257,17 @@ class Application {
 
     this._selected = key;
     this._simulation.restart();
+  }
+
+  _zoomed(event) {
+    const { transform } = event;
+
+    if (!this._onlyZoom) {
+      this._group.x = transform.x;
+      this._group.y = transform.y;
+    }
+    this._group.scale.x = transform.k;
+    this._group.scale.y = transform.k;
   }
 
   _restartSimulation() {
@@ -543,8 +590,20 @@ class Application {
   }
 
   _resize(width, height) {
-    this._group.x = width * 0.5;
-    this._group.y = height * 0.5;
+    if (this._onlyZoom) {
+      this._group.x = width * 0.5;
+      this._group.y = height * 0.5;
+    } else {
+      this._prevTransform = this._prevTransform || zoomIdentity.translate(0, 0);
+
+      const transform = zoomTransform(this._d3view.node())
+        .translate(-this._prevTransform.x, -this._prevTransform.y)
+        .translate(width * 0.5, height * 0.5);
+
+      this._prevTransform = zoomIdentity.translate(width * 0.5, height * 0.5);
+
+      this._d3view.call(this._zoom.transform, transform);
+    }
 
     this._grid.resize(width, height);
   }
