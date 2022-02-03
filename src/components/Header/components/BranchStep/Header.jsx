@@ -16,7 +16,7 @@ const Properties = styled(PropertiesOrigin)`
 `;
 
 const Header = forwardRef((props, ref) => {
-  const { selected } = useSelector(slice.selectors.getState);
+  const { selected, items } = useSelector(slice.selectors.getState);
   const { name, commits } = selected || {};
 
   return (
@@ -26,10 +26,13 @@ const Header = forwardRef((props, ref) => {
         {!selected && <div>Choose a branch</div>}
         {selected && (
           <Properties>
+            <Property title={`Branches: ${items.length}`}>
+              {items.length}
+            </Property>
             <Property style={{ overflow: 'hidden' }}>
               <Title title={name}>{name}</Title>
             </Property>
-            <Property title="Commits">
+            <Property title={`Commits: ${commits}`}>
               <HistoryIcon size={16} />
               <PropertyValue>
                 {commits}

@@ -4,6 +4,7 @@ import * as PIXI from 'pixi.js-legacy';
 
 import BackgroundGrid from '../shared/BackgroundGrid';
 import Repositories from './Repositories';
+import Languages from '@/components/Visualization/Profile/Languages';
 
 PIXI.settings.PRECISION_FRAGMENT = PIXI.PRECISION.HIGH;
 PIXI.settings.RESOLUTION = window.devicePixelRatio;
@@ -60,6 +61,9 @@ class Application {
     this._grid.alpha = 0.4;
     this._instance.stage.addChild(this._grid);
 
+    this._lng = new Languages();
+    this._instance.stage.addChild(this._lng);
+
     this._group = new Repositories();
     this._instance.stage.addChild(this._group);
   }
@@ -67,8 +71,6 @@ class Application {
   destroy() {
     this._destroyed = true;
     this._instance.destroy(true, true);
-    this._simulation.stop().nodes([]);
-    this._simulation = null;
   }
 
   on() {
@@ -82,6 +84,9 @@ class Application {
     }
 
     this._group.data(data);
+
+    this._lng._colors = this._group._colors;
+    this._lng.data(data);
 
     return this;
   }
@@ -162,6 +167,9 @@ class Application {
 
       this._d3view.call(this._zoom.transform, transform);
     }
+
+    this._lng.x = 50;
+    this._lng.y = height - 20;
 
     this._grid.resize(width, height);
   }
