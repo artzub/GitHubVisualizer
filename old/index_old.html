@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <link rel="icon" href="favicon-old.png">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="google-site-verification" content="htCqPyJla3gJQPjjtBEoLTCIK6Ec1Xau0GOeLj4TtFs" />
+    <title>GitHub Visualizer</title>
+    <link rel="stylesheet" charset="utf-8" href="style.css" >
+
+    <meta property="og:url"           content="http://ghv.artzub.com/" />
+    <meta property="og:type"          content="website" />
+    <meta property="og:title"         content="GitHub Visualizer" />
+    <meta property="og:description"   content="This service lets the user to see statistics of repositories." />
+    <meta property="og:image"         content="http://hsto.org/files/164/ad3/241/164ad32418ea4410b7547bcd8193ebf2.gif" />
+
+    <script src="js/cookies.js"></script>
+
+    <script type="text/javascript">
+        (function() {
+            var ss = location.search;
+            var ind = ss ? ss.indexOf('code=') : -1;
+            console.log(document.referrer);
+            if (location.host == "artzub.com") {
+                setCookie('referrer', document.referrer || location.host == "artzub.com" ? "http://ghv.artzub.com/" : location.href, {
+                    domain : '.artzub.com',
+                    path : '/'
+                });
+                location.replace(location.href.replace(/\/artzub\.com\/ghv/, "/ghv.artzub.com"));
+            }
+            else if (ind > -1) {
+                var params = {};
+                if (ind > 0) {
+                    ss.substr(1).split('&').forEach(function(item){
+                        var pair = item.split('=');
+                        params[pair[0].toLowerCase()] = pair.length > 1 ? pair[1] : null;
+                    });
+
+                    if(params.code) {
+                        if (opener) {
+                            opener.hasOAuth &&
+                                opener.hasOAuth(params.code);
+                            close();
+                        }
+                        else
+                            window.hasOAuth = params.code;
+                    }
+                }
+            }
+            else if (ss) {
+                var ref = getCookie('referrer');
+                if (!ref || ref.replace(/\s+$/, '').replace(/^\s+/, '').length < 1)
+                    ref = document.referrer;
+                setCookie('referrer',  ref, {
+                    domain : '.artzub.com',
+                    path : '/'
+                });
+
+                ind = location.href
+                    .replace(location.hash, location.hash.replace("#", "&"))
+                    .replace(ss, ss.replace(/^\?/, "#"));
+                location.replace(ind.replace(/(.com)\/\//, "$1/"));
+            }
+        })();
+    </script>
+</head>
+<body onload="init()">
+<div id="fb-root"></div>
+<header>
+    <div id="controls" class="popup">
+        <div class="row">
+            <ul class="steps sfirst">
+                <li style="z-index: 2" class="first">
+                    <label for="user"><strong>1.</strong></label>
+                    <input placeholder="GitHub username" type="text" id="user">
+                    <button id="showBtn" title="Press for loading data about user repositories." class="btn" disabled="disabled">Show</button>
+                    <div class="sub">
+                        <div class="row">
+                            <blockquote>Enter a GitHub username.</blockquote>
+                            <div class="row">
+                                <ul class="setting">
+                                    <li class="field"><h1>Display:</h1>
+                                        <ul class="group">
+                                            <li class="field">
+                                                <input id="cb-dlr" type="checkbox" checked="checked">
+                                                <label for="cb-dlr">Layer repos</label>
+                                            </li>
+                                        </ul>
+                                        <ul class="group">
+                                            <li class="field">
+                                                <input id="cb-dllh" type="checkbox" checked="checked">
+                                                <label for="cb-dllh">Layer histogram languages</label>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li style="z-index: 1" class="second">
+                    <label><strong>2.</strong></label>
+                    <label id="curRep"><span>Select Repository...</span></label>
+                    <button id="runBtn" title="Press for analyse repository." class="btn" disabled="disabled">Analyze</button>
+                    <div class="sub">
+                        <div class="row">
+                            <blockquote>Click to repo in the graph.</blockquote>
+                            <div class="row">
+                                <ul class="setting">
+                                    <li class="field"><h1>Display:</h1>
+                                        <ul class="group">
+                                            <li class="field">
+                                                <input id="cb-dlsr" type="checkbox" checked="checked">
+                                                <label for="cb-dlsr">Layer statistic of repo</label>
+                                            </li>
+                                        </ul>
+                                        <ul class="group">
+                                            <li class="field">
+                                                <input id="cb-dlucdg" type="checkbox" checked="checked">
+                                                <label for="cb-dlucdg">Layer contributors diagram</label>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="field"><h1>Settings:</h1>
+                                        <ul class="group">
+                                            <li class="field">
+                                                <label for="txt-lc">Limit of commits</label>
+                                                <input id="txt-lc" type="number" value="100" max="10000000" min="0" step="1">
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="field convolve"><h1>Repositories:</h1>
+                                        <ul class="group">
+                                            <li class="field" style="width: 98%">
+                                                <ul class="repo-list" id="repo-list">
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="third">
+                    <label><strong>3.</strong></label>
+                    <button id="visBtn" title="Press for dynamic visualization." class="btn" disabled="disabled"><span class="mono">►</span> Run</button>
+                    <button id="visBtnPause" title="Pause" class="btn" style="display: none" ><span class="mono">▌▌</span>Pause</button>
+                    <button id="visBtnStop" title="Stop" class="btn" style="display: none" ><span class="mono">█▌</span> Stop</button>
+                    <button id="visBtnRestart" title="Restart" class="btn" style="display: none" ><span class="mini-icon mini-icon-history"></span> Restart</button>
+                    <div class="sub">
+                        <div class="row">
+                            <blockquote>Select visualization type, change settings and press the "Run" button.</blockquote>
+                            <div class="row">
+                                <ul class="setting">
+                                    <li class="field"><h1>Display:</h1>
+                                        <ul class="group">
+                                            <li class="field">
+                                                <input id="cb-dlvml" type="checkbox" checked="checked">
+                                                <label for="cb-dlvml">Layer canvas</label>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="field"><h1>Visualization type:</h1>
+                                        <ul class="group">
+                                            <li class="field">
+                                                <input name="typeVis" id="rb_lacs" checked="checked" type="radio">
+                                                <label for="rb_lacs">Code_swarm</label>
+                                            </li>
+                                            <li class="field">
+                                                <input name="typeVis" id="rb_lag" type="radio">
+                                                <label for="rb_lag">Gource</label> — Coming soon...
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="field"><h1>Settings:</h1>
+                                        <ul class="setting" id="st-cs">
+                                            <li class="field convolve"><h1>Code_swarm:</h1>
+                                                <ul class="setting">
+                                                    <li class="field"><h1>The number of cycles of life element:</h1>
+                                                        <blockquote class="a02">value 0 — immortal</blockquote>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <label for="n-cs-userLife">User</label>
+                                                                <input data-ns="cs" id="n-cs-userLife" type="number" step="1" min="0" max="1000000">
+                                                            </li>
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showUser" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showUser">visible</label>
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <label for="n-cs-fileLife">&nbsp;&nbsp;File</label>
+                                                                <input data-ns="cs" id="n-cs-fileLife" type="number" step="1" min="0" max="1000000">
+                                                            </li>
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showFile" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showFile">visible</label>
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <label for="n-cs-edgeLife">Edge</label>
+                                                                <input data-ns="cs" id="n-cs-edgeLife" type="number" step="1" min="0" max="1000000">
+                                                            </li>
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showEdge" type="checkbox">
+                                                                <label for="cb-cs-showEdge">visible</label> — Coming soon...
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                                <ul class="setting">
+                                                    <li class="field"><h1>Display:</h1>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showCountExt" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showCountExt">Legend extension</label>
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showHistogram" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showHistogram">Changes Histogram</label>
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showCommitMessage" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showCommitMessage">Commit Messages</label>
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-onlyShownExt" type="checkbox">
+                                                                <label for="cb-cs-onlyShownExt">Only current commit extensions</label>
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showLabel" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showLabel">User's name</label>
+                                                            </li>
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-useAvatar" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-useAvatar">Use user's avatar</label>
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showHalo" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showHalo">Halo</label>
+                                                            </li>
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-asPlasma" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-asPlasma">Particle as plasma</label>
+                                                            </li>
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-blendingLighter" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-blendingLighter">Blending: lighter</label>
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showTrack" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-showTrack">Show traces of particles</label>
+                                                            </li>
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-vanishingTail" type="checkbox" checked="checked">
+                                                                <label for="cb-cs-vanishingTail">Vanishing tails</label>
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <input data-ns="cs" id="cb-cs-showPaddingCircle" type="checkbox">
+                                                                <label for="cb-cs-showPaddingCircle">Circle of padding</label>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                                <ul class="setting">
+                                                    <li class="field"><h1>Rate of decrease of:</h1>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <label for="n-cs-rateFlash">Flash</label>
+                                                                <input data-ns="cs" id="n-cs-rateFlash" type="number" step="0.5" min="0" max="100">
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <label for="n-cs-rateOpacity">Opacity</label>
+                                                                <input data-ns="cs" id="n-cs-rateOpacity" type="number" step="0.5" min="0" max="100">
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                                <ul class="setting">
+                                                    <li class="field"><h1>Size of:</h1>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <label for="n-cs-sizeUser">User</label>
+                                                                <input data-ns="cs" id="n-cs-sizeUser" type="number" step="0.1" min="0.1" max="100">
+                                                            </li>
+                                                        </ul>
+                                                        <ul class="group">
+                                                            <li class="field">
+                                                                <label for="n-cs-sizeFile">File (initial)</label>
+                                                                <input data-ns="cs" id="n-cs-sizeFile" type="number" step="0.1" min="0.1" max="100">
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                                <ul class="group">
+                                                    <li class="field">
+                                                        <label for="n-cs-padding">Padding around a user</label>
+                                                        <input data-ns="cs" id="n-cs-padding" type="number" step="0.1" min="0" max="100">
+                                                    </li>
+                                                </ul>
+                                                <ul class="group">
+                                                    <li class="field">
+                                                        <label for="txt-cs-labelPattern">Pattern for user's label</label>
+                                                        <input data-ns="cs" id="txt-cs-labelPattern" type="text" value="%n <%e>">
+                                                        <blockquote class="a02">%n - name; %e - email; %l - login</blockquote>
+                                                    </li>
+                                                </ul>
+                                                <ul class="group">
+                                                    <li class="field">
+                                                        <input data-ns="cs" id="cb-cs-skipEmptyDate" type="checkbox" checked="checked">
+                                                        <label for="cb-cs-skipEmptyDate">Skip empty date</label>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="userOAuth" class="popup tooltip userInfo">
+        <div class="row statInfo" id="divStatOAuth">
+            <label for="getOAuth" title="Access to your private repositories">private access</label>
+            <span id="getOAuth" class="checkbox">
+                <span class="before">On</span><span class="after">Off</span>
+            </span>
+            <div><a href="#" id="authUser"></a></div>
+        </div>
+    </div>
+
+    <div id="userInfo" class="popup tooltip">
+        <div class="row" id="divStat"></div>
+    </div>
+
+    <div id="misc" class="open row popup tooltip">
+        <div class="row userInfo open">
+            <div class="statInfo">
+                <ul>
+                    <li class="hidder" id="about">
+                        <strong class="title mini-icon mini-icon-help"></strong>
+                        <a class="forkme" target="_blank" href="https://github.com/artzub/GitHubCodeSwarm" title="Fork me on GitHub"></a>
+                        <ul>
+                            <li>
+                                <h1 class="capture">
+                                    Visualization GitHub repositories history.
+                                </h1>
+                                <hr>
+                                This service lets the user to see statistics of repositories.<br />
+                                <i style="color:#f9f9f9">Your GitHub data will be used only for analysis and visualisation.
+                                    <br/>They will not be passed to third parties.</i>
+                            </li>
+                            <li style="background: rgba(255, 255, 255, .6); margin-top: 5px; padding: 3px;">
+                                <!-- Place this tag where you want the +1 button to render. -->
+                                <div class="g-plusone" data-size="small" data-annotation="inline" data-width="450"></div>
+                                <br/>
+                                <div class="fb-like" data-href="http://ghv.artzub.com/" data-layout="button_count" data-action="like" data-show-faces="true" data-width="450" data-share="true"></div>
+                                <!--<div class="fb-like" data-href="http://ghv.artzub.com/" data-send="true" data-layout="button_count" data-width="450" data-show-faces="true"></div>-->
+                                <!--br/>
+                                <a href="http://selectel.ru/services/cloud/?ref_code=UVUS77Q88s64" style="overflow:hidden; display:block; margin:0;"><img style="width:66px" src="http://static.selectel.ru/partners/ref_white_88.png"></a-->
+                                <br />
+                                <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                                <input type="hidden" name="cmd" value="_donations">
+                                <input type="hidden" name="business" value="artzub@gmail.com">
+                                <input type="hidden" name="lc" value="RU">
+                                <input type="hidden" name="item_name" value="Artem Zubkov">
+                                <input type="hidden" name="item_number" value="GitHubVisualizer">
+                                <input type="hidden" name="no_note" value="0">
+                                <input type="hidden" name="currency_code" value="USD">
+                                <input type="hidden" name="bn" value="PP-DonationsBF:btn_donateCC_LG.gif:NonHostedGuest">
+                                <label><small><i>Please! Help me to maintain this service.</i></small></label><br/>
+                                <input type="image" src="https://www.paypalobjects.com/en_US/RU/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+                                <!--img alt="" border="0" src="https://www.paypalobjects.com/ru_RU/i/scr/pixel.gif" width="1" height="1" style="display:none"-->
+                                </form>
+                            </li>
+                            <li>
+                                <br/>
+                                <ul class="setting">
+                                    <li class="field">
+                                        <h1>How to use:</h1>
+                                        <blockquote>
+                                            There are three main steps.<br/>
+                                            Each step is logical stage contains of some setting.<br/>
+                                            You can show/hide a layer or sub-layers from each stage.<br/>
+                                            The new stage is opened after the previous stage is complete.
+                                        </blockquote>
+                                        <ul class="setting">
+                                            <li class="field convolve">
+                                                <h1>Step 1:</h1>
+                                                <ul class="group numerable">
+                                                    <li><label>Enter a GitHub username.</label></li>
+                                                    <li>
+                                                        <label>Press "Show".</label><br/>
+                                                        This allows the application to receive a data about user and him repositories.
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                        <ul class="setting">
+                                            <li class="field convolve">
+                                                <h1>Step 2:</h1>
+                                                <ul class="group numerable">
+                                                    <li><label>Select a repository on the graph or the list in the "Step 2" panel.</label></li>
+                                                    <li>
+                                                        <label>Press "Analyze".</label><br/>
+                                                        The application will now receive data about commits of <br/>the selected repository from "Default Branch" (Set in settings a repository on Github).
+                                                    </li>
+                                                    <li><strong style="margin:0">Contributors diagram</strong>
+                                                        <ul class="group numerable">
+                                                            <li><label>Click by a point at the "size" column for change a parameter to
+                                                                calculation the size pack.</label>
+                                                            </li>
+                                                            <li><label>Click by a name of parameter for change direction the sorting pack.</label></li>
+                                                            <li><label>Mouseover on pack for show the tooltip by contributor.</label></li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                        <ul class="setting">
+                                            <li class="field convolve">
+                                                <h1>Step 3:</h1>
+                                                <ul class="group numerable">
+                                                    <li>
+                                                        <label>The third stage panel allows you to customize the parameters for
+                                                            dynamic visualisation.</label><br/>
+                                                        You can also change these parameters once the visualization is running.<br/>
+                                                        These settings will be save in the localStorage or the browser cookies.
+                                                    </li>
+                                                    <li>
+                                                        <label>Press "Run" to begin visualization.</label><br/>
+                                                        You can use the "Pause", "Stop" and "Restart" buttons to control the visualization.
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <br/>
+                                <ul class="setting" >
+                                    <li class="field">
+                                        <h1>What's it mean:</h1>
+                                        <ul class="setting">
+                                            <li class="field convolve">
+                                                <h1>Step 1:</h1>
+                                                <ul class="group numerable">
+                                                    <li>
+                                                        <label>The size of node depends of date of create.</label><br/>
+                                                        Big nodes younger than small.
+                                                    </li>
+                                                    <li>
+                                                        <label>The opacity of node depends of date of last change.</label><br/>
+                                                        Transparent nodes have an earlier date of last change.
+                                                    </li>
+                                                    <li>
+                                                        <label>The color of node depends of main language.</label>
+                                                    </li>
+                                                    <li>
+                                                        <label>Nodes surround the node that has a later date of last change.</label>
+                                                    </li>
+                                                    <li>
+                                                        <label>Nodes repel each another if they have different language.</label>
+                                                    </li>
+                                                    <li><strong style="margin:0">Languages diagram</strong>
+                                                        <ul class="group numerable">
+                                                            <li>
+                                                                <label>
+                                                                    Shows color of language.
+                                                                </label>
+                                                            </li>
+                                                            <li>
+                                                                <label>
+                                                                    Shows count of repositories per each language.
+                                                                </label>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                        <ul class="setting">
+                                            <li class="field convolve">
+                                                <h1>Step 2:</h1>
+                                                <ul class="group numerable">
+                                                    <li>
+                                                        <label>
+                                                            The X axis shows date commits.
+                                                        </label>
+                                                    </li>
+                                                    <li>
+                                                        <label>
+                                                            Each red point is a commit.
+                                                        </label>
+                                                    </li>
+                                                    <li>
+                                                        <label>
+                                                            Arcs to top and to bottom are count of <span style="color: #ddffdd">added</span> and <span style="color:#ffdddd">deleted</span> lines at a commit.
+                                                        </label>
+                                                    </li>
+                                                    <li>
+                                                        <label>Areas show count of changed files</label><br/>
+                                                        Colors of areas: <span style="color:#A5EC6E">added files</span>, <span style="color:#FFB877">modified files</span>, <span style="color:#FF77B5">deleted files</span>
+                                                    </li>
+                                                    <li><strong style="margin:0">Contributors diagram</strong>
+                                                        <ul class="group">
+                                                            <li>
+                                                                <label>
+                                                                    Shows activity contributors based on different parameters.
+                                                                </label>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                        <ul class="setting">
+                                            <li class="field convolve">
+                                                <h1>Step 3:</h1>
+                                                <ul class="group numerable">
+                                                    <li><label>Each particle is a file. It moves from developer to developer.</label></li>
+                                                    <li><label>The size of particle depends of the degree of changes.</label></li>
+                                                    <li><label>Each user gathers files which he used.</label></li>
+                                                    <li><label>If files leave a user orbit, it mean that they were deleted.</label></li>
+                                                    <li><label>Every second is a day.</label></li>
+                                                    <li><label>The histogram shows the number of files per commit, separated by a extension.</label></li>
+                                                    <li><label>The legend shows the number of files for all time separated by a extension.</label></li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <br/>
+                                <ul class="setting" >
+                                    <li class="field">
+                                        <h1>What was used:</h1>
+                                        <blockquote>
+                                            Uses<a title="D3js.org" href="http://d3js.org">D3.js</a> and<a href="http://developer.github.com/" title="Github API">Github API</a>.
+                                            <br/>
+                                            All rights to media contents form<a href="http://github.com/">GitHub</a> (fonts, some css selectors) belong to Github.
+                                        </blockquote>
+                                        <br/>
+                                        <label><strong style="margin:0">HTML5:</strong></label>
+                                        <ul class="group numerable">
+                                            <li>
+                                                <label><strong style="margin:0" style="margin:0">Canvas</strong> — For dynamic visualization.</label>
+                                            </li>
+                                            <li>
+                                                <label><strong style="margin:0">SVG</strong> — For interactive graphic.</label>
+                                            </li>
+                                        </ul>
+                                        <br/>
+                                        <label><strong style="margin:0">D3.js layouts:</strong></label>
+                                        <ul class="group numerable">
+                                            <li>
+                                                <b><a href="https://github.com/mbostock/d3/wiki/Force-Layout" title="D3js Force layout">Force</a></b>
+                                                <label>— For calculate layer with repositories and dynamic visualization.</label>
+                                            </li>
+                                            <li>
+                                                <b><a href="https://github.com/mbostock/d3/wiki/Pack-Layout">Pack</a></b>
+                                                <label>— For calculate commiters diagram.</label>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li><hr></li>
+                            <li style="font-size: 11px; font-weight: bold;">
+                                @ 2013 Create by<a href="http://artzub.com">Artem Zubkov</a> [<a href="https://github.com/artzub/GitHubCodeSwarm/issues" title="Issues report">GitHub Issues</a> |<a href="mailto:artzub@gmail.com" title="Write me...">Bug report to email</a> ]
+                                <br />
+                                Powered by<a href="http://d3js.org" title="Perfect javascript framework">D3.js</a><br />
+                                <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="License Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="hidder">
+                        <strong class="title mini-icon mini-icon-advanced-search"></strong>
+                        <ul>
+                            <li>
+                                <h1 class="capture">System settings</h1>
+                                <ul class="setting">
+                                    <li class="field convolve">
+                                        <h1>Access parameters:</h1>
+                                        <ul class="group">
+                                            <li>
+                                                <blockquote>
+                                                    When you have got the message about exceeding the limit,<br/>
+                                                    you should set following parameters.<br/>
+                                                    These parameters also will be use to OAuth2.<br/>
+                                                    In order to get these parameters <br/>
+                                                    you must create an application on Github or to use existing.<br/>
+                                                    You can do it <a href="https://github.com/settings/applications/">here</a>.
+                                                </blockquote>
+                                            </li>
+                                        </ul>
+                                        <ul class="group">
+                                            <li class="field">
+                                                <label for="txt-access-ncid">Client ID:</label>
+                                                <input type="text" id="txt-access-ncid">
+                                            </li>
+                                        </ul>
+                                        <ul class="group">
+                                            <li class="field">
+                                                <label for="txt-access-ncs">Client Secret:</label>
+                                                <input type="text" id="txt-access-ncs">
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="hidder">
+                        <strong class="title mini-icon mini-icon-watching"></strong>
+                        <ul>
+                            <li>
+                                <h1 class="capture">System log</h1>
+                                <ul class="setting">
+                                    <li class="field" id="console">
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div id="ldrCont" class="popup" style="background:rgba(0, 0, 0, .4); display: none">
+    <img id="ldrTop" src="resource/octocat-spinner-128.gif">
+    <div id="ex-limit" class="tooltip popup" style="display: none">
+        <h1 style="color:#EF3878">API rate limit exceeded (per hour).</h1>
+        <strong>To continue you must enter the parameters in the system settings in the menu on the right<br/> or visit this page later.</strong>
+        <br/>
+        <button class="btn">Close</button>
+    </div>
+</div>
+
+<div id="tooltip" class="popup tooltip"></div>
+
+<div id="layers">
+    <div id="canvas"></div>
+    <div id="svg"></div>
+</div>
+
+<div id="sms" class="popup">
+</div>
+
+<div id="example" class="open popup tooltip">
+    <div>
+        <a href="#repo=d3&climit=100&user=d3&run" title="Run visualization repo D3js">
+            <img src="resource/preloader24.gif" class="asyncload" data-src="http://hsto.org/files/164/ad3/241/164ad32418ea4410b7547bcd8193ebf2.gif" alt="D3js">
+        </a>
+        <h1><a href="#repo=d3&climit=100&user=d3&run" title="Visit on Github">D3js</a></h1>
+        <span>A JavaScript visualization library for HTML and SVG.</span>
+    </div>
+    <div>
+        <a href="#repo=mc&climit=100&user=MidnightCommander&run" title="Run visualization repo MidnightCommander">
+            <img src="resource/preloader24.gif" class="asyncload" data-src="https://raw.github.com/artzub/GitHubCodeSwarm/master/old/resource/ss_mc.png" alt="MidnightCommander">
+        </a>
+        <h1><a href="#repo=mc&climit=100&user=MidnightCommander&run" title="Visit on Github">MidnightCommander</a></h1>
+        <span>Midnight Commander's repository.</span>
+    </div>
+    <div>
+        <a href="#repo=jquery&climit=100&user=jquery&run" title="Run visualization repo jQuery">
+            <img src="resource/preloader24.gif" class="asyncload" data-src="https://raw.github.com/artzub/GitHubCodeSwarm/master/old/resource/ss_jquery.png" alt="jQuery">
+        </a>
+        <h1><a href="#repo=jquery&climit=100&user=jquery&run" title="Visit on Github">jQuery</a></h1>
+        <span>jQuery JavaScript Library.</span>
+    </div>
+    <div>
+        <a href="#repo=bootstrap&climit=100&user=twbs&run" title="Run visualization repo Bootstrap">
+            <img src="resource/preloader24.gif" class="asyncload" data-src="https://raw.github.com/artzub/GitHubCodeSwarm/master/old/resource/ss_bootstrap.png" alt="Bootstrap">
+        </a>
+        <h1><a href="#repo=bootstrap&climit=100&user=twbs&run" title="Visit on Github">Bootstrap</a></h1>
+        <span>Sleek, intuitive, and powerful front-end framework for faster and easier web development.</span>
+    </div>
+    <div>
+        <a href="#repo=rails&climit=100&user=rails&run" title="Run visualization repo Ruby on Rails">
+            <img src="resource/preloader24.gif" class="asyncload" data-src="https://raw.github.com/artzub/GitHubCodeSwarm/master/old/resource/ss_rails.png" alt="Rails">
+        </a>
+        <h1><a href="#repo=rails&climit=100&user=rails&run" title="Visit on Github">Rails</a></h1>
+        <span>Ruby on Rails</span>
+    </div>
+    <div>
+        <a href="#repo=song-of-github&climit=100&user=ajacksified&run" title="Run visualization repo Ruby on Song-of-github">
+            <img src="resource/preloader24.gif" class="asyncload" data-src="https://raw.github.com/artzub/GitHubCodeSwarm/master/old/resource/ss_song-of-github.png" alt="song-of-github">
+        </a>
+        <h1><a href="#repo=song-of-github&climit=100&user=ajacksified&run" title="Visit on Github">Song-of-github</a></h1>
+        <span>Let me play you the song of my contributions.</span>
+    </div>
+</div>
+
+<footer>
+    <div id="statusBar" class="popup">
+        <ul>
+            <li class="progressBar">
+                <div class="meter orange" style="display: none">
+                    <span id="progressBar" style="width: 0"></span>
+                </div>
+            </li>
+        </ul>
+    </div>
+</footer>
+
+<script>
+    function asyncLoad() {
+
+        function whenLoad(from, to, url) {
+            from.onload = function() {
+                to.src = url;
+                from = null;
+            };
+            from.src = url;
+        }
+
+        var imgs = document.querySelectorAll('img.asyncload');
+        var i = imgs.length;
+        while(i--) {
+            whenLoad(new Image(), imgs[i], imgs[i].dataset.src);
+        }
+    }
+
+    if (location.search.indexOf('code=') < 0) {
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-28343295-7', 'ghv.artzub.com'/*, {'alwaysSendReferrer': true }*/);
+
+        var ref = getCookie('referrer');
+        console.log(document.referrer);
+        console.log(ref);
+        if (ref && ref.replace(/\s+$/, '').replace(/^\s+/, '').length > 0) {
+            ga('set', 'referrer', ref);
+        }
+        deleteCookie('referrer');
+
+
+        if (document.location.hash.replace(/^#/, "").length < 1) {
+            ga('send', 'pageview');
+        }
+    }
+</script>
+
+<script charset="utf-8" src="http://d3js.org/d3.v3.min.js"></script>
+<script src="js/md5.js"></script>
+<script src="js/jsonp.js"></script>
+<script src="js/ghcs.js"></script>
+<script src="js/main.js"></script>
+<script src="js/github.js"></script>
+<script src="js/vis.js"></script>
+<script src="js/stat.js"></script>
+<script src="js/usercommit.js"></script>
+<script src="js/repo.js"></script>
+<script src="js/langhg.js"></script>
+<script src="js/show.js"></script>
+
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.12&appId=780984598581744&autoLogAppEvents=1';
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function (d, w, c) {
+        (w[c] = w[c] || []).push(function() {
+            try {
+                w.yaCounter23779012 = new Ya.Metrika({id:23779012,
+                    clickmap:true,
+                    trackLinks:true,
+                    accurateTrackBounce:true,
+                    trackHash:true});
+            } catch(e) { }
+        });
+
+        var n = d.getElementsByTagName("script")[0],
+                s = d.createElement("script"),
+                f = function () { n.parentNode.insertBefore(s, n); };
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
+
+        if (w.opera == "[object Opera]") {
+            d.addEventListener("DOMContentLoaded", f, false);
+        } else { f(); }
+    })(document, window, "yandex_metrika_callbacks");
+</script>
+<noscript><div><img src="//mc.yandex.ru/watch/23779012" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+
+
+</body>
+</html>
