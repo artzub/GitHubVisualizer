@@ -1,6 +1,6 @@
+import { call, put } from 'redux-saga/effects';
 import { getEmojis } from '@/redux/api/github/getEmojis';
 import { createSlice, startFetching, stopFetching, fail } from '@/redux/utils';
-import { call, put } from 'redux-saga/effects';
 
 const initialState = {
   items: {},

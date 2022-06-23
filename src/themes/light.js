@@ -1,6 +1,6 @@
 import dark from '@/themes/dark';
 
-export default {
+const theme = {
   ...dark,
 
   name: 'light',
@@ -8,3 +8,5 @@ export default {
     type: 'light',
   },
 };
+
+export default theme;

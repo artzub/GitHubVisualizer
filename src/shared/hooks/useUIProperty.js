@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import slice from '@/redux/modules/ui';
 import { functionalUpdate } from '@/shared/utils/functionalUpdate';
-import { useDispatch, useSelector } from 'react-redux';
 
 /**
  * @param {String} property

@@ -1,6 +1,6 @@
 import React from 'react';
-import { makeId } from '@/shared/utils/makeId';
 import styled from 'styled-components';
+import { makeId } from '@/shared/utils/makeId';
 
 const Highlighted = styled.span`
   color: ${({ theme }) => theme.palette.primary.light}

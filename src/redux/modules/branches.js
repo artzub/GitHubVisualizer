@@ -1,3 +1,4 @@
+import { call, cancelled, delay, put } from 'redux-saga/effects';
 import { getBranches } from '@/redux/api/github';
 import slice from '@/redux/modules/progress';
 import {
@@ -5,7 +6,6 @@ import {
   startFetching, stopFetching,
   fail,
 } from '@/redux/utils';
-import { call, cancelled, delay, put } from 'redux-saga/effects';
 
 const initialState = {
   selected: null,

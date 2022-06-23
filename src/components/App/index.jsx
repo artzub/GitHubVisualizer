@@ -1,7 +1,4 @@
 import 'typeface-roboto';
-// make sure react-hot-loader is required before react and react-dom
-// eslint-disable-next-line import/order
-import { hot } from 'react-hot-loader/root';
 
 import React from 'react';
 import { store } from '@/redux';
@@ -33,4 +30,4 @@ const App = () => {
   );
 };
 
-export default hot(App);
+export default App;

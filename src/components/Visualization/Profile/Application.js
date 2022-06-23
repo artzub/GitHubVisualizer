@@ -2,9 +2,9 @@ import { select as d3select } from 'd3-selection';
 import { zoom as d3zoom, zoomIdentity, zoomTransform } from 'd3-zoom';
 import * as PIXI from 'pixi.js-legacy';
 
+import Languages from '@/components/Visualization/Profile/Languages';
 import BackgroundGrid from '../shared/BackgroundGrid';
 import Repositories from './Repositories';
-import Languages from '@/components/Visualization/Profile/Languages';
 
 PIXI.settings.PRECISION_FRAGMENT = PIXI.PRECISION.HIGH;
 PIXI.settings.RESOLUTION = window.devicePixelRatio;

@@ -3,7 +3,7 @@ import { Octokit } from '@octokit/rest';
 let instance;
 let lastToken;
 
-export default () => {
+const getClient = () => {
   const token = localStorage.getItem('user_token');
 
   if (!instance || lastToken !== token) {
@@ -16,3 +16,5 @@ export default () => {
 
   return instance;
 };
+
+export default getClient;

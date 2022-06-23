@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { useStageBranches } from '@/components/StageController/useStageBranches';
 import { useStageCommits } from '@/components/StageController/useStageCommits';
 import { useStageProfiles } from '@/components/StageController/useStageProfiles';
 import { useStageRepositories } from '@/components/StageController/useStageRepositories';
 import emojisSlice from '@/redux/modules/emojis';
 import { useRouteMatches } from '@/shared/hooks/useRouteMatches';
-import { useDispatch } from 'react-redux';
 
 const StageController = () => {
   const dispatch = useDispatch();

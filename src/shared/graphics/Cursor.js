@@ -1,6 +1,6 @@
-import { drawDashedPolygon } from '@/shared/graphics/drawDashedPolygon';
 import gsap from 'gsap';
 import * as PIXI from 'pixi.js-legacy';
+import { drawDashedPolygon } from '@/shared/graphics/drawDashedPolygon';
 
 const duration = 0.1;
 

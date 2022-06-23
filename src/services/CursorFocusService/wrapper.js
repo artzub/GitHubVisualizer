@@ -20,7 +20,7 @@ class Wrapper {
     }
 
     return this._cursor;
-  }
+  };
 
   focusOn = (node) => {
     if (!node?.getLocalBounds && node?.getBoundingClientRect) {
@@ -29,11 +29,11 @@ class Wrapper {
     }
 
     this.getInstance().focusOn(node);
-  }
+  };
 
   onPointerMove = (event) => {
     this.getInstance().onPointerMove(event);
-  }
+  };
 
   press = () => this.getInstance().press();
   release = () => this.getInstance().release();

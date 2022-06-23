@@ -1,5 +1,6 @@
-import { cursor, focus } from '@/services/CursorFocusService';
 import * as PIXI from 'pixi.js-legacy';
+
+import { cursor, focus } from '@/services/CursorFocusService';
 
 class Application {
   constructor(container) {

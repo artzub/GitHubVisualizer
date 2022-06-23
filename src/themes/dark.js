@@ -1,6 +1,6 @@
 import blue from '@material-ui/core/colors/blue';
 
-export default {
+const theme = {
   name: 'dark',
   palette: {
     type: 'dark',
@@ -19,3 +19,5 @@ export default {
     },
   },
 };
+
+export default theme;

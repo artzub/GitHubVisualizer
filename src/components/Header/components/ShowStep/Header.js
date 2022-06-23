@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import { useUIProperty } from '@/shared/hooks';
 import { IconButton } from '@material-ui/core';
 import PauseIcon from 'mdi-react/PauseIcon';
 import PlayArrowIcon from 'mdi-react/PlayArrowIcon';
@@ -7,6 +6,7 @@ import ReplayIcon from 'mdi-react/ReplayIcon';
 import PropTypes from 'prop-types';
 import { useEvent } from 'react-use';
 import styled from 'styled-components';
+import { useUIProperty } from '@/shared/hooks';
 import HeaderContainer from '../shared/HeaderContainer';
 
 const ButtonContainer = styled.div`
@@ -71,7 +71,7 @@ const Header = (props) => {
           onClick={onClick(isRun ? 'pause' : 'start')}
           disabled={disabled}
         >
-          {isRun && <PauseIcon size={24} />}
+          {!!isRun && <PauseIcon size={24} />}
           {!isRun && <PlayArrowIcon size={24} />}
         </IconButton>
         {start && pause && (

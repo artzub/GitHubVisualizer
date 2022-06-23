@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
-import { UrlPratTypes } from '@/models/UrlPartTypes';
 import { useHistory } from 'react-router-dom';
+import { UrlPratTypes } from '@/models/UrlPartTypes';
 import { useRouteMatches } from './useRouteMatches';
 
 const order = [

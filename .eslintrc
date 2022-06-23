@@ -1,13 +1,22 @@
 {
+  "parserOptions": {
+    "babelOptions": {
+      "presets": [
+        ["babel-preset-react-app", false],
+        "babel-preset-react-app/prod"
+      ]
+    }
+  },
+
   "extends": [
     "react-app",
+    "react-app/jest",
     "plugin:react/all",
-    "plugin:jest/recommended",
     "plugin:promise/recommended",
     "plugin:security/recommended"
   ],
+
   "plugins": [
-    "jest",
     "react",
     "react-hooks",
     "react-redux",
@@ -16,14 +25,6 @@
     "promise",
     "import"
   ],
-
-  "settings": {
-    "import/resolver": {
-      "webpack": {
-        "config": "./config/webpack.config.js"
-      }
-    }
-  },
 
   "rules": {
     "semi": [2, "always"],
@@ -88,6 +89,10 @@
           "pattern": "react",
           "group": "external",
           "position": "before"
+        },
+        {
+          "pattern": "@/**",
+          "group": "internal"
         }
       ],
       "pathGroupsExcludedImportTypes": ["react"],
@@ -97,6 +102,8 @@
       }
     }],
     "react/forbid-component-props": [0],
-    "quotes": ["error", "single", { "avoidEscape": true }]
+    "quotes": ["error", "single", { "avoidEscape": true }],
+    "react/jsx-no-leaked-render": [0],
+    "react/jsx-newline": [0]
   }
 }

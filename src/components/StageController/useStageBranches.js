@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { UrlPratTypes } from '@/models/UrlPartTypes';
 import branchesSlice from '@/redux/modules/branches';
 import profilesSlice from '@/redux/modules/profiles';
 import repositoriesSlice from '@/redux/modules/repositories';
 import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
-import { useDispatch, useSelector } from 'react-redux';
 import { useSetSelected } from './useSetSelected';
 
 /**

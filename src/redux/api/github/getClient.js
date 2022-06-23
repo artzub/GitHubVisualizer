@@ -3,7 +3,7 @@ import { Octokit } from '@octokit/rest';
 
 let instance;
 
-export default () => {
+const getClient = () => {
   if (instance) {
     return instance;
   }
@@ -20,3 +20,5 @@ export default () => {
 
   return instance;
 };
+
+export default getClient;

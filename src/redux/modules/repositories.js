@@ -1,10 +1,10 @@
+import { put, call, cancelled, delay } from 'redux-saga/effects';
 import { getRepositories } from '@/redux/api/github';
 import {
   createSlice, incrementFetching,
   startFetching, stopFetching,
   fail,
 } from '@/redux/utils';
-import { put, call, cancelled, delay } from 'redux-saga/effects';
 import slice from './progress';
 
 const initialState = {

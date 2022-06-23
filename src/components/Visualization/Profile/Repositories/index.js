@@ -1,7 +1,4 @@
-import { cursor } from '@/services/CursorFocusService';
-import { colorConvert, filledCircleTexture } from '@/shared/utils';
 import * as palettes from '@material-ui/core/colors';
-
 import { extent } from 'd3-array';
 import { color as d3color } from 'd3-color';
 import { dispatch } from 'd3-dispatch';
@@ -11,9 +8,11 @@ import {
   forceX, forceY,
 } from 'd3-force';
 import { scaleLinear, scaleLog, scaleOrdinal } from 'd3-scale';
-
 import gsap from 'gsap';
 import * as PIXI from 'pixi.js-legacy';
+import { cursor } from '@/services/CursorFocusService';
+import { colorConvert, filledCircleTexture } from '@/shared/utils';
+
 
 import forceCluster from './forceCluster';
 import forceCollide from './forceCollide';
