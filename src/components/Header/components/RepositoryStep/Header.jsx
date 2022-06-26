@@ -1,11 +1,11 @@
 import React, { forwardRef } from 'react';
-import slice from '@/redux/modules/repositories';
 import Link from '@material-ui/core/Link';
 import BookIcon from 'mdi-react/BookIcon';
 import BookLockIcon from 'mdi-react/BookLockIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import SourceRepositoryIcon from 'mdi-react/SourceRepositoryIcon';
 import { useSelector } from 'react-redux';
+import slice from '@/redux/modules/repositories';
 import Container from '../shared/HeaderContainer';
 import InfoContainer from '../shared/InfoContainer';
 import Title from '../shared/Title';

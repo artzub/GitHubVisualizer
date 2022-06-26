@@ -1,8 +1,8 @@
 import React from 'react';
-import slice from '@/redux/modules/progress';
 import LinearProgressOrigin from '@material-ui/core/LinearProgress';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+import slice from '@/redux/modules/progress';
 
 const Container = styled.div`
   position: absolute;

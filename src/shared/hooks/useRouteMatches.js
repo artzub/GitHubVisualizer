@@ -1,4 +1,4 @@
-import { useRouteMatch } from 'react-router-dom';
+import { useMatch } from 'react-router-dom';
 
 const servicePath = '/:service';
 const profilePath = `${servicePath}/:profile`;
@@ -7,11 +7,11 @@ const branchPath = `${repositoryPath}/:branch`;
 const commitsPath = `${branchPath}/:commits`;
 
 export const useRouteMatches = () => {
-  const { params: { service } = { service: 'github' } } = useRouteMatch({ path: servicePath, exact: false }) || {};
-  const { params: { profile } = {} } = useRouteMatch({ path: profilePath, exact: false }) || {};
-  const { params: { repository } = {} } = useRouteMatch({ path: repositoryPath, exact: false }) || {};
-  const { params: { branch } = {} } = useRouteMatch({ path: branchPath, exact: false }) || {};
-  const { params: { commits } = {} } = useRouteMatch({ path: commitsPath, exact: false }) || {};
+  const { params: { service } = { service: 'github' } } = useMatch({ path: servicePath, end: false }) || {};
+  const { params: { profile } = {} } = useMatch({ path: profilePath, end: false }) || {};
+  const { params: { repository } = {} } = useMatch({ path: repositoryPath, end: false }) || {};
+  const { params: { branch } = {} } = useMatch({ path: branchPath, end: false }) || {};
+  const { params: { commits } = {} } = useMatch({ path: commitsPath, end: false }) || {};
 
   return {
     service,

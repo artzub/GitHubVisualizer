@@ -1,11 +1,11 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { StageTypes } from '@/models/StageTypes';
-import commits from '@/redux/modules/commits';
-import { useUIProperty } from '@/shared/hooks';
 import { teal } from '@material-ui/core/colors';
 import { useSelector } from 'react-redux';
 import styled, { keyframes } from 'styled-components';
+import { StageTypes } from '@/models/StageTypes';
+import commits from '@/redux/modules/commits';
+import { useUIProperty } from '@/shared/hooks';
 
 const Container = styled.div`
   display: flex;

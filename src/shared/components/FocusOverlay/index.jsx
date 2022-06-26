@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { SoundTypes } from '@/models/SoundTypes';
-import { cursor, focus } from '@/services/CursorFocusService';
 import PropTypes from 'prop-types';
 import { install, ResizeObserver } from 'resize-observer';
 import useSound from 'use-sound';
+import { SoundTypes } from '@/models/SoundTypes';
+import { cursor, focus } from '@/services/CursorFocusService';
 
 if (!window.ResizeObserver) {
   install();

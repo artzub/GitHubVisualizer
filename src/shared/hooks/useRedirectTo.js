@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { UrlPratTypes } from '@/models/UrlPartTypes';
 import { useRouteMatches } from './useRouteMatches';
 
@@ -16,7 +16,7 @@ const order = [
  * @return {function(string): void}
  */
 export const useRedirectTo = (urlPartType) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const {
     service,
     profile,
@@ -44,8 +44,8 @@ export const useRedirectTo = (urlPartType) => {
       let url = order.slice(0, index).map((key) => hash[key]).join('/');
       url = url ? `/${url}` : url;
 
-      history.push(`${url}/${part}`);
+      navigate(`${url}/${part}`);
     },
-    [hash, history, urlPartType],
+    [hash, navigate, urlPartType],
   );
 };

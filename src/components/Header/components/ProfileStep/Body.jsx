@@ -1,4 +1,10 @@
 import React, { useCallback, useRef, useState } from 'react';
+import { Avatar, ListItem as ListItemOrigin, ListItemAvatar, ListSubheader, TextField } from '@material-ui/core';
+import List from '@material-ui/core/List';
+import ListItemText from '@material-ui/core/ListItemText';
+import { useDispatch, useSelector } from 'react-redux';
+import { useDebounce } from 'react-use';
+import styled from 'styled-components';
 import { UrlPratTypes } from '@/models/UrlPartTypes';
 import slice from '@/redux/modules/profiles';
 import Highlight from '@/shared/components/Highlight';
@@ -6,12 +12,6 @@ import LoadingOverlay from '@/shared/components/LoadingOverlay';
 import ScrollBar from '@/shared/components/ScrollBar';
 import { useUIProperty } from '@/shared/hooks';
 import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
-import { Avatar, ListItem as ListItemOrigin, ListItemAvatar, ListSubheader, TextField } from '@material-ui/core';
-import List from '@material-ui/core/List';
-import ListItemText from '@material-ui/core/ListItemText';
-import { useDispatch, useSelector } from 'react-redux';
-import { useDebounce } from 'react-use';
-import styled from 'styled-components';
 import ListItemButton from '../shared/ListItemButton';
 
 const Container = styled.div`

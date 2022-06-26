@@ -1,4 +1,12 @@
 {
+  "settings": {
+    "import/resolver": {
+      "webpack": {
+        "config": "./config/webpack.config.js"
+      }
+    }
+  },
+
   "parserOptions": {
     "babelOptions": {
       "presets": [
@@ -82,8 +90,8 @@
     "max-classes-per-file": "off",
     "react/jsx-curly-spacing": [2, {"when": "never"}],
     "object-curly-spacing": ["warn", "always", { "objectsInObjects": true }],
-    "import/order": ["warn", {
-      "groups": ["builtin", "external", "internal"],
+    "import/order": ["error", {
+      "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
       "pathGroups": [
         {
           "pattern": "react",
@@ -91,11 +99,12 @@
           "position": "before"
         },
         {
-          "pattern": "@/**",
-          "group": "internal"
+          "pattern": "@//**",
+          "group": "internal",
+          "position": "before"
         }
       ],
-      "pathGroupsExcludedImportTypes": ["react"],
+      "pathGroupsExcludedImportTypes": ["react", "@/**"],
       "alphabetize": {
         "order": "asc",
         "caseInsensitive": true

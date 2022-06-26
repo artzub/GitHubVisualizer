@@ -1,5 +1,4 @@
 import React, { forwardRef } from 'react';
-import slice from '@/redux/modules/profiles';
 import { Avatar } from '@material-ui/core';
 import LinkOrigin from '@material-ui/core/Link';
 import BookMultipleIcon from 'mdi-react/BookMultipleIcon';
@@ -7,6 +6,7 @@ import GithubIcon from 'mdi-react/GithubIcon';
 import LinkVariantIcon from 'mdi-react/LinkVariantIcon';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+import slice from '@/redux/modules/profiles';
 import HeaderContainer from '../shared/HeaderContainer';
 import InfoContainer from '../shared/InfoContainer';
 import PropertiesOrigin from '../shared/Properties';

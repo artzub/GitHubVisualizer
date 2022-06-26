@@ -1,9 +1,9 @@
 import React, { forwardRef } from 'react';
-import slice from '@/redux/modules/branches';
 import HistoryIcon from 'mdi-react/HistoryIcon';
 import SourceBranchIcon from 'mdi-react/SourceBranchIcon';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+import slice from '@/redux/modules/branches';
 import Container from '../shared/HeaderContainer';
 import InfoContainer from '../shared/InfoContainer';
 import PropertiesOrigin from '../shared/Properties';

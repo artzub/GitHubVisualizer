@@ -1,10 +1,10 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
+import useSound from 'use-sound';
 import { SoundTypes } from '@/models/SoundTypes';
 import { UrlPratTypes } from '@/models/UrlPartTypes';
 import repositoriesSlice from '@/redux/modules/repositories';
 import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
-import { useSelector } from 'react-redux';
-import useSound from 'use-sound';
 import Tab from '../shared/Tab';
 import Application from './Application';
 
