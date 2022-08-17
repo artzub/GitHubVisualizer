@@ -1,22 +1,20 @@
-import { createOAuthAppAuth } from '@octokit/auth-oauth-app';
 import { Octokit } from '@octokit/rest';
 
 let instance;
+let lastToken;
+
+// TODO Add WebFlow Auth
 
 const getClient = () => {
-  if (instance) {
-    return instance;
-  }
+  const token = localStorage.getItem('user_token');
 
-  instance = new Octokit({
-    userAgent: 'visgit/v1.0.0',
-    authStrategy: createOAuthAppAuth,
-    auth: {
-      type: 'oauth-app',
-      clientId: process.env.REACT_APP_CLIENT_ID,
-      clientSecret: process.env.REACT_APP_CLIENT_SECRET,
-    },
-  });
+  if (!instance || token !== lastToken) {
+    lastToken = token || process.env.REACT_APP_PERSONAL_TOKEN;
+    instance = new Octokit({
+      userAgent: 'visgit/v1.0.0',
+      auth: lastToken || process.env.REACT_APP_PERSONAL_TOKEN,
+    });
+  }
 
   return instance;
 };

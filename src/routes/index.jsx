@@ -5,7 +5,7 @@ import Layout from '@/components/Layout';
 const AppRouter = () => {
   return (
     <Routes>
-      <Route path="/" element={<Layout />} />
+      <Route path="*" element={<Layout />} />
     </Routes>
   );
 };
