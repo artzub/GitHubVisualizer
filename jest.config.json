@@ -18,7 +18,7 @@
   ],
   "testEnvironment": "jsdom",
   "transform": {
-    "^.*\\.graphql$": "jest-raw-loader",
+    "^.*\\.graphql$": "<rootDir>/config/jest/rawTransform.js",
     "^.+\\.(js|jsx|mjs|cjs|ts|tsx)$": "<rootDir>/config/jest/babelTransform.js",
     "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
     "^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json|graphql)$)": "<rootDir>/config/jest/fileTransform.js"
