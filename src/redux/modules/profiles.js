@@ -1,4 +1,5 @@
 import { call, cancelled, put } from 'redux-saga/effects';
+
 import { getProfile, searchAccount } from '@/redux/api/github';
 import { createSlice, startFetching, stopFetching, fail } from '@/redux/utils';
 

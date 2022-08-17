@@ -1,4 +1,5 @@
-import React from 'react';
+import { Fragment } from 'react';
+
 import Cursor from '@/components/Cursor';
 import Header from '@/components/Header';
 import Progress from '@/components/Progress';
@@ -7,14 +8,14 @@ import Visualization from '@/components/Visualization';
 import FocusOverlay from '@/shared/components/FocusOverlay';
 
 const Layout = () => (
-  <React.Fragment>
+  <Fragment>
     <StageController />
     <Visualization />
     <Progress />
     <Header />
     <FocusOverlay />
     <Cursor />
-  </React.Fragment>
+  </Fragment>
 );
 
 export default Layout;

@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+
 import styled from 'styled-components';
+
 import Application from './Application';
 
 const Container = styled.div`

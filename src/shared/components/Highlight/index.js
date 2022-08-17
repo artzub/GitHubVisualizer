@@ -1,5 +1,5 @@
-import React from 'react';
 import styled from 'styled-components';
+
 import { makeId } from '@/shared/utils/makeId';
 
 const Highlighted = styled.span`

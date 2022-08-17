@@ -1,6 +1,9 @@
-import React, { useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
+
 import { StageTypes } from '@/models/StageTypes';
+
 import { useUIProperty } from '@/shared/hooks';
+
 import Profile from './Profile';
 import Container from './shared/Container';
 

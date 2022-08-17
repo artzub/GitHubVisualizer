@@ -1,12 +1,17 @@
-import React, { forwardRef } from 'react';
+import { Fragment, forwardRef } from 'react';
+import { useSelector } from 'react-redux';
+
+import styled from 'styled-components';
+
 import { Avatar } from '@material-ui/core';
 import LinkOrigin from '@material-ui/core/Link';
+
 import BookMultipleIcon from 'mdi-react/BookMultipleIcon';
 import GithubIcon from 'mdi-react/GithubIcon';
 import LinkVariantIcon from 'mdi-react/LinkVariantIcon';
-import { useSelector } from 'react-redux';
-import styled from 'styled-components';
+
 import slice from '@/redux/modules/profiles';
+
 import HeaderContainer from '../shared/HeaderContainer';
 import InfoContainer from '../shared/InfoContainer';
 import PropertiesOrigin from '../shared/Properties';
@@ -51,7 +56,7 @@ const Header = forwardRef((props, ref) => {
       <InfoContainer>
         {!selected && <div>Find a profile</div>}
         {selected && (
-          <React.Fragment>
+          <Fragment>
             <Title title={name || login}>{name || login}</Title>
             <Properties>
               <Property>
@@ -87,7 +92,7 @@ const Header = forwardRef((props, ref) => {
                 </Property>
               )}
             </Properties>
-          </React.Fragment>
+          </Fragment>
         )}
       </InfoContainer>
     </Container>

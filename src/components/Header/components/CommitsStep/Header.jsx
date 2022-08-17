@@ -1,6 +1,9 @@
-import React, { forwardRef } from 'react';
-import PollIcon from 'mdi-react/PollIcon';
+import { forwardRef } from 'react';
+
 import styled from 'styled-components';
+
+import PollIcon from 'mdi-react/PollIcon';
+
 import HeaderContainer from '../shared/HeaderContainer';
 
 const Container = styled(HeaderContainer)`

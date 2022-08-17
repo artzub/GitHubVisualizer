@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
 import PortalMUI from '@material-ui/core/Portal';
 
 const Portal = ({ children, inBody }) => {

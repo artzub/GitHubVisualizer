@@ -1,17 +1,23 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
+import styled from 'styled-components';
+
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import Input from '@material-ui/core/Input';
 import Slider from '@material-ui/core/Slider';
 import Typography from '@material-ui/core/Typography';
+
 import HistoryIcon from 'mdi-react/HistoryIcon';
 import PlayArrowIcon from 'mdi-react/PlayArrowIcon';
 import StopIcon from 'mdi-react/StopIcon';
-import { useDispatch, useSelector } from 'react-redux';
-import styled from 'styled-components';
+
 import { UrlPratTypes } from '@/models/UrlPartTypes';
+
 import branchesSlice from '@/redux/modules/branches';
 import commitsSlice from '@/redux/modules/commits';
+
 import { useUIProperty } from '@/shared/hooks';
 import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
 

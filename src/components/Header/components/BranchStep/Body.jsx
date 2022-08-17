@@ -1,21 +1,28 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Avatar, ListItem as ListItemOrigin, ListItemAvatar, ListSubheader, TextField } from '@material-ui/core';
-import List from '@material-ui/core/List';
-import ListItemText from '@material-ui/core/ListItemText';
-import debounce from 'lodash.debounce';
-import SourceBranchIcon from 'mdi-react/SourceBranchIcon';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useDebounce } from 'react-use';
 import { FixedSizeList } from 'react-window';
+
+import debounce from 'lodash.debounce';
 import styled from 'styled-components';
+
+import { Avatar, ListItem as ListItemOrigin, ListItemAvatar, ListSubheader, TextField } from '@material-ui/core';
+import List from '@material-ui/core/List';
+import ListItemText from '@material-ui/core/ListItemText';
+
+import SourceBranchIcon from 'mdi-react/SourceBranchIcon';
+
 import { UrlPratTypes } from '@/models/UrlPartTypes';
+
 import slice from '@/redux/modules/branches';
 import repositoriesSlice from '@/redux/modules/repositories';
+
 import Highlight from '@/shared/components/Highlight';
 import LoadingOverlay from '@/shared/components/LoadingOverlay';
 import { ScrollBarMixin } from '@/shared/components/ScrollBar';
 import { useUIProperty } from '@/shared/hooks';
 import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
+
 import ListItemButton from '../shared/ListItemButton';
 import Marker from '../shared/Marker';
 import Secondary from './Secondary';

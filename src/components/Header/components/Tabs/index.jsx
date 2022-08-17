@@ -1,10 +1,15 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { teal } from '@material-ui/core/colors';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+
 import styled, { keyframes } from 'styled-components';
+
+import { teal } from '@material-ui/core/colors';
+
 import { StageTypes } from '@/models/StageTypes';
+
 import commits from '@/redux/modules/commits';
+
 import { useUIProperty } from '@/shared/hooks';
 
 const Container = styled.div`

@@ -1,15 +1,21 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
+import { useClickAway } from 'react-use';
+
+import styled from 'styled-components';
+
 import Collapse from '@material-ui/core/Collapse';
 import DividerOriginal from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
-import { useSelector } from 'react-redux';
-import { useClickAway } from 'react-use';
-import styled from 'styled-components';
+
 import { StageTypes } from '@/models/StageTypes';
+
 import branchesSlice from '@/redux/modules/branches';
 import profilesSlice from '@/redux/modules/profiles';
 import repositoriesSlice from '@/redux/modules/repositories';
+
 import { useUIProperty } from '@/shared/hooks';
+
 import BranchStepBody from './components/BranchStep/Body';
 import BranchStepHeader from './components/BranchStep/Header';
 import CommitsStepBody from './components/CommitsStep/Body';

@@ -1,7 +1,9 @@
-import * as palettes from '@material-ui/core/colors';
 import { scaleOrdinal } from 'd3-scale';
 import { select as d3select } from 'd3-selection';
 import * as PIXI from 'pixi.js-legacy';
+
+import * as palettes from '@material-ui/core/colors';
+
 import { colorConvert } from '@/shared/utils';
 
 const sortLang = ({ key: a }, { key: b }) => {

@@ -1,8 +1,10 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
+
 import styled from 'styled-components';
+
 import slice from '@/redux/modules/emojis';
+
 import { makeId } from '@/shared/utils';
 
 const Image = styled.img`

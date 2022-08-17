@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+
 import branchesSlice from '@/redux/modules/branches';
 import commitsSlice from '@/redux/modules/commits';
 import profilesSlice from '@/redux/modules/profiles';
 import repositoriesSlice from '@/redux/modules/repositories';
+
 import { useUIProperty } from '@/shared/hooks';
 
 export const useStageCommits = (amount) => {

@@ -1,4 +1,5 @@
 import styled, { keyframes } from 'styled-components';
+
 import Container from './Container';
 
 const left = keyframes`

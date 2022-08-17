@@ -1,7 +1,9 @@
-import React from 'react';
-import LinearProgressOrigin from '@material-ui/core/LinearProgress';
 import { useSelector } from 'react-redux';
+
 import styled from 'styled-components';
+
+import LinearProgressOrigin from '@material-ui/core/LinearProgress';
+
 import slice from '@/redux/modules/progress';
 
 const Container = styled.div`

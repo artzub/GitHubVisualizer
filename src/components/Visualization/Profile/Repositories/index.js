@@ -1,4 +1,3 @@
-import * as palettes from '@material-ui/core/colors';
 import { extent } from 'd3-array';
 import { color as d3color } from 'd3-color';
 import { dispatch } from 'd3-dispatch';
@@ -10,6 +9,9 @@ import {
 import { scaleLinear, scaleLog, scaleOrdinal } from 'd3-scale';
 import gsap from 'gsap';
 import * as PIXI from 'pixi.js-legacy';
+
+import * as palettes from '@material-ui/core/colors';
+
 import { cursor } from '@/services/CursorFocusService';
 import { colorConvert, filledCircleTexture } from '@/shared/utils';
 

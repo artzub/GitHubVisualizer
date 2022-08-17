@@ -1,4 +1,5 @@
 import { StageTypes } from '@/models/StageTypes';
+
 import { createSlice } from '@/redux/utils';
 
 const initialState = {

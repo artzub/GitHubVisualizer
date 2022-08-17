@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+
 import profilesSlice from '@/redux/modules/profiles';
 
 export const useStageProfiles = (service, profile) => {

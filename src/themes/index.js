@@ -1,5 +1,7 @@
-import { createMuiTheme } from '@material-ui/core/styles';
 import { createGlobalStyle } from 'styled-components';
+
+import { createMuiTheme } from '@material-ui/core/styles';
+
 import dark from './dark';
 import light from './light';
 

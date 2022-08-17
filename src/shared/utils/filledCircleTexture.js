@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js-legacy';
+
 import { colorConvert } from './colorConvert';
 
 const textureHash = {};

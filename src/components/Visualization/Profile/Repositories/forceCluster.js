@@ -1,4 +1,5 @@
 import { rollup } from 'd3-array';
+
 import { centroid } from './centroid';
 
 const forceCluster = () => {

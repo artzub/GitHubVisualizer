@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
+import { useCallback } from 'react';
 import { Route } from 'react-router-dom';
 
 const PrivateRoute = (props) => {

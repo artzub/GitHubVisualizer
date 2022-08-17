@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useSetSelected } from '@/components/StageController/useSetSelected';
+
 import profilesSlice from '@/redux/modules/profiles';
 import repositoriesSlice from '@/redux/modules/repositories';
+
+import { useSetSelected } from '@/components/StageController/useSetSelected';
 
 /**
  * @param {String} name - name of repository

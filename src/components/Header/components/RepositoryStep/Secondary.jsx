@@ -1,13 +1,17 @@
-import React from 'react';
+import PropTypes from 'prop-types';
+
+import styled from 'styled-components';
+
 import capitalize from '@material-ui/core/utils/capitalize';
+
 import AlertCircleOutlineIcon from 'mdi-react/AlertCircleOutlineIcon';
 import CodeTagsIcon from 'mdi-react/CodeTagsIcon';
 import EyeOutlineIcon from 'mdi-react/EyeOutlineIcon';
 import SourceForkIcon from 'mdi-react/SourceForkIcon';
 import StarIcon from 'mdi-react/StarIcon';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+
 import GithubEmoji from '@/shared/components/GithubEmoje';
+
 import Properties from '../shared/Properties';
 import Property from '../shared/Property';
 import PropertyValue from '../shared/PropertyValue';

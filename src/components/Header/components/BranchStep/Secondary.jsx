@@ -1,7 +1,9 @@
-import React from 'react';
-import HistoryIcon from 'mdi-react/HistoryIcon';
 import PropTypes from 'prop-types';
+
 import styled from 'styled-components';
+
+import HistoryIcon from 'mdi-react/HistoryIcon';
+
 import Properties from '../shared/Properties';
 import Property from '../shared/Property';
 import PropertyValue from '../shared/PropertyValue';

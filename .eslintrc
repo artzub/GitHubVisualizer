@@ -19,13 +19,11 @@
   "extends": [
     "react-app",
     "react-app/jest",
-    "plugin:react/all",
     "plugin:promise/recommended",
     "plugin:security/recommended"
   ],
 
   "plugins": [
-    "react",
     "react-hooks",
     "react-redux",
     "security",
@@ -90,21 +88,55 @@
     "max-classes-per-file": "off",
     "react/jsx-curly-spacing": [2, {"when": "never"}],
     "object-curly-spacing": ["warn", "always", { "objectsInObjects": true }],
+    "indent": ["error", 2, { "SwitchCase": 1 }],
     "import/order": ["error", {
-      "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
+      "newlines-between": "always",
+      "groups": [
+        "builtin",
+        "external",
+        "object",
+        "type",
+        "internal",
+        ["parent", "sibling", "index"]
+      ],
       "pathGroups": [
         {
-          "pattern": "react",
-          "group": "external",
-          "position": "before"
+          "pattern": "react*",
+          "group": "builtin"
         },
         {
-          "pattern": "@//**",
+          "pattern": "prop-types",
+          "group": "builtin"
+        },
+        {
+          "pattern": "@mui/**",
+          "group": "object"
+        },
+        {
+          "pattern": "@material-ui/**",
+          "group": "object"
+        },
+        {
+          "pattern": "mdi-react/**",
+          "group": "object",
+          "position": "after"
+        },
+        {
+          "pattern": "@/models/**",
+          "group": "type"
+        },
+        {
+          "pattern": "@/redux/**",
+          "group": "type",
+          "position": "after"
+        },
+        {
+          "pattern": "@/**",
           "group": "internal",
           "position": "before"
         }
       ],
-      "pathGroupsExcludedImportTypes": ["react", "@/**"],
+      "pathGroupsExcludedImportTypes": ["our"],
       "alphabetize": {
         "order": "asc",
         "caseInsensitive": true

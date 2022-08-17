@@ -1,12 +1,17 @@
-import React, { useCallback } from 'react';
+import PropTypes from 'prop-types';
+import { useCallback } from 'react';
+import { useEvent } from 'react-use';
+
+import styled from 'styled-components';
+
 import { IconButton } from '@material-ui/core';
+
 import PauseIcon from 'mdi-react/PauseIcon';
 import PlayArrowIcon from 'mdi-react/PlayArrowIcon';
 import ReplayIcon from 'mdi-react/ReplayIcon';
-import PropTypes from 'prop-types';
-import { useEvent } from 'react-use';
-import styled from 'styled-components';
+
 import { useUIProperty } from '@/shared/hooks';
+
 import HeaderContainer from '../shared/HeaderContainer';
 
 const ButtonContainer = styled.div`
