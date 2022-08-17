@@ -29,8 +29,6 @@ const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 
 const createEnvironmentHash = require('./webpack/persistentCache/createEnvironmentHash');
 
-const appPackageJson = require(paths.appPackageJson);
-
 // Source maps are resource heavy and can cause out of memory issue for large source files.
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false';
 
@@ -87,6 +85,10 @@ const hasJsxRuntime = (() => {
     return false;
   }
 })();
+
+const appPackageJson = require(paths.appPackageJson);
+
+const { babel: { plugins: babelPlugins } } = appPackageJson;
 
 // This is the production and development configuration.
 // It is focused on developer experience, fast rebuilds, and a minimal bundle.
@@ -425,13 +427,10 @@ module.exports = function (webpackEnv) {
                 ],
 
                 plugins: [
+                  ...babelPlugins,
                   isEnvDevelopment &&
                     shouldUseReactRefresh &&
-                    require.resolve('react-refresh/babel'),
-                  'babel-plugin-styled-components',
-                  '@babel/plugin-proposal-object-rest-spread',
-                  '@babel/plugin-proposal-nullish-coalescing-operator',
-                  '@babel/plugin-proposal-optional-chaining',
+                      require.resolve('./alwaysResetForHMR'),
                 ].filter(Boolean),
                 // This is a feature of `babel-loader` for webpack (not Babel itself).
                 // It enables caching results in ./node_modules/.cache/babel-loader/
@@ -750,7 +749,7 @@ module.exports = function (webpackEnv) {
           eslintPath: require.resolve('eslint'),
           failOnError: !(isEnvDevelopment && emitErrorsAsWarnings),
           context: paths.appSrc,
-          cache: false,
+          cache: true,
           cacheLocation: path.resolve(
             paths.appNodeModules,
             '.cache/.eslintcache'

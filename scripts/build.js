@@ -27,9 +27,7 @@ const printHostingInstructions = require('react-dev-utils/printHostingInstructio
 const FileSizeReporter = require('react-dev-utils/FileSizeReporter');
 const printBuildError = require('react-dev-utils/printBuildError');
 
-const measureFileSizesBeforeBuild =
-  FileSizeReporter.measureFileSizesBeforeBuild;
-const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild;
+const { measureFileSizesBeforeBuild, printFileSizesAfterBuild } = FileSizeReporter;
 const useYarn = fs.existsSync(paths.yarnLockFile);
 
 // These sizes are pretty large. We'll warn for bundles exceeding them.
@@ -133,7 +131,7 @@ checkBrowsers(paths.appPath, isInteractive)
 
 // Create the production build and print the deployment instructions.
 function build(previousFileSizes) {
-  console.log('Creating an optimized production build...');
+  console.log(`Creating an optimized ${process.env.NODE_ENV} build...`);
 
   const compiler = webpack(config);
   return new Promise((resolve, reject) => {
@@ -184,7 +182,7 @@ function build(previousFileSizes) {
           console.log(
             chalk.yellow(
               '\nTreating warnings as errors because process.env.CI = true.\n' +
-                'Most CI servers set it automatically.\n'
+              'Most CI servers set it automatically.\n'
             )
           );
           return reject(new Error(filteredWarnings.join('\n\n')));

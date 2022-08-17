@@ -32,7 +32,7 @@ const dotenvFiles = [
 // https://github.com/motdotla/dotenv-expand
 dotenvFiles.forEach(dotenvFile => {
   if (fs.existsSync(dotenvFile)) {
-    require('dotenv-expand')(
+    require('dotenv-expand').expand(
       require('dotenv').config({
         path: dotenvFile,
       })
@@ -72,6 +72,9 @@ function getClientEnvironment(publicUrl) {
         // Useful for determining whether we’re running in production mode.
         // Most importantly, it switches React into the correct mode.
         NODE_ENV: process.env.NODE_ENV || 'development',
+        GENERATE_SOURCEMAP: process.env.REACT_APP_GENERATE_SOURCEMAP || 'false',
+        INLINE_RUNTIME_CHUNK: 'false',
+        IMAGE_INLINE_SIZE_LIMIT: '0',
         // Useful for resolving the correct path to static assets in `public`.
         // For example, <img src={process.env.PUBLIC_URL + '/img/logo.png'} />.
         // This should only be used as an escape hatch. Normally you would put
