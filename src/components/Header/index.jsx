@@ -4,9 +4,9 @@ import { useClickAway } from 'react-use';
 
 import styled from 'styled-components';
 
-import Collapse from '@material-ui/core/Collapse';
-import DividerOriginal from '@material-ui/core/Divider';
-import Paper from '@material-ui/core/Paper';
+import Collapse from '@mui/material/Collapse';
+import DividerOriginal from '@mui/material/Divider';
+import Paper from '@mui/material/Paper';
 
 import { StageTypes } from '@/models/StageTypes';
 
@@ -37,6 +37,7 @@ const PaperStyled = styled(Paper)`
   border-radius: 0 0 10px 10px;
   overflow: hidden;
   z-index: 10;
+  background-image: none;
 `;
 
 const Container = styled.div`
@@ -137,7 +138,7 @@ const Header = () => {
   );
 
   return (
-    <PaperStyled square ref={ref}>
+    <PaperStyled elevation={3} ref={ref}>
       <Container>
         <ProfileStepHeader
           onClick={onClick(StageTypes.profile)}

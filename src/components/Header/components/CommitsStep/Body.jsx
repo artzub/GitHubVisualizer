@@ -3,11 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import styled from 'styled-components';
 
-import Button from '@material-ui/core/Button';
-import Grid from '@material-ui/core/Grid';
-import Input from '@material-ui/core/Input';
-import Slider from '@material-ui/core/Slider';
-import Typography from '@material-ui/core/Typography';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import Input from '@mui/material/Input';
+import Slider from '@mui/material/Slider';
+import Typography from '@mui/material/Typography';
 
 import HistoryIcon from 'mdi-react/HistoryIcon';
 import PlayArrowIcon from 'mdi-react/PlayArrowIcon';
@@ -146,7 +146,7 @@ const Body = () => {
           </Typography>
         </Grid>
       </Grid>
-      <GridStyled container spacing={2} alignItems="center">
+      <GridStyled container alignItems="center">
         <SliderContainer item xs>
           <Slider
             min={min}
@@ -160,10 +160,10 @@ const Body = () => {
             disabled={isFetching}
           />
         </SliderContainer>
-        <Grid item>
+        <Grid item pl="10px">
           <Button
             variant="outlined"
-            color={isFetching ? 'secondary' : 'default'}
+            color={isFetching ? 'secondary' : 'primary'}
             onClick={isFetching ? onStop : onClick}
           >
             {isFetching ? <StopIcon /> : <PlayArrowIcon />}

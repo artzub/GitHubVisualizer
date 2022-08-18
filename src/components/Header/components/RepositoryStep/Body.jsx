@@ -9,9 +9,9 @@ import styled from 'styled-components';
 import {
   Avatar, ListItem as ListItemOrigin,
   ListItemAvatar, ListSubheader, TextField,
-} from '@material-ui/core';
-import List from '@material-ui/core/List';
-import ListItemText from '@material-ui/core/ListItemText';
+} from '@mui/material';
+import List from '@mui/material/List';
+import ListItemText from '@mui/material/ListItemText';
 
 import BookIcon from 'mdi-react/BookIcon';
 import BookLockIcon from 'mdi-react/BookLockIcon';

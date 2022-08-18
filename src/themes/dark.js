@@ -1,9 +1,9 @@
-import blue from '@material-ui/core/colors/blue';
+import blue from '@mui/material/colors/blue';
 
 const theme = {
   name: 'dark',
   palette: {
-    type: 'dark',
+    mode: 'dark',
     primary: {
       main: blue[200],
     },

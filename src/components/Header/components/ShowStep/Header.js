@@ -4,7 +4,7 @@ import { useEvent } from 'react-use';
 
 import styled from 'styled-components';
 
-import { IconButton } from '@material-ui/core';
+import { IconButton } from '@mui/material';
 
 import PauseIcon from 'mdi-react/PauseIcon';
 import PlayArrowIcon from 'mdi-react/PlayArrowIcon';

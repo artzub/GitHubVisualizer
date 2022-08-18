@@ -6,9 +6,9 @@ import { FixedSizeList } from 'react-window';
 import debounce from 'lodash.debounce';
 import styled from 'styled-components';
 
-import { Avatar, ListItem as ListItemOrigin, ListItemAvatar, ListSubheader, TextField } from '@material-ui/core';
-import List from '@material-ui/core/List';
-import ListItemText from '@material-ui/core/ListItemText';
+import { Avatar, ListItem as ListItemOrigin, ListItemAvatar, ListSubheader, TextField } from '@mui/material';
+import List from '@mui/material/List';
+import ListItemText from '@mui/material/ListItemText';
 
 import SourceBranchIcon from 'mdi-react/SourceBranchIcon';
 

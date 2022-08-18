@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 
 import styled from 'styled-components';
 
-import capitalize from '@material-ui/core/utils/capitalize';
+import capitalize from '@mui/material/utils/capitalize';
 
 import AlertCircleOutlineIcon from 'mdi-react/AlertCircleOutlineIcon';
 import CodeTagsIcon from 'mdi-react/CodeTagsIcon';

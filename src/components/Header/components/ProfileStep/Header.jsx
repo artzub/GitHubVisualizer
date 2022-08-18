@@ -3,8 +3,8 @@ import { useSelector } from 'react-redux';
 
 import styled from 'styled-components';
 
-import { Avatar } from '@material-ui/core';
-import LinkOrigin from '@material-ui/core/Link';
+import { Avatar } from '@mui/material';
+import LinkOrigin from '@mui/material/Link';
 
 import BookMultipleIcon from 'mdi-react/BookMultipleIcon';
 import GithubIcon from 'mdi-react/GithubIcon';

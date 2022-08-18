@@ -1,6 +1,6 @@
 import { createGlobalStyle } from 'styled-components';
 
-import { createMuiTheme } from '@material-ui/core/styles';
+import { createTheme } from '@mui/material/styles';
 
 import dark from './dark';
 import light from './light';
@@ -21,6 +21,7 @@ const GlobalStyle = createGlobalStyle`
     width: 100vw;
     height: 100vh;
     overflow: hidden;
+    font-size: 14px;
   }
 
   *:not(#id_fake_for_hack) {
@@ -60,7 +61,7 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 export const getTheme = (name) => {
-  const theme = createMuiTheme(themes[name] || themes.dark);
+  const theme = createTheme(themes[name] || themes.dark);
 
   return {
     theme,

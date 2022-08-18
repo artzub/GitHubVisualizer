@@ -2,7 +2,7 @@ import { useSelector } from 'react-redux';
 
 import styled from 'styled-components';
 
-import LinearProgressOrigin from '@material-ui/core/LinearProgress';
+import LinearProgressOrigin from '@mui/material/LinearProgress';
 
 import slice from '@/redux/modules/progress';
 

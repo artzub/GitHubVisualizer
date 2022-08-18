@@ -2,7 +2,7 @@ import { scaleOrdinal } from 'd3-scale';
 import { select as d3select } from 'd3-selection';
 import * as PIXI from 'pixi.js-legacy';
 
-import * as palettes from '@material-ui/core/colors';
+import * as palettes from '@mui/material/colors';
 
 import { colorConvert } from '@/shared/utils';
 

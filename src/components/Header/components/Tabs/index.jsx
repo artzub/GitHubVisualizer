@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 
 import styled, { keyframes } from 'styled-components';
 
-import { teal } from '@material-ui/core/colors';
+import { teal } from '@mui/material/colors';
 
 import { StageTypes } from '@/models/StageTypes';
 

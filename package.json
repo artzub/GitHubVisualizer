@@ -36,10 +36,15 @@
     "lint": "eslint ./src",
     "precommit": "lint-staged"
   },
+  "resolutions": {
+    "@mui/styled-engine": "npm:@mui/styled-engine-sc@5.10.1"
+  },
   "dependencies": {
-    "@material-ui/core": "4.12.4",
-    "@material-ui/icons": "4.11.3",
-    "@material-ui/lab": "4.0.0-alpha.61",
+    "@emotion/react": "^11.10.0",
+    "@emotion/styled": "^11.10.0",
+    "@mui/material": "^5.10.1",
+    "@mui/styled-engine": "npm:@mui/styled-engine-sc@5.10.1",
+    "@mui/styles": "^5.9.3",
     "@octokit/auth-oauth-app": "^5.0.2",
     "@octokit/auth-token": "^3.0.1",
     "@octokit/graphql": "^5.0.1",

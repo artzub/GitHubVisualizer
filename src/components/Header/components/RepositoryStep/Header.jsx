@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import { useSelector } from 'react-redux';
 
-import Link from '@material-ui/core/Link';
+import Link from '@mui/material/Link';
 
 import BookIcon from 'mdi-react/BookIcon';
 import BookLockIcon from 'mdi-react/BookLockIcon';
