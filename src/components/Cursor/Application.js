@@ -17,13 +17,11 @@ class Application {
     this._instance.queueResize();
 
     this._locator = cursor.getInstance();
-    this._locator.x = -10;
-    this._locator.y = -10;
+    this._locator.moveToPoint(-10, -10);
     this._instance.stage.addChild(this._locator);
 
     this._focuser = focus.getInstance();
-    this._focuser.x = -10;
-    this._focuser.y = -10;
+    this._focuser.moveToPoint(-10, -10);
     this._instance.stage.addChild(this._focuser);
 
     this._group = new PIXI.Container();

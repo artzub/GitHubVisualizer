@@ -16,7 +16,6 @@ const Container = styled.div`
 `;
 
 const Cursor = () => {
-  // const [app, setApp] = useState(null);
   const [container, setContainer] = useState(null);
 
   useEffect(
@@ -25,11 +24,9 @@ const Cursor = () => {
         return;
       }
       const instance = new Application(container);
-      // setApp(instance);
 
       return () => {
         instance.destroy();
-        // setApp(null);
       };
     },
     [container],

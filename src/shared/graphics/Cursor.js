@@ -1,9 +1,9 @@
-import gsap from 'gsap';
+import { select } from 'd3-selection';
 import * as PIXI from 'pixi.js-legacy';
 
 import { drawDashedPolygon } from '@/shared/graphics/drawDashedPolygon';
 
-const duration = 0.1;
+const duration = 100;
 
 const defaultOptions = {
   cross: true,
@@ -12,9 +12,46 @@ const defaultOptions = {
   dots: false,
 };
 
+const bindGraphic = (graphic) => function () {
+  this.graphic = graphic;
+};
+
+const updatePosition = function () {
+  const graphic = this.graphic;
+  const attrs = this.attributes;
+  graphic.x = +attrs.x.value;
+  graphic.y = +attrs.y.value;
+};
+
+const drawRect = function () {
+  const graphic = this.graphic;
+  const attrs = this.attributes;
+  const x0 = +attrs.x0.value;
+  const y0 = +attrs.y0.value;
+  const x1 = +attrs.x1.value;
+  const y1 = +attrs.y1.value;
+
+  const width = Math.max(x1 - x0, 0);
+  const height = Math.max(y1 - y0, 0);
+
+  graphic.clear();
+  graphic.lineStyle(1, 0xffffff, 0.2);
+  graphic.drawRect(x0 + (width && 0.5), y0 + (height && 0.5), width, height - (height && 0.5));
+};
+
 class Cursor extends PIXI.Container {
   constructor(options = defaultOptions) {
     super();
+
+    this._shadow = select(document.createElement('shadow'));
+
+    this._shadowMain = this._shadow
+      .append('shadow')
+      .attr('class', 'main')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('opacity', 1)
+      .each(bindGraphic(this));
 
     this.onPointerMove = this.onPointerMove.bind(this);
 
@@ -31,17 +68,22 @@ class Cursor extends PIXI.Container {
     };
 
     if (this._options.lines) {
-      this._lines = new Array(4)
-        .fill(false)
-        .map((_, i) => {
-          const item = new PIXI.Graphics();
-          const [x, y] = this._linesRates[i];
-          item.x = x * 12;
-          item.y = y * 12;
-          item.name = `locator_line_${i + 1}`;
-          return item;
+      const lines = [];
+      this._shadowLines = this._shadow
+        .selectAll('.line')
+        .data(this._linesRates)
+        .enter()
+        .append('shadow')
+        .attr('class', 'line')
+        .attr('id', (d, i) => `locator_line_${i + 1}`)
+        .attr('x', (d) => d[0] * 12)
+        .attr('y', (d) => d[1] * 12)
+        .each(function () {
+          this.graphic = new PIXI.Graphics();
+          lines.push(this.graphic);
         });
-      this.addChild(...this._lines);
+      this._lines = lines;
+      this.addChild(...lines);
     }
 
     const stickSize = 10;
@@ -59,9 +101,17 @@ class Cursor extends PIXI.Container {
     ];
 
     if (this._options.cross) {
-      this._borders = new Array(4)
-        .fill(false)
-        .map((_, i) => {
+      const borders = [];
+      this._shadowBorders = this._shadow
+        .selectAll('.border')
+        .data(this._bordersBasePoints)
+        .enter()
+        .append('shadow')
+        .attr('class', 'border')
+        .attr('id', (d, i) => `locator_border_${i + 1}`)
+        .attr('x', (d) => d[0])
+        .attr('y', (d) => d[1])
+        .each(function (d, i) {
           const item = new PIXI.Graphics();
           item.roundPixels = true;
           item.lineStyle(1, 0xffffff, 1);
@@ -72,27 +122,26 @@ class Cursor extends PIXI.Container {
           item.lineTo(x1, y1);
           item.lineTo(x2, y2);
 
-          const [sx, sy] = this._bordersBasePoints[i];
-
-          item.x = sx;
-          item.y = sy;
-
-          item.name = `locator_border_${i + 1}`;
-
-          return item;
+          this.graphic = item;
+          borders.push(item);
         });
+      this._borders = borders;
       this.addChild(...this._borders);
     }
 
     if (this._options.dots) {
-      this._dots = new Array(4)
-        .fill(false)
-        .map((_, i) => {
+      const dots = [];
+      this._shadowDots = this._shadow
+        .selectAll('.dot')
+        .data(this._linesRates)
+        .enter()
+        .append('shadow')
+        .attr('class', 'dot')
+        .attr('id', (d, i) => `locator_dots_${i + 1}`)
+        .attr('x', (d) => d[0] * 12)
+        .attr('y', (d) => d[1] * 12)
+        .each(function ([x, y], i) {
           const item = new PIXI.Graphics();
-          let [x, y] = this._linesRates[i];
-          item.x = x * 12;
-          item.y = y * 12;
-          item.name = `locator_dots_${i + 1}`;
           item.lineStyle(1, 0xffffff, 1);
           const ySign = Math.sign(y);
           x = x !== 0 ? 0 : 4;
@@ -100,24 +149,26 @@ class Cursor extends PIXI.Container {
           item.moveTo(x ? -x + 0.5 : 0.5, y ? -y - 0.5 : ySign * 0.5);
           item.lineTo(x ? x + 0.5 : 0.5, y ? y - 0.5 : ySign * 0.5);
 
-          return item;
+          this.graphic = item;
+          dots.push(item);
         });
+      this._dots = dots;
       this.addChild(...this._dots);
     }
 
     if (this._options.rect) {
       const rect = new PIXI.Graphics();
-      this._rect = {
-        x1: 0,
-        y1: 0,
-        x2: 0,
-        y2: 0,
-        target: rect,
-      };
-      this._drawRect();
+      this._shadowRect = this._shadow
+        .append('shadow')
+        .attr('class', 'rect')
+        .attr('x0', 0)
+        .attr('y0', 0)
+        .attr('x1', 0)
+        .attr('y1', 0)
+        .each(bindGraphic(rect));
+      rect.roundPixels = true;
+      this._rect = rect;
       this.addChild(rect);
-
-      this._drawRect = this._drawRect.bind(this);
     }
   }
 
@@ -187,37 +238,28 @@ class Cursor extends PIXI.Container {
     }
 
     const { x, y } = event.data.global;
-    this.x = x;
-    this.y = y;
+    this.moveToPoint(x, y);
+  }
+
+  moveToPoint(x, y) {
+    this._shadowMain
+      .attr('x', x)
+      .attr('y', y);
   }
 
   show() {
-    gsap.to(this, {
-      alpha: 1,
-      duration,
-      overwrite: true,
-    });
+    this.alpha = 0.001;
+    this._shadowMain
+      .transition('fade')
+      .duration(duration)
+      .attr('opacity', 1);
   }
 
   hide() {
-    gsap.to(this, {
-      alpha: 0,
-      duration,
-      overwrite: true,
-    });
-  }
-
-  _drawRect() {
-    if (!this._rect) {
-      return;
-    }
-
-    const { x1, y1, x2, y2, target } = this._rect;
-    const width = Math.max(x2 - x1, 0);
-    const height = Math.max(y2 - y1, 0);
-    target.clear();
-    target.lineStyle(1, 0xffffff, 0.2);
-    target.drawRect(x1 + (width && 0.5), y1 + (height && 0.5), width, height - (height && 0.5));
+    this._shadowMain
+      .transition('fade')
+      .duration(duration)
+      .attr('opacity', 0);
   }
 
   _expand() {
@@ -225,115 +267,98 @@ class Cursor extends PIXI.Container {
 
     const pos = this._focused.getGlobalPosition(undefined, true);
 
-    gsap.to(this.position, {
-      x: pos.x,
-      y: pos.y,
-      duration,
-      overwrite: true,
-    });
+    this._shadowMain
+      .transition('move')
+      .duration(duration)
+      .attr('x', pos.x)
+      .attr('y', pos.y);
 
     const w2 = width * 0.5;
     const h2 = height * 0.5;
     const offset = this._pressed ? 0 : 5;
 
     if (this._lines) {
-      this._lines.forEach((item, i) => {
-        const [x, y] = this._linesRates[i];
-        gsap.to(item.position, {
-          x: x * Math.max(w2 + offset, 12),
-          y: y * Math.max(h2 + offset, 12),
-          duration,
-          overwrite: true,
-        });
-      });
-    }
-
-    if (this._dots) {
-      this._dots.forEach((item, i) => {
-        const [x, y] = this._linesRates[i];
-        gsap.to(item.position, {
-          x: x * Math.max(w2 + offset, 12),
-          y: y * Math.max(h2 + offset, 12),
-          duration,
-          overwrite: true,
-        });
-      });
+      this._shadowLines
+        .transition('line-move')
+        .duration(duration)
+        .attr('x', (d) => d[0] * Math.max(w2 + offset, 12))
+        .attr('y', (d) => d[1] * Math.max(h2 + offset, 12));
     }
 
     if (this._borders) {
-      this._borders.forEach((item, i) => {
-        const [x, y] = this._bordersBasePoints[i];
-        gsap.to(item.position, {
-          x: Math.sign(x) * -1 * Math.max(w2 + offset, 12),
-          y: Math.sign(y) * -1 * Math.max(h2 + offset, 12),
-          duration,
-          overwrite: true,
-        });
-      });
+      this._shadowBorders
+        .transition('border-move')
+        .duration(duration)
+        .attr('x', ([x]) => Math.sign(x) * -1 * Math.max(w2 + offset, 12))
+        .attr('y', ([, y]) => Math.sign(y) * -1 * Math.max(h2 + offset, 12));
+    }
+
+    if (this._dots) {
+      this._shadowDots
+        .transition('dot-move')
+        .duration(duration)
+        .attr('x', (d) => d[0] * Math.max(w2 + offset, 12))
+        .attr('y', (d) => d[1] * Math.max(h2 + offset, 12));
     }
 
     if (this._rect) {
-      const [[x1, y1], , [x2, y2]] = this._bordersBasePoints;
-      gsap.to(this._rect, {
-        x1: Math.sign(x1) * -1 * Math.max(w2 + offset, 12),
-        y1: Math.sign(y1) * -1 * Math.max(h2 + offset, 12),
-        x2: Math.sign(x2) * -1 * Math.max(w2 + offset, 12),
-        y2: Math.sign(y2) * -1 * Math.max(h2 + offset, 12),
-        duration,
-        overwrite: true,
-        onUpdate: this._drawRect,
-      });
+      const [[x0, y0], , [x2, y2]] = this._bordersBasePoints;
+      this._shadowRect
+        .transition('rect-move')
+        .duration(duration)
+        .attr('x0', Math.sign(x0) * -1 * Math.max(w2 + offset, 12))
+        .attr('y0', Math.sign(y0) * -1 * Math.max(h2 + offset, 12))
+        .attr('x1', Math.sign(x2) * -1 * Math.max(w2 + offset, 12))
+        .attr('y1', Math.sign(y2) * -1 * Math.max(h2 + offset, 12));
     }
   }
 
   _reduce() {
     if (this._lines) {
-      this._lines.forEach((item, i) => {
-        const [x, y] = this._linesRates[i];
-        gsap.to(item.position, {
-          x: x * 12,
-          y: y * 12,
-          duration,
-          overwrite: true,
-        });
-      });
-    }
-
-    if (this._dots) {
-      this._dots.forEach((item, i) => {
-        const [x, y] = this._linesRates[i];
-        gsap.to(item.position, {
-          x: x * 12,
-          y: y * 12,
-          duration,
-          overwrite: true,
-        });
-      });
+      this._shadowLines
+        .transition('line-move')
+        .duration(duration)
+        .attr('x', (d) => d[0] * 12)
+        .attr('y', (d) => d[1] * 12);
     }
 
     if (this._borders) {
-      this._borders.forEach((item, i) => {
-        const [x, y] = this._bordersBasePoints[i];
-        gsap.to(item.position, {
-          x,
-          y,
-          duration,
-          overwrite: true,
-        });
-      });
+      this._shadowBorders
+        .transition('border-move')
+        .duration(duration)
+        .attr('x', (d) => d[0])
+        .attr('y', (d) => d[1]);
+    }
+
+    if (this._dots) {
+      this._shadowDots
+        .transition('dot-move')
+        .duration(duration)
+        .attr('x', (d) => d[0] * 12)
+        .attr('y', (d) => d[1] * 12);
     }
 
     if (this._rect) {
-      gsap.to(this._rect, {
-        x1: 0,
-        y1: 0,
-        x2: 0,
-        y2: 0,
-        duration,
-        overwrite: true,
-        onUpdate: this._drawRect,
-      });
+      this._shadowRect
+        .transition('rect-move')
+        .duration(duration)
+        .attr('x0', 0)
+        .attr('y0', 0)
+        .attr('x1', 0)
+        .attr('y1', 0);
     }
+  }
+
+  _render(_) {
+    const attrs = this._shadowMain.node().attributes;
+    this.x = +attrs.x.value;
+    this.y = +attrs.y.value;
+    this.alpha = +attrs.opacity.value;
+
+    this._shadowLines?.each(updatePosition);
+    this._shadowBorders?.each(updatePosition);
+    this._shadowDots?.each(updatePosition);
+    this._shadowRect?.each(drawRect);
   }
 }
 
