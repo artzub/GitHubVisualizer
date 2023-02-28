@@ -6,15 +6,12 @@ import {
   forceManyBody, forceSimulation,
   forceX, forceY,
 } from 'd3-force';
-import { scaleLinear, scaleLog, scaleOrdinal } from 'd3-scale';
+import { scaleLinear, scaleLog } from 'd3-scale';
 import gsap from 'gsap';
 import * as PIXI from 'pixi.js-legacy';
 
-import * as palettes from '@mui/material/colors';
-
 import { cursor } from '@/services/CursorFocusService';
-import { colorConvert, filledCircleTexture } from '@/shared/utils';
-
+import { colorConvert, colorScale, filledCircleTexture } from '@/shared/utils';
 
 import forceCluster from './forceCluster';
 import forceCollide from './forceCollide';
@@ -24,23 +21,10 @@ const radiusDefault = (node) => node.stars;
 const alphaDefault = (node) => +node.updatedAt;
 const keyDefault = (node) => node.id;
 
-//d3.scaleSequential(d3.interpolateRainbow)
-const colorIndexes = [100, 200, 300, 500, 600, 700];
-const ignoreColors = ['common', 'grey', 'brown'];
-const colors = Object.entries(palettes)
-  .filter(([key]) => !ignoreColors.includes(key))
-  .reduce((acc, [, palette]) => [
-    ...acc,
-    ...colorIndexes.map((key) => PIXI.utils.string2hex(palette[key])),
-  ], [])
-  .sort()
-  .map((item) => PIXI.utils.hex2string(item))
-;
-
 const textStyle = {
   fontFamily: "'JetBrains Mono', monospace",
-  fontSize: 12,
-  fontWeight: 'lighter',
+  fontSize: 24,
+  // fontWeight: 'lighter',
   align: 'center',
   lineJoin: 'round',
 
@@ -58,7 +42,7 @@ class Repositories extends PIXI.Container {
   _alphaGetter = alphaDefault;
   _keyGetter = keyDefault;
 
-  constructor() {
+  constructor(options = {}) {
     super();
 
     this.interactive = true;
@@ -97,7 +81,7 @@ class Repositories extends PIXI.Container {
 
     this._radius = scaleLinear().range([10, 50]);
     this._alpha = scaleLog().range([0.1, 0.3, 0.7]);
-    this._colors = scaleOrdinal(colors);
+    this._colors = options.colorScale || colorScale();
 
     this._event = dispatch(
       'overItem', 'outItem', 'selectItem',
@@ -166,7 +150,18 @@ class Repositories extends PIXI.Container {
     }
 
     this._groupGetter = getter || groupDefault;
-    this._colors = scaleOrdinal(colors);
+    this.children.forEach(this._updateNodes);
+    this._restartSimulation();
+
+    return this;
+  }
+
+  colorScale(scale) {
+    if (this._destroyed) {
+      return this;
+    }
+
+    this._colors = scale || colorScale();
     this.children.forEach(this._updateNodes);
     this._restartSimulation();
 
@@ -476,7 +471,8 @@ class Repositories extends PIXI.Container {
         ...textStyle,
         fill: '#fff',
       });
-      text.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
+      // text.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
+      text.scale.set(0.5);
       text.anchor.set(0.5);
       node.addChild(text);
     }

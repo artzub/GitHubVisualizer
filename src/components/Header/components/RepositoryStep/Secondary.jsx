@@ -36,7 +36,7 @@ const Secondary = ({ item }) => (
     )}
     <Properties>
       {item.language && (
-        <Property title="Forks">
+        <Property title="Language">
           <CodeTagsIcon size={16} />
           <PropertyValue>
             {capitalize(item.language)}

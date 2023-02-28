@@ -2,9 +2,10 @@ import { select as d3select } from 'd3-selection';
 import { zoom as d3zoom, zoomIdentity, zoomTransform } from 'd3-zoom';
 import * as PIXI from 'pixi.js-legacy';
 
-import Languages from '@/components/Visualization/Profile/Languages';
+import { colorScale } from '@/shared/utils';
 
 import BackgroundGrid from '../shared/BackgroundGrid';
+import GroupsLegend from './GroupsLegend';
 import Repositories from './Repositories';
 
 PIXI.settings.PRECISION_FRAGMENT = PIXI.PRECISION.HIGH;
@@ -62,11 +63,13 @@ class Application {
     this._grid.alpha = 0.4;
     this._instance.stage.addChild(this._grid);
 
-    this._lng = new Languages();
-    this._instance.stage.addChild(this._lng);
+    this._colorScale = colorScale();
 
-    this._group = new Repositories();
+    this._group = new Repositories({ colorScale: (...args) => this._colorScale(...args) });
     this._instance.stage.addChild(this._group);
+
+    this._groupsLegend = new GroupsLegend({ colorScale: (...args) => this._colorScale(...args) });
+    this._instance.stage.addChild(this._groupsLegend);
   }
 
   destroy() {
@@ -85,9 +88,7 @@ class Application {
     }
 
     this._group.data(data);
-
-    this._lng._colors = this._group._colors;
-    this._lng.data(data);
+    this._groupsLegend.data(data);
 
     return this;
   }
@@ -118,6 +119,7 @@ class Application {
     }
 
     this._group.group(getter);
+    this._groupsLegend.group(getter);
 
     return this;
   }
@@ -169,8 +171,8 @@ class Application {
       this._d3view.call(this._zoom.transform, transform);
     }
 
-    this._lng.x = 50;
-    this._lng.y = height - 20;
+    this._groupsLegend.x = 25;
+    this._groupsLegend.y = height - 120;
 
     this._grid.resize(width, height);
   }

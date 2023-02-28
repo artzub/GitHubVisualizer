@@ -1,4 +1,5 @@
 export * from './makeId';
 export * from './functionalUpdate';
 export * from './colorConvert';
-export * from './filledCircleTexture';
+export * from './colorScale';
+export * from './textures';

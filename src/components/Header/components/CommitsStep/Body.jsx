@@ -142,7 +142,7 @@ const Body = () => {
         </Grid>
         <Grid item>
           <Typography gutterBottom>
-            last of commits:
+            last commits:
           </Typography>
         </Grid>
       </Grid>
