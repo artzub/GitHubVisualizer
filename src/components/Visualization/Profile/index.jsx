@@ -11,7 +11,7 @@ import repositoriesSlice from '@/redux/modules/repositories';
 import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
 
 import Tab from '../shared/Tab';
-import Application from './Application';
+import Application, { Events } from './Application';
 
 const merge = (data, newData) => {
   const hash = data.reduce((acc, item) => ({
@@ -90,9 +90,11 @@ const UserVisualization = (props) => {
       }
       const instance = new Application(container);
       instance.key((item) => item.name);
-      instance.on('selectItem', (...args) => onSelectItem.current(...args));
-      instance.on('overItem', (...args) => onOverItem.current(...args));
-      instance.on('outItem', (...args) => onOutItem.current(...args));
+      instance.on(Events.selectItem, (...args) => onSelectItem.current(...args));
+      instance.on(Events.overItem, (...args) => onOverItem.current(...args));
+      instance.on(Events.outItem, (...args) => onOutItem.current(...args));
+      instance.on(Events.overItemLegend, (...args) => onOverItem.current(...args));
+      instance.on(Events.outItemLegend, (...args) => onOutItem.current(...args));
       setApp(instance);
 
       return () => {

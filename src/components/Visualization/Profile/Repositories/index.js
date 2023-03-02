@@ -35,6 +35,13 @@ const textStyle = {
   dropShadowDistance: 1,
 };
 
+export const Events = {
+  overItem: 'overItem',
+  outItem: 'outItem',
+  selectItem: 'selectItem',
+  dragStart: 'dragStart',
+  dragEnd: 'dragEnd',
+};
 
 class Repositories extends PIXI.Container {
   _radiusGetter = radiusDefault;
@@ -83,10 +90,7 @@ class Repositories extends PIXI.Container {
     this._alpha = scaleLog().range([0.1, 0.3, 0.7]);
     this._colors = options.colorScale || colorScale();
 
-    this._event = dispatch(
-      'overItem', 'outItem', 'selectItem',
-      'dragStart', 'dragEnd',
-    );
+    this._event = dispatch(...Object.values(Events));
 
     this._simulation.on('tick', this._draw.bind(this));
   }
@@ -221,7 +225,7 @@ class Repositories extends PIXI.Container {
       .restart();
 
     const node = event.currentTarget;
-    this._event.call('overItem', node, event, node);
+    this._event.call(Events.overItem, node, event, node);
 
     this.cursor = 'pointer';
 
@@ -252,7 +256,7 @@ class Repositories extends PIXI.Container {
     cursor.focusOn(null);
 
     const node = event.currentTarget;
-    this._event.call('outItem', node, event, node);
+    this._event.call(Events.outItem, node, event, node);
 
     this.cursor = 'none';
 
@@ -301,7 +305,7 @@ class Repositories extends PIXI.Container {
 
       if (this._dragging) {
         this.cursor = 'grabbing';
-        this._event.call('dragStart', node, event, node);
+        this._event.call(Events.dragStart, node, event, node);
       }
     }
 
@@ -330,13 +334,13 @@ class Repositories extends PIXI.Container {
     if (!this._dragging) {
       if (this._selected === key) {
         this._selected = null;
-        this._event.call('selectItem', node, event, null);
+        this._event.call(Events.selectItem, node, event, null);
       } else {
         this._selected = key;
-        this._event.call('selectItem', node, event, item);
+        this._event.call(Events.selectItem, node, event, item);
       }
     } else {
-      this._event.call('dragEnd', node, event, node);
+      this._event.call(Events.dragEnd, node, event, node);
       this.cursor = 'pointer';
     }
 

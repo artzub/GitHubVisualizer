@@ -5,11 +5,16 @@ import * as PIXI from 'pixi.js-legacy';
 import { colorScale } from '@/shared/utils';
 
 import BackgroundGrid from '../shared/BackgroundGrid';
-import GroupsLegend from './GroupsLegend';
-import Repositories from './Repositories';
+import GroupsLegend, { Events as EventsGroupsLegend } from './GroupsLegend';
+import Repositories, { Events as EventsRepositories } from './Repositories';
 
 PIXI.settings.PRECISION_FRAGMENT = PIXI.PRECISION.HIGH;
 PIXI.settings.RESOLUTION = window.devicePixelRatio;
+
+export const Events = {
+  ...EventsRepositories,
+  ...EventsGroupsLegend,
+};
 
 class Application {
   constructor(container) {
@@ -77,9 +82,12 @@ class Application {
     this._instance.destroy(true, true);
   }
 
-  on() {
-    const value = this._group.on.apply(this._group, arguments);
-    return value === this._group ? this : value;
+  on(...args) {
+    const [eventName] = args;
+    const emitter = EventsGroupsLegend[eventName] ? this._groupsLegend : this._group;
+
+    const value = emitter.on.apply(emitter, args);
+    return value === emitter ? this : value;
   }
 
   data(data) {

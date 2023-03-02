@@ -153,7 +153,7 @@ class GroupsLegend extends PIXI.Container {
       }
     };
 
-    this._event = dispatch(Object.values(Events));
+    this._event = dispatch(...Object.values(Events));
 
     this.data();
   }
@@ -269,7 +269,7 @@ class GroupsLegend extends PIXI.Container {
       graphic.name = getKey(node);
       graphic.interactive = true;
       graphic.on('pointerover', (event) => {
-        graphic.cursor = 'pointer';
+        graphic.cursor = 'help';
         cursor.focusOn(graphic);
         that._hovered = node;
         that._shadowNodes
