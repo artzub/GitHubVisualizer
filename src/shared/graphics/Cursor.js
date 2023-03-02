@@ -174,10 +174,12 @@ class Cursor extends PIXI.Container {
     }
   }
 
-  focusOn(node) {
-    if (!arguments.length) {
+  focusOn(...args) {
+    if (!args.length) {
       return this._focused;
     }
+
+    const [node] = args;
 
     this._focused = node;
 

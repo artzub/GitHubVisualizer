@@ -30,7 +30,12 @@ class Wrapper {
     return this._cursor;
   };
 
-  focusOn = (node) => {
+  focusOn = (...args) => {
+    if (!args.length) {
+      return this.getInstance().focusOn();
+    }
+
+    const [node] = args;
     if (!node?.getLocalBounds && node?.getBoundingClientRect) {
       node.getLocalBounds = getLocalBounds.bind(node);
       node.getGlobalPosition = getGlobalPosition.bind(node);

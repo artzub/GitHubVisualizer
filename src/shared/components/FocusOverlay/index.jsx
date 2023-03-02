@@ -189,14 +189,12 @@ const FocusOverlay = ({ globalListener }) => {
       let isEnter = true;
       const onDocumentEnter = () => {
         if (!isEnter) {
-          console.log('show');
           cursor.show();
           isEnter = true;
         }
       };
       const onDocumentLeave = () => {
-        if (isEnter) {
-          console.log('hide');
+        if (isEnter && !cursor.focusOn()) {
           cursor.hide();
           isEnter = false;
         }
