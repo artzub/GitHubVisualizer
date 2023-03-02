@@ -1,14 +1,21 @@
-import { color } from 'd3-color';
+import { color, hsl as hslColor } from 'd3-color';
+import { dispatch } from 'd3-dispatch';
 import { scaleSqrt } from 'd3-scale';
 import { select as d3select } from 'd3-selection';
 import * as PIXI from 'pixi.js-legacy';
 
-import { colorConvert, colorScale, roundedRectangularTexture } from '@/shared/utils';
+import { cursor } from '@/services/CursorFocusService';
+import { colorConvert, colorScale, hasTransition, roundedRectangularTexture } from '@/shared/utils';
 
 const textStyle = {
   fontSize: '2.4em',
   fontFamily: "'JetBrains Mono',monospace",
   lineJoin: 'round',
+};
+
+export const Events = {
+  overItemLegend: 'overItemLegend',
+  outItemLegend: 'outItemLegend',
 };
 
 const groupDefault = (node) => node.language;
@@ -21,6 +28,13 @@ const sortByKey = (a, b) => {
   const la = getKey(a).toLowerCase();
   const lb = getKey(b).toLowerCase();
   return la.localeCompare(lb);
+};
+
+const MAX_HEIGHT = 100;
+
+const updateBoundNode = (node, textHeight) => {
+  node.height = MAX_HEIGHT + 6 + textHeight;
+  node.y = -(2 + textHeight);
 };
 
 const updateNodeGraphic = function () {
@@ -36,8 +50,9 @@ const updateNodeGraphic = function () {
   const nameColor = attrs.nameColor?.value || '#fff';
   const valueColor = attrs.valueColor?.value || '#fff';
   const opacity = attrs.opacity?.value ?? 1;
+  const hovered = +attrs.hovered?.value ?? 0;
 
-  if (graphic.opacity !== opacity) {
+  if (graphic.alpha !== opacity) {
     graphic.alpha = opacity;
     graphic.visible = opacity > 0;
   }
@@ -46,14 +61,17 @@ const updateNodeGraphic = function () {
     return;
   }
 
-  const [nameNode, barNode, countNode] = graphic.children;
+  const [boundNode, nameNode, barNode, countNode] = graphic.children;
+
+  boundNode.alpha = hovered * 0.1;
 
   if (nameNode.text !== text) {
     nameNode.text = text;
     nameNode.updateText();
+
+    updateBoundNode(boundNode, nameNode.width);
   }
 
-  let hasChanges = false;
   let tint = colorConvert(nameColor);
   if (tint !== nameNode.tint) {
     nameNode.tint = tint;
@@ -64,6 +82,7 @@ const updateNodeGraphic = function () {
     barNode.tint = tint;
   }
 
+  let hasChanges = false;
   if (barNode.height !== height) {
     barNode.height = height;
     hasChanges = true;
@@ -108,20 +127,24 @@ class GroupsLegend extends PIXI.Container {
 
     this._addNode = this._addNodeFactory();
 
-    this._scale = scaleSqrt().range([5, 100]);
+    this._scale = scaleSqrt().range([5, MAX_HEIGHT]);
+
+    const colorOrColorless = (node, expectedColor) => {
+      if (!this._hovered || this._hovered === node) {
+        return expectedColor;
+      }
+
+      const hsl = hslColor(color(expectedColor));
+      hsl.s = 0.05;
+      return hsl;
+    };
 
     this._getBarHeight = (node) => this._scale(+getValue(node));
-    this._getBarColor = (node) => this._colors(getKey(node));
-    this._getNameColor = (node) => this._colors(getKey(node));
-    this._getValueColor = (node) => color(this._colors(getKey(node))).darker(2.5);
+    this._getBarColor = (node) => colorOrColorless(node, this._colors(getKey(node)));
+    this._getNameColor = (node) => colorOrColorless(node, this._colors(getKey(node)));
+    this._getValueColor = (node) => colorOrColorless(node, color(this._colors(getKey(node))).darker(2.5));
+    this._getIsHovered = (node) => +(this._hovered === node);
 
-    this._awaitRendering = 0;
-    this._incRenderCounter = () => {
-      this._awaitRendering += 1;
-    };
-    this._decRenderCounter = () => {
-      this._awaitRendering = Math.max(this._awaitRendering - 1, 0);
-    };
     this._removeGraphic = function () {
       if (this.graphic) {
         const parent = this.graphic.parent || nodesGroup;
@@ -130,12 +153,19 @@ class GroupsLegend extends PIXI.Container {
       }
     };
 
+    this._event = dispatch(Object.values(Events));
+
     this.data();
   }
 
   destroy(...args) {
     super.destroy(...args);
     this._destroyed = true;
+  }
+
+  on() {
+    const value = this._event.on.apply(this._event, arguments);
+    return value === this._event ? this : value;
   }
 
   colorScale(scale) {
@@ -194,6 +224,7 @@ class GroupsLegend extends PIXI.Container {
       .attr('class', 'node')
       .attr('id', getKey)
       .attr('opacity', 0)
+      .attr('hovered', 0)
       .each(this._addNode)
       .each(updateNodeGraphic)
     ;
@@ -211,15 +242,23 @@ class GroupsLegend extends PIXI.Container {
       .attr('barColor', this._getBarColor)
       .attr('nameColor', this._getNameColor)
       .attr('valueColor', this._getValueColor)
-      .attr('opacity', 1)
-      .on('start', this._incRenderCounter)
-      .on('cancel interrupt end', this._decRenderCounter);
+      .attr('opacity', 1);
 
     nodes.exit()
       .each(this._removeGraphic)
       .remove();
 
+    this.forceRendering();
+
     return this;
+  }
+
+  forceRendering() {
+    this._neededRendering = true;
+  }
+
+  _emit(eventName, event, target, node) {
+    this._event.call(eventName, target, event, node);
   }
 
   _addNodeFactory() {
@@ -227,6 +266,34 @@ class GroupsLegend extends PIXI.Container {
 
     return function (node) {
       const graphic = new PIXI.Container();
+      graphic.name = getKey(node);
+      graphic.interactive = true;
+      graphic.on('pointerover', (event) => {
+        graphic.cursor = 'pointer';
+        cursor.focusOn(graphic);
+        that._hovered = node;
+        that._shadowNodes
+          .transition('fade')
+          .duration(300)
+          .attr('barColor', that._getBarColor)
+          .attr('nameColor', that._getNameColor)
+          .attr('valueColor', that._getValueColor)
+          .attr('hovered', that._getIsHovered);
+        that._emit(Events.overItemLegend, event, graphic, node);
+      });
+      graphic.on('pointerout', (event) => {
+        graphic.cursor = 'none';
+        cursor.focusOn(null);
+        that._hovered = null;
+        that._shadowNodes
+          .transition('fade')
+          .duration(700)
+          .attr('barColor', that._getBarColor)
+          .attr('nameColor', that._getNameColor)
+          .attr('valueColor', that._getValueColor)
+          .attr('hovered', 0);
+        that._emit(Events.outItemLegend, event, graphic, node);
+      });
 
       const nameNode = new PIXI.Text(getKey(node), {
         ...textStyle,
@@ -240,10 +307,17 @@ class GroupsLegend extends PIXI.Container {
       let width = nameNode.height * 1.5;
 
       const barNode = new PIXI.Sprite(roundedRectangularTexture('#fff', 1, 1, 0));
-      barNode.y = 2;
       barNode.width = width * 0.8;
       barNode.anchor.set(0.5, 0);
+      barNode.y = 2;
       barNode.name = 'bar';
+
+      const boundNode = new PIXI.Sprite(roundedRectangularTexture('#fff', 1, 1, 0));
+      boundNode.width = width;
+      boundNode.alpha = 0;
+      boundNode.anchor.set(0.5, 0);
+      boundNode.name = 'bound';
+      updateBoundNode(boundNode, nameNode.width);
 
       const countNode = new PIXI.Text(getValue(node), {
         ...textStyle,
@@ -254,6 +328,7 @@ class GroupsLegend extends PIXI.Container {
       countNode.rotation = -Math.PI / 2;
       countNode.name = 'count';
 
+      graphic.addChild(boundNode);
       graphic.addChild(nameNode);
       graphic.addChild(barNode);
       graphic.addChild(countNode);
@@ -267,11 +342,13 @@ class GroupsLegend extends PIXI.Container {
   _render(_renderer) {
     super._render(_renderer);
 
-    if (this._awaitRendering < 1) {
-      return;
+    this._neededRendering = this._neededRendering ?? true;
+
+    if (this._neededRendering || hasTransition(this._shadowNodes)) {
+      this._shadowNodes?.each(updateNodeGraphic);
     }
 
-    this._shadowNodes?.each(updateNodeGraphic);
+    this._neededRendering = false;
   }
 }
 
