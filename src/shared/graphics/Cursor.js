@@ -1,7 +1,9 @@
 import { select } from 'd3-selection';
 import * as PIXI from 'pixi.js-legacy';
 
-import { drawDashedPolygon } from '@/shared/graphics/drawDashedPolygon';
+import { hasTransition } from '@/shared/utils';
+
+import { drawDashedPolygon } from './drawDashedPolygon';
 
 const duration = 100;
 
@@ -263,9 +265,21 @@ class Cursor extends PIXI.Container {
   }
 
   _expand() {
-    const { width, height } = this._focused.getLocalBounds();
+    const bounds = this._focused.getLocalBounds();
 
+    const { width, height, x, y } = bounds;
+
+    const w2 = width * 0.5;
+    const h2 = height * 0.5;
     const pos = this._focused.getGlobalPosition(undefined, true);
+
+    if (x >= 0 || width / Math.abs(x) !== 2) {
+      pos.x += x + w2;
+    }
+
+    if (y >= 0 || height / Math.abs(y) !== 2) {
+      pos.y += y + h2;
+    }
 
     this._shadowMain
       .transition('move')
@@ -273,8 +287,6 @@ class Cursor extends PIXI.Container {
       .attr('x', pos.x)
       .attr('y', pos.y);
 
-    const w2 = width * 0.5;
-    const h2 = height * 0.5;
     const offset = this._pressed ? 0 : 5;
 
     if (this._lines) {
@@ -355,10 +367,25 @@ class Cursor extends PIXI.Container {
     this.y = +attrs.y.value;
     this.alpha = +attrs.opacity.value;
 
-    this._shadowLines?.each(updatePosition);
-    this._shadowBorders?.each(updatePosition);
-    this._shadowDots?.each(updatePosition);
-    this._shadowRect?.each(drawRect);
+    this._firstRendering = this._firstRendering ?? true;
+
+    if (this._firstRendering || hasTransition(this._shadowLines)) {
+      this._shadowLines?.each(updatePosition);
+    }
+
+    if (this._firstRendering || hasTransition(this._shadowBorders)) {
+      this._shadowBorders?.each(updatePosition);
+    }
+
+    if (this._firstRendering || hasTransition(this._shadowDots)) {
+      this._shadowDots?.each(updatePosition);
+    }
+
+    if (this._firstRendering || hasTransition(this._shadowRect)) {
+      this._shadowRect?.each(drawRect);
+    }
+
+    this._firstRendering = false;
   }
 }
 

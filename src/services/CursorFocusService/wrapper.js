@@ -9,6 +9,14 @@ const getGlobalPosition = function () {
   return { x, y };
 };
 
+const getLocalBounds = function () {
+  const { width, height } = this.getBoundingClientRect();
+  const x = -width * 0.5;
+  const y = -height * 0.5;
+
+  return { x, y, width, height };
+};
+
 class Wrapper {
   constructor(options) {
     this._options = options;
@@ -24,7 +32,7 @@ class Wrapper {
 
   focusOn = (node) => {
     if (!node?.getLocalBounds && node?.getBoundingClientRect) {
-      node.getLocalBounds = node.getBoundingClientRect.bind(node);
+      node.getLocalBounds = getLocalBounds.bind(node);
       node.getGlobalPosition = getGlobalPosition.bind(node);
     }
 
