@@ -271,7 +271,8 @@ class GroupsLegend extends PIXI.Container {
       graphic.on('pointerover', (event) => {
         graphic.cursor = 'help';
         cursor.focusOn(graphic);
-        that._hovered = node;
+        const data = this.__data__;
+        that._hovered = data;
         that._shadowNodes
           .transition('fade')
           .duration(300)
@@ -279,7 +280,7 @@ class GroupsLegend extends PIXI.Container {
           .attr('nameColor', that._getNameColor)
           .attr('valueColor', that._getValueColor)
           .attr('hovered', that._getIsHovered);
-        that._emit(Events.overItemLegend, event, graphic, node);
+        that._emit(Events.overItemLegend, event, this, data);
       });
       graphic.on('pointerout', (event) => {
         graphic.cursor = 'none';
@@ -292,7 +293,7 @@ class GroupsLegend extends PIXI.Container {
           .attr('nameColor', that._getNameColor)
           .attr('valueColor', that._getValueColor)
           .attr('hovered', 0);
-        that._emit(Events.outItemLegend, event, graphic, node);
+        that._emit(Events.overItemLegend, event, this, this.__data__);
       });
 
       const nameNode = new PIXI.Text(getKey(node), {
