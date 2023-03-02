@@ -184,6 +184,35 @@ const FocusOverlay = ({ globalListener }) => {
     [clickSoundPlay, clickSoundStop, globalListener, hoverSoundPlay, hoverSoundStop],
   );
 
+  useEffect(
+    () => {
+      let isEnter = true;
+      const onDocumentEnter = () => {
+        if (!isEnter) {
+          console.log('show');
+          cursor.show();
+          isEnter = true;
+        }
+      };
+      const onDocumentLeave = () => {
+        if (isEnter) {
+          console.log('hide');
+          cursor.hide();
+          isEnter = false;
+        }
+      };
+
+      document.documentElement?.addEventListener('pointerenter', onDocumentEnter, true);
+      document.documentElement?.addEventListener('pointerleave', onDocumentLeave, true);
+
+      return () => {
+        document.documentElement?.removeEventListener('pointerenter', onDocumentEnter, true);
+        document.documentElement?.removeEventListener('pointerleave', onDocumentLeave, true);
+      };
+    },
+    [],
+  );
+
   return null;
 };
 

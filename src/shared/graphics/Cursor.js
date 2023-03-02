@@ -252,6 +252,7 @@ class Cursor extends PIXI.Container {
   show() {
     this.alpha = 0.001;
     this._shadowMain
+      .attr('opacity', this.alpha)
       .transition('fade')
       .duration(duration)
       .attr('opacity', 1);
