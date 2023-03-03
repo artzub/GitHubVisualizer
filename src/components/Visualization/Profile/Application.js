@@ -70,7 +70,10 @@ class Application {
 
     this._colorScale = colorScale();
 
-    this._group = new Repositories({ colorScale: (...args) => this._colorScale(...args) });
+    this._group = new Repositories(
+      this._instance.renderer.plugins.interaction,
+      { colorScale: (...args) => this._colorScale(...args) }
+    );
     this._instance.stage.addChild(this._group);
 
     this._groupsLegend = new GroupsLegend({ colorScale: (...args) => this._colorScale(...args) });

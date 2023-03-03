@@ -2333,10 +2333,25 @@
   resolved "https://registry.yarnpkg.com/@pixi/filter-fxaa/-/filter-fxaa-6.5.1.tgz#2f7742d60533deab9777eb635e91d1a1cb3af126"
   integrity sha512-1/V7Brx2v0rBczo0eXHFC1bH0q0CkyTCRserLk/+0B1mY2vhoEOF62QhrMOdL+P9gMnGWpU8j+cDEAmi/lp4DQ==
 
+"@pixi/filter-glow@4.1.5":
+  version "4.1.5"
+  resolved "https://registry.yarnpkg.com/@pixi/filter-glow/-/filter-glow-4.1.5.tgz#bd92a6eca3320b71e8c3651fea26c56480a7b640"
+  integrity sha512-Km+30k1dMlmAn2QuzdR1qhGIiyRRrSLknS0aVxvFlCoIlBlSN6ii9eo2sn1FQxjJq3A977kwYrhrcZS/Y5SrwQ==
+
 "@pixi/filter-noise@6.5.1":
   version "6.5.1"
   resolved "https://registry.yarnpkg.com/@pixi/filter-noise/-/filter-noise-6.5.1.tgz#3f08a0560d9350afad2e923e001846a4d232260c"
   integrity sha512-V3Y8IcdxyEra1wtWCwB0D0s/KfXzTDG8MO0UbNfxR9DbM01TRfJYiaoqXU7otVMQReMjcrswA3eDZuZabkqq2g==
+
+"@pixi/filter-outline@4.1.5":
+  version "4.1.5"
+  resolved "https://registry.yarnpkg.com/@pixi/filter-outline/-/filter-outline-4.1.5.tgz#d44f63fb40e80ea8719a4f72a8f5453c1244b515"
+  integrity sha512-tm0lQR5fGFz0g7GQamRGhf5vkzj4aYLTv0MCK98KaK1L45agzRioJgzicVkuSu6J/SMMvT4O6XSGax0z4fTs9Q==
+
+"@pixi/graphics-extras@6.4.2":
+  version "6.4.2"
+  resolved "https://registry.yarnpkg.com/@pixi/graphics-extras/-/graphics-extras-6.4.2.tgz#caf4277b6852b93b2f58cbb4c400e8fd194b04b7"
+  integrity sha512-SOYBCs2bs5wZYnMPLr3lTb/CZ5yP8cX/GUa+Nu4ohtpesrXlvkAWdAG+qeujnsUNp/9RLXQZhjw5vFC6TzqbRA==
 
 "@pixi/graphics@6.5.1":
   version "6.5.1"

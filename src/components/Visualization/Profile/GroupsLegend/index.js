@@ -226,12 +226,12 @@ class GroupsLegend extends PIXI.Container {
       .attr('opacity', 0)
       .attr('hovered', 0)
       .each(this._addNode)
-      .each(updateNodeGraphic)
     ;
 
     this._shadowNodes = nodes.merge(nodesEnter)
       .attr('value', getValue)
       .attr('text', getKey)
+      .each(updateNodeGraphic)
     ;
 
     this._shadowNodes
@@ -242,7 +242,8 @@ class GroupsLegend extends PIXI.Container {
       .attr('barColor', this._getBarColor)
       .attr('nameColor', this._getNameColor)
       .attr('valueColor', this._getValueColor)
-      .attr('opacity', 1);
+      .attr('opacity', 1)
+    ;
 
     nodes.exit()
       .each(this._removeGraphic)

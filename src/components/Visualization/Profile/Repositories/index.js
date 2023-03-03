@@ -1,3 +1,4 @@
+import { OutlineFilter } from '@pixi/filter-outline';
 import { extent } from 'd3-array';
 import { color as d3color } from 'd3-color';
 import { dispatch } from 'd3-dispatch';
@@ -7,19 +8,23 @@ import {
   forceX, forceY,
 } from 'd3-force';
 import { scaleLinear, scaleLog } from 'd3-scale';
-import gsap from 'gsap';
+import { select as d3select } from 'd3-selection';
 import * as PIXI from 'pixi.js-legacy';
 
 import { cursor } from '@/services/CursorFocusService';
-import { colorConvert, colorScale, filledCircleTexture } from '@/shared/utils';
+import { colorConvert, colorScale, filledCircleTexture, hasTransition } from '@/shared/utils';
 
 import forceCluster from './forceCluster';
 import forceCollide from './forceCollide';
+
+const getX = (d) => d.x ?? 0;
+const getY = (d) => d.y ?? 0;
 
 const groupDefault = (node) => node.language;
 const radiusDefault = (node) => node.stars;
 const alphaDefault = (node) => +node.updatedAt;
 const keyDefault = (node) => node.id;
+const textDefault = (node) => node.name;
 
 const textStyle = {
   fontFamily: "'JetBrains Mono', monospace",
@@ -40,21 +45,158 @@ export const Events = {
   outItem: 'outItem',
   selectItem: 'selectItem',
   dragStart: 'dragStart',
+  drag: 'drag',
   dragEnd: 'dragEnd',
 };
+
+const removeNodeFactory = (container) => function () {
+  if (this.graphic) {
+    const parent = this.graphic.parent || container;
+    parent.removeChild(this.graphic);
+    this.graphic = null;
+  }
+};
+
+const addNodeFactory = (container) => function () {
+  const graphic = new PIXI.Container();
+
+  const circleNode = new PIXI.Sprite(filledCircleTexture('#fff', 128));
+  circleNode.anchor.set(0.5);
+
+  const boundsNode = new PIXI.Sprite(filledCircleTexture('#fff', 128));
+  boundsNode.anchor.set(0.5);
+  boundsNode.alpha = 0.2; // 0.5
+  boundsNode.filters = [new OutlineFilter(1, colorConvert('#fff'), 0.1)];
+
+  const textNode = new PIXI.Text('', {
+    ...textStyle,
+    fill: '#fff',
+  });
+  textNode.scale.set(0.5);
+  textNode.anchor.set(0.5);
+
+  graphic.addChild(circleNode);
+  graphic.addChild(boundsNode);
+  graphic.addChild(textNode);
+
+  graphic.alpha = 0;
+
+  graphic.interactive = true;
+  graphic.on('pointerover', container._onPointerOver(this));
+  graphic.on('pointerout', container._onPointerOut(this));
+  graphic.on('pointerdown', container._onDragStart);
+
+  this.graphic = graphic;
+
+  container.addChild(graphic);
+};
+
+const updateNodePosition = function () {
+  const { graphic } = this;
+
+  if (!graphic?.visible) {
+    return;
+  }
+
+  const attrs = this.attributes;
+
+  const x = +attrs.x?.value ?? 0;
+  const y = +attrs.y?.value ?? 0;
+
+  graphic.x = x;
+  graphic.y = y;
+};
+
+const updateNodeGraphic = function () {
+  const { graphic } = this;
+
+  const attrs = this.attributes;
+
+  const radius = Math.max(+attrs.radius?.value ?? 0, 0);
+  const diameter = radius * 2;
+  const color = attrs.color?.value ?? '#000';
+  const fill = attrs.fill?.value ?? '#fff';
+  const stroke = attrs.stroke?.value ?? '#000';
+  const text = attrs.text?.value ?? '';
+  const backgroundAlpha = +attrs.backgroundAlpha?.value ?? 1;
+  const opacity = +attrs.opacity?.value ?? 1;
+
+  if (graphic && graphic.alpha !== opacity) {
+    graphic.alpha = opacity;
+    graphic.visible = opacity > 0;
+  }
+
+  if (!graphic?.visible) {
+    return;
+  }
+
+  const [circleNode, boundsNode, textNode] = graphic.children;
+  const [outlineFilter] = boundsNode.filters;
+
+  circleNode.alpha = backgroundAlpha;
+
+  let tint = colorConvert(fill);
+  if (tint !== circleNode.tint) {
+    circleNode.tint = tint;
+  }
+
+  if (boundsNode.width !== diameter) {
+    boundsNode.width = diameter;
+    boundsNode.height = diameter;
+  }
+
+  tint = colorConvert(stroke);
+  if (outlineFilter.color !== tint) {
+    outlineFilter.color = tint;
+    boundsNode.tint = tint;
+  }
+
+  let hasChanged = false;
+  if (circleNode.width !== diameter - 2) {
+    circleNode.width = diameter - 2;
+    circleNode.height = diameter - 2;
+    hasChanged = true;
+  }
+
+  if (textNode.text !== text) {
+    textNode.text = text;
+    textNode.updateText();
+    hasChanged = true;
+  }
+
+  tint = colorConvert(color);
+  if (tint !== textNode.tint) {
+    textNode.tint = tint;
+  }
+
+  if (hasChanged) {
+    textNode.visible = textNode.width < radius * 4.2;
+  }
+
+  updateNodePosition.call(this);
+};
+
+const delay = (ms) => new Promise((resolve) => {
+  setTimeout(resolve, ms);
+});
 
 class Repositories extends PIXI.Container {
   _radiusGetter = radiusDefault;
   _groupGetter = groupDefault;
   _alphaGetter = alphaDefault;
   _keyGetter = keyDefault;
+  _textGetter = textDefault;
 
-  constructor(options = {}) {
+  constructor(interaction, options = {}) {
     super();
 
     this.interactive = true;
 
+    this._interaction = interaction;
+
     this._bindMethods();
+
+    this._shadow = d3select(document.createElement('shadow'));
 
     const radius = this._radiusOfItem;
     const group = (node) => this._groupGetter(node);
@@ -86,18 +228,51 @@ class Repositories extends PIXI.Container {
       .force('collide', this._forceCollide)
     ;
 
+    this._simulation.nodes([]);
+
     this._radius = scaleLinear().range([10, 50]);
     this._alpha = scaleLog().range([0.1, 0.3, 0.7]);
     this._colors = options.colorScale || colorScale();
 
     this._event = dispatch(...Object.values(Events));
 
-    this._simulation.on('tick', this._draw.bind(this));
+    this._simulation.on('tick', this._tick.bind(this));
+
+    const draw = () => {
+      this._neededRendering = this._neededRendering ?? true;
+
+      if (this._neededRendering || hasTransition(this._shadowNodes)) {
+        this._shadowNodes?.each(updateNodeGraphic);
+      }
+
+      this._neededRendering = false;
+    };
+
+    const drawLoop = async () => {
+      if (this.destroyed) {
+        return;
+      }
+
+      this._drawTimer = requestAnimationFrame(drawLoop);
+
+      await delay(10);
+
+      draw();
+    };
+
+    this._drawTimer = requestAnimationFrame(drawLoop);
   }
 
   destroy(...args) {
+    if (this._stopEarlyTimer) {
+      clearTimeout(this._stopEarlyTimer);
+    }
+
+    if (this._drawTimer) {
+      cancelAnimationFrame(this._drawTimer);
+    }
+
     super.destroy(...args);
-    this._destroyed = true;
     this._simulation.stop().nodes([]);
     this._simulation = null;
   }
@@ -108,380 +283,351 @@ class Repositories extends PIXI.Container {
   }
 
   data(data) {
-    if (this._destroyed) {
+    if (this.destroyed) {
       return this;
     }
 
     this._calcRadiusDomain(data);
     this._calcAlphaDomain(data);
+
+    const nodes = this._simulation.nodes();
+    nodes.length = 0;
+    nodes.push(...data);
     this._simulation.nodes(data);
+
     this._restartSimulation();
 
-    this._data();
+    return this.updateLayout();
+  }
+
+  updateLayout() {
+    const data = this._simulation.nodes();
+
+    const nodes = this._shadow
+      .selectAll('.node')
+      .data(data, this._keyOfItem);
+
+    const nodesEnter = nodes
+      .enter()
+      .append('shadow')
+      .attr('class', 'node')
+      .attr('id', this._keyOfItem)
+      .attr('backgroundAlpha', 1)
+      .attr('opacity', 1)
+      .attr('hovered', 0)
+      .attr('selected', 0)
+      .attr('radius', 0)
+      .each(this._addNode);
+
+    this._shadowNodes = nodesEnter.merge(nodes)
+      .attr('text', this._textOfItem)
+      .attr('x', getX)
+      .attr('y', getY)
+      .attr('radius', this._radiusOfItem)
+    ;
+
+    this._shadowNodes
+      .transition()
+      .duration(500)
+      .attr('color', this._textColorOfItem)
+      .attr('stroke', this._borderColorOfItem)
+      .attr('fill', this._colorOfItem)
+      .attr('backgroundAlpha', this._alphaOfItem)
+    ;
+
+    nodes.exit()
+      .transition()
+      .duration(500)
+      .attr('opacity', 0)
+      .each(this._removeNode)
+      .remove();
+
+    this.forceRendering();
 
     return this;
   }
 
+  forceRendering() {
+    this._neededRendering = true;
+  }
+
   radius(getter) {
-    if (this._destroyed) {
+    if (this.destroyed) {
       return this;
     }
 
     this._radiusGetter = getter || radiusDefault;
     this._calcRadiusDomain(this._simulation.nodes());
-    this.children.forEach(this._updateNodes);
+    this.updateLayout();
     this._restartSimulation();
+
+    return this;
+  }
+
+  text(getter) {
+    if (this.destroyed) {
+      return this;
+    }
+
+    this._textGetter = getter || textDefault;
+    this.updateLayout();
 
     return this;
   }
 
   alpha(getter) {
-    if (this._destroyed) {
+    if (this.destroyed) {
       return this;
     }
 
     this._alphaGetter = getter || alphaDefault;
     this._calcAlphaDomain(this._simulation.nodes());
-    this.children.forEach(this._updateNodes);
-    this._restartSimulation();
+    this.updateLayout();
 
     return this;
   }
 
   group(getter) {
-    if (this._destroyed) {
+    if (this.destroyed) {
       return this;
     }
 
     this._groupGetter = getter || groupDefault;
-    this.children.forEach(this._updateNodes);
     this._restartSimulation();
 
     return this;
   }
 
   colorScale(scale) {
-    if (this._destroyed) {
+    if (this.destroyed) {
       return this;
     }
 
     this._colors = scale || colorScale();
-    this.children.forEach(this._updateNodes);
-    this._restartSimulation();
+    this.updateLayout();
 
     return this;
   }
 
   key(getter) {
-    if (this._destroyed) {
+    if (this.destroyed) {
       return this;
     }
 
     this._keyGetter = getter || keyDefault;
-    this._data();
+    this.updateLayout();
   }
 
   select(key) {
-    if (this._destroyed) {
+    if (this.destroyed) {
       return this;
     }
 
     this._selected = key;
-    this._simulation.restart();
-  }
-
-  _restartSimulation() {
-    this._simulation
-      .alpha(0.5)
-      .restart()
-    ;
+    this.updateLayout();
   }
 
   _bindMethods() {
-    this._updateNodes = this._updateNodes.bind(this);
+    this._addNode = addNodeFactory(this);
+    this._removeNode = removeNodeFactory(this);
 
     this._radiusOfItem = this._radiusOfItem.bind(this);
     this._colorOfItem = this._colorOfItem.bind(this);
+    this._borderColorOfItem = (node) => d3color(this._colorOfItem(node)).darker(0.1);
+    this._textColorOfItem = (node) => d3color(this._colorOfItem(node)).brighter(1.1);
     this._alphaOfItem = this._alphaOfItem.bind(this);
     this._keyOfItem = this._keyOfItem.bind(this);
+    this._textOfItem = this._textOfItem.bind(this);
 
     this._onPointerOver = this._onPointerOver.bind(this);
     this._onPointerOut = this._onPointerOut.bind(this);
-    this._onPointerDown = this._onPointerDown.bind(this);
-    this._onPointerMove = this._onPointerMove.bind(this);
-    this._onPointerUp = this._onPointerUp.bind(this);
+    this._onDragStart = this._onDragStart.bind(this);
+    this._onDrag = this._onDrag.bind(this);
+    this._onDragEnd = this._onDragEnd.bind(this);
   }
 
-  _onPointerOver(event) {
-    if (this._dragging) {
-      return;
-    }
-
-    event.stopPropagation();
-
-    this._simulation
-      .velocityDecay(0.05)
-      .alpha(0.5)
-      .restart();
-
-    const node = event.currentTarget;
-    this._event.call(Events.overItem, node, event, node);
-
-    this.cursor = 'pointer';
-
-    if (!node) {
-      return;
-    }
-
-    this._hovered = node;
-    cursor.focusOn(node);
-
-    const item = node.__data__;
-    if (!item) {
-      return;
-    }
-
-    item.fx = item.x;
-    item.fy = item.y;
+  _emit(eventName, target, event, data) {
+    this._event.call(eventName, target, event, data);
   }
 
-  _onPointerOut(event) {
-    if (this._dragging) {
-      return;
-    }
-
-    event.stopPropagation();
-
-    this._hovered = null;
-    cursor.focusOn(null);
-
-    const node = event.currentTarget;
-    this._event.call(Events.outItem, node, event, node);
-
-    this.cursor = 'none';
-
-    if (!node) {
-      return;
-    }
-
-    const item = node.__data__;
-    if (!item) {
-      return;
-    }
-
-    delete item.fx;
-    delete item.fy;
-  }
-
-  _onPointerDown(event) {
-    event.stopPropagation();
-    if (event.data.originalEvent.ctrlKey || event.data.originalEvent.button) {
-      return;
-    }
-
-    cursor.press();
-
-    const node = event.currentTarget;
-    if (!node) {
-      return;
-    }
-    this._dragNode = node;
-    this._dragPrevPoint = event.data.getLocalPosition(node.parent);
-    this._dragging = false;
-
-    node.on('pointermove', this._onPointerMove);
-    node.on('pointerupoutside', this._onPointerUp);
-    node.on('pointerup', this._onPointerUp);
-  }
-
-  _onPointerMove(event) {
-    event.stopPropagation();
-    const node = this._dragNode;
-    const { x, y } = this._dragPrevPoint;
-    const { x: nx, y: ny } = event.data.getLocalPosition(this._dragNode.parent);
-
-    if (!this._dragging) {
-      this._dragging = Math.hypot(nx - x, ny - y) > 0;
-
+  _onPointerOver(node) {
+    return (event) => {
       if (this._dragging) {
-        this.cursor = 'grabbing';
-        this._event.call(Events.dragStart, node, event, node);
-      }
-    }
-
-    const item = node.__data__;
-    if (!this._dragging || !item) {
-      return;
-    }
-
-    cursor.onPointerMove(event);
-
-    item.fx = nx;
-    item.fy = ny;
-  }
-
-  _onPointerUp(event) {
-    event.stopPropagation();
-    const node = this._dragNode;
-    const item = node?.__data__;
-    const key = this._keyOfItem(item || {});
-
-    cursor.release();
-
-    this._dragNode = null;
-    this._dragPrevPoint = null;
-
-    if (!this._dragging) {
-      if (this._selected === key) {
-        this._selected = null;
-        this._event.call(Events.selectItem, node, event, null);
-      } else {
-        this._selected = key;
-        this._event.call(Events.selectItem, node, event, item);
-      }
-    } else {
-      this._event.call(Events.dragEnd, node, event, node);
-      this.cursor = 'pointer';
-    }
-
-    this._dragging = false;
-
-    if (event.type === 'pointerupoutside') {
-      this._onPointerOut(event);
-    }
-
-    if (!node) {
-      return;
-    }
-
-    node.off('pointermove', this._onPointerMove);
-    node.off('pointerupoutside', this._onPointerUp);
-    node.off('pointerup', this._onPointerUp);
-  }
-
-  _data() {
-    if (this._destroyed) {
-      return;
-    }
-
-    const data = this._simulation.nodes();
-
-    const hash = this.children.reduce((acc, item) => ({
-      ...acc,
-      [item.name]: item,
-    }), {});
-
-    const result = [];
-
-    data.forEach((item) => {
-      const id = item.id;
-      const node = hash[id];
-      if (!node) {
-        result.push([null, item]);
-      } else {
-        result.push([node, item]);
-        delete hash[id];
-      }
-    });
-
-    Object.values(hash).forEach((node) => {
-      this.removeChild(node);
-    });
-
-    result.forEach(([_, item]) => {
-      if (this._destroyed) {
         return;
       }
 
-      let node = _;
+      const data = d3select(node).datum();
+
+      event.stopPropagation();
+
+      this._restartSimulation();
+
+      const graphic = event.currentTarget;
+      this._emit(Events.overItem, graphic, event, data);
+
+      this.cursor = 'pointer';
+
       if (!node) {
-        node = new PIXI.Container();
-        node.name = item.id;
-
-        node.interactive = true;
-        node.on('pointerover', this._onPointerOver);
-        node.on('pointerout', this._onPointerOut);
-        node.on('pointerdown', this._onPointerDown);
-
-        this.addChild(node);
+        return;
       }
-      node.__data__ = item;
 
-      this._updateNodes(node);
-    });
+      this._hovered = node;
+      cursor.focusOn(graphic);
 
-    this._simulation.restart();
+      if (!data) {
+        return;
+      }
+
+      data.fx = data.x;
+      data.fy = data.y;
+    };
   }
 
-  _updateNodes(node) {
-    const item = node.__data__;
+  _onPointerOut(node) {
+    return (event) => {
+      if (this._dragging) {
+        return;
+      }
 
-    if (!item) {
+      if (this._hovered !== node) {
+        return;
+      }
+
+      const data = d3select(node).datum();
+
+      event.stopPropagation();
+
+      this._hovered = null;
+      cursor.focusOn(null);
+
+      this._restartSimulation();
+
+      const graphic = event.currentTarget;
+      this._emit(Events.outItem, graphic, event, data);
+
+      this.cursor = 'none';
+
+      if (!graphic) {
+        return;
+      }
+
+      if (!data) {
+        return;
+      }
+
+      delete data.fx;
+      delete data.fy;
+    };
+  }
+
+  _onDragStart(event) {
+    event.stopPropagation();
+    if (event?.target !== this._hovered?.graphic) {
       return;
     }
 
-    const color = d3color(this._colorOfItem(item));
-    const radius = +this._radiusOfItem(item);
-    const diameter = radius * 2;
-    let alpha = +this._alphaOfItem(item);
+    const node = this._hovered;
 
-    let [circle, border] = node.children;
-    if (!circle) {
-      circle = new PIXI.Sprite(filledCircleTexture('#fff', 128));
-      circle.anchor.set(0.5);
-      node.addChild(circle);
+    this._clicked = node;
 
-      node._focused = true;
-      alpha = 1;
+    node.startPoint = event.data.getLocalPosition(this);
+
+    cursor.press();
+
+    const data = d3select(node).datum();
+    const { graphic } = node;
+
+    this.cursor = 'grabbing';
+
+    d3select(document.body).style('user-select', 'none');
+
+    this._emit(Events.dragStart, graphic, event, data);
+
+    this.parent.interactiveChildren = false;
+
+    this._interaction
+      .on('pointermove', this._onDrag)
+      .on('pointerupoutside', this._onDragEnd)
+      .on('pointerup', this._onDragEnd);
+  }
+
+  _onDrag(event) {
+    event.stopPropagation();
+    if (!this._clicked) {
+      return;
     }
 
-    if (!border) {
-      border = new PIXI.Sprite();
-      border.alpha = 0.5;
-      border.anchor.set(0.5);
-      node.addChild(border);
+    const node = this._clicked;
+
+    const { x, y } = node.startPoint;
+    const point = event.data.getLocalPosition(this);
+
+    this._dragging = this._dragging || Math.hypot(point.x - x, point.y - y) > 0;
+
+    if (!this._dragging) {
+      return;
     }
 
-    const circleColor = colorConvert(color);
-    if (circle.tint !== circleColor) {
-      circle.__tint = color;
-      circle.tint = circleColor;
+    const data = d3select(node).datum();
+
+    event.currentTarget = node.graphic;
+
+    cursor.onPointerMove(event);
+
+    data.fx = point.x;
+    data.fy = point.y;
+
+    data.x = point.x;
+    data.y = point.y;
+
+    this._emit(Events.drag, node.graphic, event, data);
+  }
+
+  _onDragEnd(event) {
+    event.stopPropagation();
+    if (!this._clicked) {
+      return;
     }
 
-    if (circle.width !== diameter) {
-      circle.width = diameter;
-      circle.height = diameter;
-    }
-    circle.alpha = alpha;
+    const node = this._clicked;
+    this._clicked = null;
 
-    if (border.width !== diameter) {
-      border.texture = new PIXI.Graphics()
-        .lineStyle(1, colorConvert('#fff'))
-        .drawCircle(0, 0, radius)
-        .generateCanvasTexture()
-      ;
-      border.width = diameter;
-      border.height = diameter;
+    const prevDragging = this._dragging;
+    this._dragging = false;
+
+    const data = d3select(node).datum();
+
+    cursor.release();
+
+    this.cursor = 'pointer';
+
+    this.parent.interactiveChildren = true;
+
+    this._interaction
+      .off('pointermove', this._onDrag)
+      .off('pointerupoutside', this._onDragEnd)
+      .off('pointerup', this._onDragEnd);
+
+    d3select(document.body).style('user-select', null);
+
+    this._event.call(Events.dragEnd, node.graphic, event, data);
+
+    if (!prevDragging) {
+      const key = this._keyOfItem(data);
+
+      if (this._selected === key) {
+        this._selected = null;
+      } else {
+        this._selected = key;
+      }
+
+      this._event.call(Events.selectItem, node.graphic, event, this._selected ? data : null);
+      return;
     }
 
-    const borderColor = colorConvert(color.darker(0.1));
-    if (border.tint !== borderColor) {
-      border.tint = borderColor;
+    if (event.type === 'pointerupoutside') {
+      this._onPointerOut(node)(event);
     }
-
-    let [, , text] = node.children;
-    if (!text) {
-      text = new PIXI.Text(item.name, {
-        ...textStyle,
-        fill: '#fff',
-      });
-      // text.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
-      text.scale.set(0.5);
-      text.anchor.set(0.5);
-      node.addChild(text);
-    }
-    text.tint = colorConvert(color.brighter(1.5));
-    text.visible = text.width < radius * 4.2;
   }
 
   _calcRadiusDomain(data) {
@@ -494,45 +640,54 @@ class Repositories extends PIXI.Container {
     this._alpha.domain(bounds);
   }
 
+  _keyOfHovered() {
+    return this._keyOfItem(
+      d3select(this._hovered || {}).datum() || {}
+    );
+  }
+
   _radiusOfItem(node) {
     return this._radius(this._radiusGetter(node));
   }
 
   _colorOfItem(node) {
-    return this._colors(this._groupGetter(node));
+    const color = this._colors(this._groupGetter(node));
+
+    const key = this._keyOfItem(node);
+    const keyHovered = this._keyOfHovered();
+
+    if (this._selected === key || keyHovered) {
+      return d3color(color).brighter(0.5);
+    }
+
+    return color;
   }
 
   _alphaOfItem(node) {
-    return this._alpha(this._alphaGetter(node));
+    const key = this._keyOfItem(node);
+    const keyHovered = this._keyOfHovered();
+
+    if (key === keyHovered) {
+      return 0.9;
+    }
+
+    return this._selected === key ? 0.8 : this._alpha(this._alphaGetter(node));
   }
 
   _keyOfItem(node) {
     return this._keyGetter(node);
   }
 
-  _updateFocused(nodes) {
-    const items = nodes || this.children.filter((node) => {
-      const key = this._keyOfItem(node.__data__);
-      return node === this._hovered || key === this._selected;
-    });
+  _textOfItem(node) {
+    return this._textGetter(node);
+  }
 
-    items.forEach((node) => {
-      node._focused = true;
-      gsap.to(node.children[0], {
-        alpha: node === this._hovered ? 0.9 : 0.8,
-        duration: 0.2,
-        overwrite: true,
-        __tint: d3color(this._colorOfItem(node.__data__))
-          .brighter(0.5)
-          .toString(),
-        onUpdate: function () {
-          const [target] = this.targets();
-          gsap.set(target, {
-            tint: colorConvert(target.__tint),
-          });
-        },
-      });
-    });
+  _updateFocused() {
+    this._shadowNodes
+      .transition('focus')
+      .duration(200)
+      .attr('fill', this._colorOfItem)
+      .attr('backgroundAlpha', this._alphaOfItem);
   }
 
   get _selected() {
@@ -551,51 +706,42 @@ class Repositories extends PIXI.Container {
     this._updateFocused();
   }
 
-  _draw() {
-    if (this._destroyed) {
+  _restartSimulation() {
+    this._simulation
+      .alpha(0.5)
+      .restart()
+    ;
+    this._stopEarly(5e3);
+  }
+
+  _stopEarly(ms) {
+    if (ms == null) {
+      return;
+    }
+
+    if (this._stopEarlyTimer) {
+      clearTimeout(this._stopEarlyTimer);
+    }
+
+    this._stopEarlyTimer = setTimeout(() => {
+      this._stopEarlyTimer = null;
+      this._simulation.alpha(this._simulation.alphaTarget());
+    }, ms);
+  }
+
+  _tick() {
+    if (this.destroyed) {
       return this;
     }
 
     const alpha = this._simulation.alpha();
     const alphaTarget = this._simulation.alphaTarget();
-    if (!this._hovered && +alpha.toFixed(15) === alphaTarget) {
+    if (!this._hovered && +alpha.toFixed(4) <= alphaTarget) {
       this._simulation.stop();
     }
 
-    this.children.forEach((node) => {
-      const item = node.__data__;
-      if (!item) {
-        return;
-      }
-
-      const key = this._keyOfItem(item);
-
-      if (!(node === this._hovered || key === this._selected) && node._focused) {
-        node._focused = false;
-        gsap.to(node.children[0], {
-          alpha: this._alphaOfItem(item),
-          delay: 0.3,
-          duration: 0.5,
-          overwrite: true,
-          __tint: this._colorOfItem(node.__data__),
-          onUpdate: function () {
-            const [target] = this.targets();
-            gsap.set(target, {
-              tint: colorConvert(target.__tint),
-            });
-          },
-        });
-
-        if (node !== this._hovered) {
-          cursor.focusOn(null);
-          delete item.fx;
-          delete item.fy;
-        }
-      }
-
-      node.x = item.x + (item.x % 2 ? 0 : 0.5);
-      node.y = item.y + (item.y % 2 ? 0 : 0.5);
-    });
+    this._shadowNodes?.attr('x', getX).attr('y', getY);
+    this.forceRendering();
   }
 }
 

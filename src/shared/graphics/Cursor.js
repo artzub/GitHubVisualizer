@@ -179,6 +179,10 @@ class Cursor extends PIXI.Container {
       return this._focused;
     }
 
+    if (this._pressed) {
+      return this;
+    }
+
     const [node] = args;
 
     this._focused = node;
