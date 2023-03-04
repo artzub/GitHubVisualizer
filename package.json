@@ -33,7 +33,8 @@
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js --config ./jest.config.json",
-    "lint": "eslint ./src",
+    "lint": "eslint --ext .js,.jsx src",
+    "lint:fix": "eslint --fix --ext .js,.jsx src",
     "precommit": "lint-staged"
   },
   "resolutions": {
@@ -140,6 +141,8 @@
     "postcss-normalize": "^10.0.1",
     "postcss-preset-env": "^8.0.1",
     "pre-commit": "^1.2.2",
+    "prettier-eslint": "^15.0.1",
+    "prettier-eslint-cli": "^7.1.0",
     "prompts": "^2.4.2",
     "raw-loader": "^4.0.2",
     "resolve": "^1.22.1",
@@ -210,6 +213,9 @@
     "precommit"
   ],
   "lint-staged": {
-    "*.{js,jsx}": "eslint"
+    "src/**/*.{js,jsx}": [
+      "prettier-eslint --write",
+      "eslint --max-warnings=0"
+    ]
   }
 }
