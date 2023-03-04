@@ -188,7 +188,7 @@ class GroupsLegend extends PIXI.Container {
     return this.updateGroups();
   }
 
-  resize(width, height) {
+  resize() {
   }
 
   updateGroups() {

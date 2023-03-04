@@ -2,6 +2,7 @@ import { addCursorAfter, parsePageInfo } from '@/redux/api/githubGQL/utils';
 import { withCancellation } from '@/redux/utils';
 
 import getClient from '../getClient';
+
 import query from './query.graphql';
 
 /**

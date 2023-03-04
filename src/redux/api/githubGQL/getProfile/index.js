@@ -1,6 +1,7 @@
 import { withCancellation } from '@/redux/utils';
 
 import getClient from '../getClient';
+
 import query from './query.graphql';
 
 /**
@@ -10,7 +11,7 @@ import query from './query.graphql';
  * @return {Promise<{rateLimit: *, data: object}>}
  */
 export const getProfile = (login, isOrganization = false) =>
-  withCancellation(async (singal) => {
+  withCancellation(async () => {
     const client = getClient();
 
     const data = await client.graphql(query, {

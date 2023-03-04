@@ -11,6 +11,7 @@ import repositoriesSlice from '@/redux/modules/repositories';
 import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
 
 import Tab from '../shared/Tab';
+
 import Application, { Events } from './Application';
 
 const merge = (data, newData) => {

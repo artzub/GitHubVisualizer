@@ -9,7 +9,7 @@ describe('Redux Utils', () => {
     it('should call a passed method', () => {
       const fn = jest.fn();
       withCancellation(fn);
-      expect(fn).toBeCalled();
+      expect(fn).toHaveBeenCalled();
     });
 
     it('should return Promise', () => {

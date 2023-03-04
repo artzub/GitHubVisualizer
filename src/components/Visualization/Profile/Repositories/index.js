@@ -647,7 +647,7 @@ class Repositories extends PIXI.Container {
 
   _keyOfHovered() {
     return this._keyOfItem(
-      d3select(this._hovered || {}).datum() || {}
+      d3select(this._hovered || {}).datum() || {},
     );
   }
 

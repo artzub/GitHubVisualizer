@@ -55,7 +55,7 @@ class OutlineFilter extends PIXI.Filter {
     return (Math.PI * 2 / samples).toFixed(7);
   }
 
-  apply(filterManager, input, output, clear, _currentState) {
+  apply(filterManager, input, output, clear) {
     this.uniforms.uThickness[0] = this._thickness / input._frame.width;
     this.uniforms.uThickness[1] = this._thickness / input._frame.height;
     this.uniforms.uAlpha = this._alpha;

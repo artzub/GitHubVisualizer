@@ -1,0 +1,7 @@
+{
+  "name": "eslint-plugin-netography",
+  "description": "Netography ESLint plugin",
+  "author": "Artem Zubkov <artzub@netography.com>",
+  "version": "1.0.0",
+  "main": "index.js"
+}

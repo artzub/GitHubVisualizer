@@ -5,6 +5,7 @@ import * as PIXI from 'pixi.js-legacy';
 import { colorScale } from '@/shared/utils';
 
 import BackgroundGrid from '../shared/BackgroundGrid';
+
 import GroupsLegend, { Events as EventsGroupsLegend } from './GroupsLegend';
 import Repositories, { Events as EventsRepositories } from './Repositories';
 
@@ -72,7 +73,7 @@ class Application {
 
     this._group = new Repositories(
       this._instance.renderer.plugins.interaction,
-      { colorScale: (...args) => this._colorScale(...args) }
+      { colorScale: (...args) => this._colorScale(...args) },
     );
     this._instance.stage.addChild(this._group);
 

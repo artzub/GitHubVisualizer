@@ -5,7 +5,7 @@ import { parsePageInfo, parseRateLimit } from './utils';
 
 const reg = /page=(\d+)>; rel="last"/;
 const getCount = (link, defValue = 0) =>
-  Boolean(link && link.includes('rel="last"'))
+  link?.includes?.('rel="last"')
     ? +link.match(reg)[1]
     : defValue;
 

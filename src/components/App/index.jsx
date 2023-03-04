@@ -13,7 +13,7 @@ import { getTheme } from '@/themes';
 const App = () => {
   const { theme, GlobalStyle } = useMemo(
     () => getTheme('dark'),
-    []
+    [],
   );
 
   return (

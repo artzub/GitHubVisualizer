@@ -8,7 +8,7 @@ const reg = /page=(\d+)>; rel="next"/;
 const regPerPage = /per_page=(\d+)/;
 const regPageCount = /page=(\d+)>; rel="last"/;
 export const parsePageInfo = ({ link = '' } = {}) => {
-  const hasNextPage = Boolean(link && link.includes('rel="next"'));
+  const hasNextPage = link?.includes?.('rel="next"');
   let nextPage;
 
   if (hasNextPage) {
@@ -16,7 +16,7 @@ export const parsePageInfo = ({ link = '' } = {}) => {
   }
 
   let total = 0;
-  if (Boolean(link && link.includes('rel="last"'))) {
+  if (link?.includes?.('rel="last"')) {
     total = +link.match(regPerPage)[1];
     total *= +link.match(regPageCount)[1];
   }

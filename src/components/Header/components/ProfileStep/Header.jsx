@@ -46,8 +46,12 @@ const onClick = (event) => event.stopPropagation();
 const Header = forwardRef((props, ref) => {
   const { selected } = useSelector(slice.selectors.getState);
   const {
-    avatar, name, login,
-    url, publicRepos, site,
+    avatar,
+    name,
+    login,
+    url,
+    publicRepos,
+    site,
   } = selected || {};
 
   return (

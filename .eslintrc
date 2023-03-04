@@ -1,5 +1,8 @@
 {
   "settings": {
+    "react": {
+      "version": "detect"
+    },
     "import/resolver": {
       "webpack": {
         "config": "./config/webpack.config.js"
@@ -7,18 +10,29 @@
     }
   },
 
+  "env": {
+    "browser": true,
+    "node": true,
+    "mocha": true,
+    "es6": true,
+    "jest/globals": true
+  },
+
   "parserOptions": {
-    "babelOptions": {
-      "presets": [
-        ["babel-preset-react-app", false],
-        "babel-preset-react-app/prod"
-      ]
-    }
+    "sourceType": "module",
+    "ecmaVersion": 2022
+//    "babelOptions": {
+//      "presets": [
+//        ["babel-preset-react-app", false],
+//        "babel-preset-react-app/prod"
+//      ]
+//    }
   },
 
   "extends": [
-    "react-app",
-    "react-app/jest",
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:jest/recommended",
     "plugin:promise/recommended",
     "plugin:security/recommended"
   ],
@@ -26,10 +40,12 @@
   "plugins": [
     "react-hooks",
     "react-redux",
+    "jest",
     "security",
     "unicorn",
     "promise",
-    "import"
+    "import",
+    "netography"
   ],
 
   "rules": {
@@ -56,7 +72,7 @@
     // "import/no-unused-modules": [1, {"unusedExports": true}], // uncomment to find out what files are unused
     "no-unused-vars": "warn",
     "no-multi-spaces": "warn",
-    "no-restricted-syntax": "off",
+    "no-restricted-syntax": ["error", "IfStatement > :not(BlockStatement).consequent"],
     "arrow-parens": "warn",
     "comma-dangle": ["warn", "always-multiline"],
     "padded-blocks": ["warn", "never"],
@@ -69,11 +85,6 @@
     "import/no-named-as-default-member": "off",
     "import/no-named-as-default": "off",
     "import/prefer-default-export": "off",
-    "jsx-a11y/anchor-is-valid": [ "error", {
-      "components": [ "Link" ],
-      "specialLink": [ "to", "hrefLeft", "hrefRight" ],
-      "aspects": [ "noHref", "invalidHref", "preferButton" ]
-    }],
     "max-len": ["error", {"code": 180, "ignoreRegExpLiterals": true, "tabWidth": 2}],
     "no-console": ["warn"],
     "no-underscore-dangle": "off",
@@ -89,6 +100,22 @@
     "react/jsx-curly-spacing": [2, {"when": "never"}],
     "object-curly-spacing": ["warn", "always", { "objectsInObjects": true }],
     "indent": ["error", 2, { "SwitchCase": 1 }],
+    "react/react-in-jsx-scope": "off",
+    "function-call-argument-newline": ["error", "consistent"],
+    "function-paren-newline": ["error", "multiline-arguments"],
+    "netography/function-paren-newline": ["error", {
+      "pattern": "^use(Memo|Callback|Effect|LayoutEffect)$",
+      "minArgs": 1
+    }, {
+      "pattern": "^createSelector$"
+    }, {
+      "pattern": "^from$",
+      "minArgs": 1
+    }],
+    "netography/object-property-newline": ["error", {
+      "minProperties": 7,
+      "minLineLength": 80
+    }],
     "import/order": ["error", {
       "newlines-between": "always",
       "groups": [
@@ -97,7 +124,8 @@
         "object",
         "type",
         "internal",
-        ["parent", "sibling", "index"]
+        "parent",
+        ["sibling", "index"]
       ],
       "pathGroups": [
         {
@@ -110,10 +138,6 @@
         },
         {
           "pattern": "@mui/**",
-          "group": "object"
-        },
-        {
-          "pattern": "@material-ui/**",
           "group": "object"
         },
         {

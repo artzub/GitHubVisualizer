@@ -142,7 +142,7 @@ export class Cursor extends PIXI.Container {
         .attr('id', (d, i) => `locator_dots_${i + 1}`)
         .attr('x', (d) => d[0] * 12)
         .attr('y', (d) => d[1] * 12)
-        .each(function ([x, y], i) {
+        .each(function ([x, y]) {
           const item = new PIXI.Graphics();
           item.lineStyle(1, 0xffffff, 1);
           const ySign = Math.sign(y);
@@ -368,7 +368,7 @@ export class Cursor extends PIXI.Container {
     }
   }
 
-  _render(_) {
+  _render() {
     const attrs = this._shadowMain.node().attributes;
     this.x = +attrs.x.value;
     this.y = +attrs.y.value;
