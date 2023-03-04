@@ -1,4 +1,4 @@
-import Cursor from '@/shared/graphics/Cursor';
+import { Cursor } from '@/shared/graphics/Cursor';
 
 const getGlobalPosition = function () {
   const { top, left, width, height } = this.getBoundingClientRect();

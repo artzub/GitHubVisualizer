@@ -41,7 +41,7 @@ const drawRect = function () {
   graphic.drawRect(x0 + (width && 0.5), y0 + (height && 0.5), width, height - (height && 0.5));
 };
 
-class Cursor extends PIXI.Container {
+export class Cursor extends PIXI.Container {
   constructor(options = defaultOptions) {
     super();
 
@@ -395,5 +395,3 @@ class Cursor extends PIXI.Container {
     this._firstRendering = false;
   }
 }
-
-export default Cursor;

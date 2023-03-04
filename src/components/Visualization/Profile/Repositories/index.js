@@ -1,4 +1,5 @@
-import { OutlineFilter } from '@pixi/filter-outline';
+// TODO use it after migration to pixi.js v7
+// import { OutlineFilter } from '@pixi/filter-outline';
 import { extent } from 'd3-array';
 import { color as d3color } from 'd3-color';
 import { dispatch } from 'd3-dispatch';
@@ -12,6 +13,7 @@ import { select as d3select } from 'd3-selection';
 import * as PIXI from 'pixi.js-legacy';
 
 import { cursor } from '@/services/CursorFocusService';
+import { OutlineFilter } from '@/shared/graphics/filtres';
 import { colorConvert, colorScale, filledCircleTexture, hasTransition } from '@/shared/utils';
 
 import forceCluster from './forceCluster';
@@ -65,8 +67,9 @@ const addNodeFactory = (container) => function () {
 
   const boundsNode = new PIXI.Sprite(filledCircleTexture('#fff', 128));
   boundsNode.anchor.set(0.5);
-  boundsNode.alpha = 0.2; // 0.5
-  boundsNode.filters = [new OutlineFilter(1, colorConvert('#fff'), 0.1)];
+  boundsNode.filters = [
+    new OutlineFilter(2, colorConvert('#fff'), 1, 0.5, true),
+  ];
 
   const textNode = new PIXI.Text('', {
     ...textStyle,
@@ -131,30 +134,32 @@ const updateNodeGraphic = function () {
   }
 
   const [circleNode, boundsNode, textNode] = graphic.children;
-  const [outlineFilter] = boundsNode.filters;
+  const [filter] = boundsNode.filters;
 
-  circleNode.alpha = backgroundAlpha;
+  if (circleNode.alpha !== backgroundAlpha) {
+    circleNode.alpha = backgroundAlpha;
+  }
 
   let tint = colorConvert(fill);
   if (tint !== circleNode.tint) {
     circleNode.tint = tint;
   }
 
-  if (boundsNode.width !== diameter) {
-    boundsNode.width = diameter;
-    boundsNode.height = diameter;
+  if (boundsNode.width !== diameter - 4) {
+    boundsNode.width = diameter - 4;
+    boundsNode.height = diameter - 4;
   }
 
   tint = colorConvert(stroke);
-  if (outlineFilter.color !== tint) {
-    outlineFilter.color = tint;
+  if (boundsNode.tint !== tint) {
     boundsNode.tint = tint;
+    filter.color = tint;
   }
 
   let hasChanged = false;
-  if (circleNode.width !== diameter - 2) {
-    circleNode.width = diameter - 2;
-    circleNode.height = diameter - 2;
+  if (circleNode.width !== diameter) {
+    circleNode.width = diameter;
+    circleNode.height = diameter;
     hasChanged = true;
   }
 
