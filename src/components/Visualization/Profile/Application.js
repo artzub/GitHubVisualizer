@@ -33,7 +33,7 @@ class Application {
     this._onlyZoom = true;
 
     this._zoom = d3zoom()
-      .scaleExtent([1/2, 1])
+      .scaleExtent([0.5, 1])
       .on('zoom', this._zoomed.bind(this))
       .on('start', (event) => {
         if (this._onlyZoom) {
@@ -58,8 +58,7 @@ class Application {
         }
 
         return event.ctrlKey;
-      })
-    ;
+      });
 
     this._d3view = d3select(this._instance.view).call(this._zoom);
 
@@ -71,13 +70,15 @@ class Application {
 
     this._colorScale = colorScale();
 
+    const colorScaleFn = (...args) => this._colorScale(...args);
+
     this._group = new Repositories(
       this._instance.renderer.plugins.interaction,
-      { colorScale: (...args) => this._colorScale(...args) },
+      { colorScale: colorScaleFn },
     );
     this._instance.stage.addChild(this._group);
 
-    this._groupsLegend = new GroupsLegend({ colorScale: (...args) => this._colorScale(...args) });
+    this._groupsLegend = new GroupsLegend({ colorScale: colorScaleFn });
     this._instance.stage.addChild(this._groupsLegend);
   }
 
@@ -88,9 +89,11 @@ class Application {
 
   on(...args) {
     const [eventName] = args;
-    const emitter = EventsGroupsLegend[eventName] ? this._groupsLegend : this._group;
+    const emitter = EventsGroupsLegend[eventName]
+      ? this._groupsLegend
+      : this._group;
 
-    const value = emitter.on.apply(emitter, args);
+    const value = emitter.on(...args);
     return value === emitter ? this : value;
   }
 

@@ -86,7 +86,8 @@
     "resize-observer": "^1.0.4",
     "smooth-scrollbar": "^8.8.1",
     "styled-components": "^5.3.8",
-    "use-sound": "^4.0.1"
+    "use-sound": "^4.0.1",
+    "web-vitals": "^3.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.21.0",
@@ -112,9 +113,11 @@
     "dotenv": "^16.0.3",
     "dotenv-expand": "^8.0.3",
     "eslint": "^8.35.0",
+    "eslint-config-airbnb": "^19.0.4",
     "eslint-import-resolver-webpack": "^0.13.2",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-jest": "^27.2.1",
+    "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-netography": "file:config/eslint-plugin-netography",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.32.2",
@@ -153,7 +156,6 @@
     "style-loader": "^3.3.1",
     "tailwindcss": "^3.2.7",
     "terser-webpack-plugin": "^5.3.6",
-    "web-vitals": "^3.1.1",
     "webpack": "^5.75.0",
     "webpack-dev-server": "^4.11.1",
     "webpack-manifest-plugin": "^5.0.0",

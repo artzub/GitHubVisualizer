@@ -42,9 +42,9 @@ class BackgroundGrid extends PIXI.Container {
 
     const pad = this._boundsPadding;
     let countCellWidth = Math.floor(width / this._cellSize);
-    countCellWidth += countCellWidth % 2 + 4;
+    countCellWidth += (countCellWidth % 2) + 4;
     let countCellHeight = Math.floor(height / this._cellSize);
-    countCellHeight += countCellHeight % 2 + 4;
+    countCellHeight += (countCellHeight % 2) + 4;
     const size = this._cellSize;
     const stickSizeBorder = 26;
 
@@ -79,8 +79,8 @@ class BackgroundGrid extends PIXI.Container {
     const w2 = width * 0.5;
     const h2 = height * 0.5;
 
-    for (let i = 0; i < countCellWidth * 0.5; i++) {
-      for (let j = 0; j < countCellHeight * 0.5; j++) {
+    for (let i = 0; i < countCellWidth * 0.5; i += 1) {
+      for (let j = 0; j < countCellHeight * 0.5; j += 1) {
         item = cross(8);
         item.x = w2 - i * size;
         item.y = h2 - j * size;
@@ -88,8 +88,8 @@ class BackgroundGrid extends PIXI.Container {
       }
     }
 
-    for (let i = 1; i < countCellWidth * 0.5; i++) {
-      for (let j = 0; j < countCellHeight * 0.5; j++) {
+    for (let i = 1; i < countCellWidth * 0.5; i += 1) {
+      for (let j = 0; j < countCellHeight * 0.5; j += 1) {
         item = cross(8);
         item.x = w2 + i * size;
         item.y = h2 - j * size;
@@ -97,8 +97,8 @@ class BackgroundGrid extends PIXI.Container {
       }
     }
 
-    for (let i = 0; i < countCellWidth * 0.5; i++) {
-      for (let j = 1; j < countCellHeight * 0.5; j++) {
+    for (let i = 0; i < countCellWidth * 0.5; i += 1) {
+      for (let j = 1; j < countCellHeight * 0.5; j += 1) {
         item = cross(8);
         item.x = w2 - i * size;
         item.y = h2 + j * size;
@@ -106,15 +106,14 @@ class BackgroundGrid extends PIXI.Container {
       }
     }
 
-    for (let i = 1; i < countCellWidth * 0.5; i++) {
-      for (let j = 1; j < countCellHeight * 0.5; j++) {
+    for (let i = 1; i < countCellWidth * 0.5; i += 1) {
+      for (let j = 1; j < countCellHeight * 0.5; j += 1) {
         item = cross(8);
         item.x = w2 + i * size;
         item.y = h2 + j * size;
         children.push(item);
       }
     }
-
 
     this.removeChildren();
     this.addChild(...children);

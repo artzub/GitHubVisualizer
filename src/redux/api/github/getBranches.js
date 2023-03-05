@@ -4,34 +4,33 @@ import getClient from './getClient';
 import { parsePageInfo, parseRateLimit } from './utils';
 
 const reg = /page=(\d+)>; rel="last"/;
-const getCount = (link, defValue = 0) =>
-  link?.includes?.('rel="last"')
-    ? +link.match(reg)[1]
-    : defValue;
+const getCount = (link, defValue = 0) => (link?.includes?.('rel="last"') ? +link.match(reg)[1] : defValue);
 
 /**
  * Gets branches by owner and repo
- * @param {String} owner - login of a user of an organization
- * @param {String} repo - name of repository
- * @param {Number} [perPage] - page size, default 10, (max is 100)
- * @param {Number} [page] - index of page
+ * @param {Object} options
+ * @param {String} options.owner - login of a user of an organization
+ * @param {String} options.repo - name of repository
+ * @param {Number} [options.perPage] - page size, default 10, (max is 100)
+ * @param {Number} [options.page] - index of page
  * @return {Promise<{rateLimit: *, data: Array, pageInfo: *}>}
  */
-export const getBranches = ({ owner, repo, perPage = 10, page }) =>
-  withCancellation(async (signal) => {
-    const client = getClient();
+export const getBranches = (options) => withCancellation(async (signal) => {
+  const { owner, repo, perPage = 10, page } = options || {};
+  const client = getClient();
 
-    const data = await client.repos.listBranches({
-      owner,
-      repo,
-      per_page: perPage,
-      page,
-      request: {
-        signal,
-      },
-    });
+  const data = await client.repos.listBranches({
+    owner,
+    repo,
+    per_page: perPage,
+    page,
+    request: {
+      signal,
+    },
+  });
 
-    const branches = await Promise.all((data?.data || []).map(async (branch) => {
+  const branches = await Promise.all(
+    (data?.data || []).map(async (branch) => {
       const commits = await client.repos.listCommits({
         repo,
         owner,
@@ -49,13 +48,14 @@ export const getBranches = ({ owner, repo, perPage = 10, page }) =>
         },
         commits?.headers,
       ];
-    }));
+    }),
+  );
 
-    const [[,rateHeaders]] = branches.slice(-1);
+  const [[, rateHeaders]] = branches.slice(-1);
 
-    return {
-      data: branches.map(([item]) => item),
-      pageInfo: parsePageInfo(data?.headers),
-      rateLimit: parseRateLimit(rateHeaders),
-    };
-  });
+  return {
+    data: branches.map(([item]) => item),
+    pageInfo: parsePageInfo(data?.headers),
+    rateLimit: parseRateLimit(rateHeaders),
+  };
+});

@@ -3,8 +3,10 @@ import { call, cancelled, delay, put } from 'redux-saga/effects';
 import { getCommits } from '@/redux/api/github';
 import slice from '@/redux/modules/progress';
 import {
-  createSlice, incrementFetching,
-  startFetching, stopFetching,
+  createSlice,
+  incrementFetching,
+  startFetching,
+  stopFetching,
   fail,
 } from '@/redux/utils';
 
@@ -33,12 +35,14 @@ export default createSlice({
             return;
           }
 
-          yield put(slice.actions.change({
-            max: amount,
-            value: 0,
-            valueBuffer: 0,
-            show: true,
-          }));
+          yield put(
+            slice.actions.change({
+              max: amount,
+              value: 0,
+              valueBuffer: 0,
+              show: true,
+            }),
+          );
 
           let next = true;
           let page = 0;
@@ -50,7 +54,7 @@ export default createSlice({
               owner,
               repo,
               perPage: nextPart,
-              page: page,
+              page,
             });
 
             yield put(actions.fetchSuccess({ data, append: page > 0 }));
@@ -61,7 +65,11 @@ export default createSlice({
 
             next = pageInfo.hasNextPage && nextPart > 0;
 
-            yield put(slice.actions.change({ max: Math.min(pageInfo.total || amount, amount) }));
+            yield put(
+              slice.actions.change({
+                max: Math.min(pageInfo.total || amount, amount),
+              }),
+            );
             yield put(slice.actions.incValue(data.length));
             yield put(slice.actions.incValueBuffer(data.length + nextPart));
           }

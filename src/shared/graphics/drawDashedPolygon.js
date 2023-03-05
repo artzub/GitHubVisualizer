@@ -1,4 +1,13 @@
-export const drawDashedPolygon = (node, polygons, x, y, rotation, dash, gap, offsetPercentage) => {
+export const drawDashedPolygon = (
+  node,
+  polygons,
+  x,
+  y,
+  rotation,
+  dash,
+  gap,
+  offsetPercentage,
+) => {
   let i;
   let p1;
   let p2;
@@ -18,8 +27,9 @@ export const drawDashedPolygon = (node, polygons, x, y, rotation, dash, gap, off
   }
 
   const rotatedPolygons = [];
-  for (i = 0; i < polygons.length; i++) {
+  for (i = 0; i < polygons.length; i += 1) {
     if (!polygons[i]) {
+      // eslint-disable-next-line no-continue
       continue;
     }
 
@@ -28,19 +38,18 @@ export const drawDashedPolygon = (node, polygons, x, y, rotation, dash, gap, off
     const sinAngle = Math.sin(rotation);
     dx = p.x;
     dy = p.y;
-    p.x = (dx * cosAngle - dy * sinAngle);
-    p.y = (dx * sinAngle + dy * cosAngle);
+    p.x = dx * cosAngle - dy * sinAngle;
+    p.y = dx * sinAngle + dy * cosAngle;
     rotatedPolygons.push(p);
   }
 
-  for (i = 0; i < rotatedPolygons.length; i++) {
+  for (i = 0; i < rotatedPolygons.length; i += 1) {
     p1 = rotatedPolygons[i];
     if (i === rotatedPolygons.length - 1) {
-      p2 = rotatedPolygons[0];
       return;
-    } else {
-      p2 = rotatedPolygons[i + 1];
     }
+
+    p2 = rotatedPolygons[i + 1];
 
     dx = p2.x - p1.x;
     dy = p2.y - p1.y;
@@ -67,7 +76,10 @@ export const drawDashedPolygon = (node, polygons, x, y, rotation, dash, gap, off
         dashLeft = 0;
       }
 
-      node.lineTo(x + p1.x + progressOnLine * normal.x, y + p1.y + progressOnLine * normal.y);
+      node.lineTo(
+        x + p1.x + progressOnLine * normal.x,
+        y + p1.y + progressOnLine * normal.y,
+      );
 
       progressOnLine += gap;
 
@@ -75,7 +87,10 @@ export const drawDashedPolygon = (node, polygons, x, y, rotation, dash, gap, off
         gapLeft = progressOnLine - len;
       } else {
         gapLeft = 0;
-        node.moveTo(x + p1.x + progressOnLine * normal.x, y + p1.y + progressOnLine * normal.y);
+        node.moveTo(
+          x + p1.x + progressOnLine * normal.x,
+          y + p1.y + progressOnLine * normal.y,
+        );
       }
     }
   }

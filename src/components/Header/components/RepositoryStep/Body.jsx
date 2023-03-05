@@ -7,8 +7,11 @@ import debounce from 'lodash.debounce';
 import styled from 'styled-components';
 
 import {
-  Avatar, ListItem as ListItemOrigin,
-  ListItemAvatar, ListSubheader, TextField,
+  Avatar,
+  ListItem as ListItemOrigin,
+  ListItemAvatar,
+  ListSubheader,
+  TextField,
 } from '@mui/material';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
@@ -79,6 +82,10 @@ const bySearch = (search) => (item) => {
   return String(item?.name).toLowerCase().includes(search.toLowerCase());
 };
 
+const blockLockIcon = <BookLockIcon />;
+const sourceRepositoryIcon = <SourceRepositoryIcon />;
+const bookIcon = <BookIcon />;
+
 const Body = () => {
   const redirectTo = useRedirectTo(UrlPratTypes.repository);
   const dispatch = useDispatch();
@@ -89,10 +96,7 @@ const Body = () => {
   const [filtered, setFiltered] = useState(items);
 
   const changeSearch = useMemo(
-    () => debounce(
-      (value) => setSearch(value),
-      300,
-    ),
+    () => debounce((value) => setSearch(value), 300),
     [],
   );
 
@@ -123,7 +127,11 @@ const Body = () => {
   const Item = useCallback(
     ({ index, style }) => {
       const item = filtered[index];
-      const title = (item.private ? 'Private' : item.fork ? 'Fork' : 'Public');
+      let title = item.fork ? 'Fork' : 'Public';
+      title = item.private ? 'Private' : title;
+
+      let icon = item.isFork ? sourceRepositoryIcon : bookIcon;
+      icon = item.isPrivate ? blockLockIcon : icon;
 
       return (
         <ListItem
@@ -136,18 +144,17 @@ const Body = () => {
           tabIndex="0"
         >
           <ListItemAvatar>
-            <Avatar>
-              {item.isPrivate ? <BookLockIcon /> : (
-                item.isFork ? <SourceRepositoryIcon /> : <BookIcon />
-              )}
-            </Avatar>
+            <Avatar>{icon}</Avatar>
           </ListItemAvatar>
           <ListItemText
             primary={(
               <Primary>
                 {item.isPrivate && <Marker>private</Marker>}
                 {item.isFork && <Marker>fork</Marker>}
-                <Highlight search={search} text={item.name} />
+                <Highlight
+                  search={search}
+                  text={item.name}
+                />
               </Primary>
             )}
             secondary={<Secondary item={item} />}
@@ -184,7 +191,7 @@ const Body = () => {
         ref={inputRef}
       />
       <LoadingOverlay loading={isFetching}>
-        {/*<ListContainer>*/}
+        {/* <ListContainer> */}
         <List
           component="div"
           dense
@@ -199,7 +206,7 @@ const Body = () => {
             {Item}
           </ListItems>
         </List>
-        {/*</ListContainer>*/}
+        {/* </ListContainer> */}
       </LoadingOverlay>
     </Container>
   );

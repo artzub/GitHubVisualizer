@@ -15,10 +15,13 @@ import Tab from '../shared/Tab';
 import Application, { Events } from './Application';
 
 const merge = (data, newData) => {
-  const hash = data.reduce((acc, item) => ({
-    ...acc,
-    [item.id]: item,
-  }), {});
+  const hash = data.reduce(
+    (acc, item) => ({
+      ...acc,
+      [item.id]: item,
+    }),
+    {},
+  );
 
   return newData.map(({ id, ...rest }) => ({
     id,
@@ -31,12 +34,20 @@ const UserVisualization = (props) => {
   const [app, setApp] = useState(null);
   const [container, setContainer] = useState(null);
   const dataRef = useRef([]);
-  const { selected: repo, items } = useSelector(repositoriesSlice.selectors.getState);
+  const { selected: repo, items } = useSelector(
+    repositoriesSlice.selectors.getState,
+  );
   const { name: selected } = repo || {};
   const redirectTo = useRedirectTo(UrlPratTypes.repository);
 
-  const [clickSoundPlay, { stop: clickSoundStop }] = useSound(SoundTypes.click, { volume: 0.25 });
-  const [hoverSoundPlay, { stop: hoverSoundStop }] = useSound(SoundTypes.hover, { volume: 0.25 });
+  const [clickSoundPlay, { stop: clickSoundStop }] = useSound(
+    SoundTypes.click,
+    { volume: 0.25 },
+  );
+  const [hoverSoundPlay, { stop: hoverSoundStop }] = useSound(
+    SoundTypes.hover,
+    { volume: 0.25 },
+  );
 
   const onSelectItem = useRef(null);
   const onOverItem = useRef(null);
@@ -87,7 +98,7 @@ const UserVisualization = (props) => {
   useEffect(
     () => {
       if (!container) {
-        return;
+        return undefined;
       }
       const instance = new Application(container);
       instance.key((item) => item.name);
@@ -129,7 +140,10 @@ const UserVisualization = (props) => {
   );
 
   return (
-    <Tab {...props} ref={setContainer} />
+    <Tab
+      {...props}
+      ref={setContainer}
+    />
   );
 };
 

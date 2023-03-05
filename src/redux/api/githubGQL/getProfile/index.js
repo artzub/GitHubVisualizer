@@ -10,17 +10,16 @@ import query from './query.graphql';
  * @param {Boolean} [isOrganization] - if true then receiving organization
  * @return {Promise<{rateLimit: *, data: object}>}
  */
-export const getProfile = (login, isOrganization = false) =>
-  withCancellation(async () => {
-    const client = getClient();
+export const getProfile = (login, isOrganization = false) => withCancellation(async () => {
+  const client = getClient();
 
-    const data = await client.graphql(query, {
-      login,
-      isOrganization,
-    });
-
-    return {
-      data: data?.organization || data?.user,
-      rateLimit: data?.rateLimit,
-    };
+  const data = await client.graphql(query, {
+    login,
+    isOrganization,
   });
+
+  return {
+    data: data?.organization || data?.user,
+    rateLimit: data?.rateLimit,
+  };
+});

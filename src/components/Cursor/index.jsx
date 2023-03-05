@@ -21,7 +21,7 @@ const Cursor = () => {
   useEffect(
     () => {
       if (!container) {
-        return;
+        return undefined;
       }
       const instance = new Application(container);
 
@@ -32,9 +32,7 @@ const Cursor = () => {
     [container],
   );
 
-  return (
-    <Container ref={setContainer} />
-  );
+  return <Container ref={setContainer} />;
 };
 
 export default Cursor;

@@ -7,31 +7,32 @@ import query from './query.graphql';
 
 /**
  * Gets branches by owner and repo
- * @param {String} owner - login of a user of an organization
- * @param {String} repo - name of repository
- * @param {Number} [perPage] - page size, default 10, (max is 100)
- * @param {String} [page] - cursor of page
+ * @param {Object} options
+ * @param {String} options.owner - login of a user of an organization
+ * @param {String} options.repo - name of repository
+ * @param {Number} [options.perPage] - page size, default 10, (max is 100)
+ * @param {String} [options.page] - cursor of page
  * @return {Promise<{rateLimit: *, data: Array, pageInfo: *}>}
  */
-export const getBranches = ({ owner, repo, page = '', perPage = 10 }) =>
-  withCancellation(async (signal) => {
-    const client = getClient();
+export const getBranches = (options) => withCancellation(async (signal) => {
+  const { owner, repo, page = '', perPage = 10 } = options || {};
+  const client = getClient();
 
-    const fixedQuery = addCursorAfter(query, page);
+  const fixedQuery = addCursorAfter(query, page);
 
-    const data = await client.graphql(fixedQuery, {
-      owner,
-      repo,
-      perPage,
-      page,
-      request: {
-        signal,
-      },
-    });
-
-    return {
-      data: data?.repository?.refs?.nodes,
-      pageInfo: parsePageInfo(data?.repository?.refs),
-      rateLimit: data?.rateLimit,
-    };
+  const data = await client.graphql(fixedQuery, {
+    owner,
+    repo,
+    perPage,
+    page,
+    request: {
+      signal,
+    },
   });
+
+  return {
+    data: data?.repository?.refs?.nodes,
+    pageInfo: parsePageInfo(data?.repository?.refs),
+    rateLimit: data?.rateLimit,
+  };
+});

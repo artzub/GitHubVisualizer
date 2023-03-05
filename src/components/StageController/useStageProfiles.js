@@ -30,7 +30,7 @@ export const useStageProfiles = (service, profile) => {
   useEffect(
     () => {
       if (!profile || login === profile) {
-        return;
+        return undefined;
       }
 
       dispatch(profilesSlice.actions.fetchProfile(profile, 'profile'));

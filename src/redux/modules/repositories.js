@@ -2,8 +2,10 @@ import { put, call, cancelled, delay } from 'redux-saga/effects';
 
 import { getRepositories } from '@/redux/api/github';
 import {
-  createSlice, incrementFetching,
-  startFetching, stopFetching,
+  createSlice,
+  incrementFetching,
+  startFetching,
+  stopFetching,
   fail,
 } from '@/redux/utils';
 
@@ -40,12 +42,14 @@ export default createSlice({
             return;
           }
 
-          yield put(slice.actions.change({
-            max: amount,
-            value: 0,
-            valueBuffer: 0,
-            show: true,
-          }));
+          yield put(
+            slice.actions.change({
+              max: amount,
+              value: 0,
+              valueBuffer: 0,
+              show: true,
+            }),
+          );
 
           let next = true;
           let page = 0;
@@ -54,7 +58,7 @@ export default createSlice({
             const { data, pageInfo } = yield call(getRepositories, {
               owner,
               perPage: 100,
-              page: page,
+              page,
             });
 
             yield put(actions.fetchSuccess({ data, append: page > 0 }));

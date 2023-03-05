@@ -18,7 +18,7 @@ const LinearProgress = styled(LinearProgressOrigin)`
   height: 2px;
 `;
 
-const normalize = ({ value, min, max }) => (value - min) * 100 / (max - min);
+const normalize = ({ value, min, max }) => ((value - min) * 100) / (max - min);
 
 const Progress = () => {
   const state = useSelector(slice.selectors.getState);
@@ -28,7 +28,11 @@ const Progress = () => {
 
   return !state.show ? null : (
     <Container>
-      <LinearProgress variant="buffer" value={value} valueBuffer={valueBuffer} />
+      <LinearProgress
+        variant="buffer"
+        value={value}
+        valueBuffer={valueBuffer}
+      />
     </Container>
   );
 };

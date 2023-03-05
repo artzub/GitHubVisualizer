@@ -25,7 +25,7 @@ const rootSlices = [
 const sagas = [...rootSlices, ...nestedSlices]
   .map((slice) => slice.sagas)
   .filter(Boolean)
-  .reduce((acc, sagas) => [...acc, ...sagas]);
+  .reduce((acc, items) => [...acc, ...items]);
 
 export function* rootSaga() {
   yield all(sagas.map((saga) => saga()));

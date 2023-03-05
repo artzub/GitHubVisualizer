@@ -16,17 +16,23 @@ import Title from '../shared/Title';
 
 const onClick = (event) => event.stopPropagation();
 
+const bookIcon = <BookIcon size={20} />;
+const bookLockIcon = <BookLockIcon size={20} />;
+const sourceRepositoryIcon = <SourceRepositoryIcon size={20} />;
+
 const Header = forwardRef((props, ref) => {
   const { selected } = useSelector(slice.selectors.getState);
   const { name, isPrivate, isFork, url } = selected || {};
 
+  let icon = isFork ? sourceRepositoryIcon : bookIcon;
+  icon = isPrivate ? bookLockIcon : icon;
+
   return (
-    <Container {...props} ref={ref}>
-      {isPrivate ? <BookLockIcon size={20} /> : (
-        isFork
-          ? <SourceRepositoryIcon size={20} />
-          : <BookIcon size={20} />
-      )}
+    <Container
+      {...props}
+      ref={ref}
+    >
+      {icon}
       <InfoContainer>
         {!selected && <div>Choose a repository</div>}
         {selected && (

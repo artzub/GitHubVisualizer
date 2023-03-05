@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console,import/no-import-module-exports */
 import { createStore, applyMiddleware } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import createSagaMiddleware from 'redux-saga';
@@ -10,9 +10,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 
 const sagaMiddleware = createSagaMiddleware();
 
-const middleware = [
-  sagaMiddleware,
-];
+const middleware = [sagaMiddleware];
 const composeEnhancers = composeWithDevTools({
   // actionsBlacklist,
 });

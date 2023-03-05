@@ -42,6 +42,8 @@ class Wrapper {
     }
 
     this.getInstance().focusOn(node);
+
+    return this;
   };
 
   onPointerMove = (event) => {
@@ -49,9 +51,13 @@ class Wrapper {
   };
 
   press = () => this.getInstance().press();
+
   release = () => this.getInstance().release();
+
   resize = (...args) => this.getInstance().resize(...args);
+
   hide = () => this.getInstance().hide();
+
   show = () => this.getInstance().show();
 }
 

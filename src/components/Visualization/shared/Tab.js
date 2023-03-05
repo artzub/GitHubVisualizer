@@ -50,16 +50,16 @@ const Tab = styled(Container)`
   background: ${({ theme }) => theme.palette.background.default};
   z-index: 1;
   transform: translate3d(100%, 0, 0);
-  
+
   animation-name: ${({ $active, $prev, $dir }) => {
     if ($active) {
       return $dir > 0 ? right : left;
     }
-  
+
     if ($prev) {
       return $dir > 0 ? leftRev : rightRev;
     }
-  
+
     return 'none';
   }};
   animation-timing-function: ease-in;

@@ -5,8 +5,7 @@ const defaultAlphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123
  * @param length length of id
  * @param alphabet string of characters to choose from
  */
-export const makeId = (length = 10, alphabet = defaultAlphabet) =>
-  new Array(length)
-    .fill('')
-    .map(() => alphabet[ Math.floor(Math.random() * alphabet.length) ])
-    .join('');
+export const makeId = (length = 10, alphabet = defaultAlphabet) => new Array(length)
+  .fill('')
+  .map(() => alphabet[Math.floor(Math.random() * alphabet.length)])
+  .join('');

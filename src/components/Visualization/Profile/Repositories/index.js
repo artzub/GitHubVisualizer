@@ -5,8 +5,10 @@ import { color as d3color } from 'd3-color';
 import { dispatch } from 'd3-dispatch';
 import {
   forceCollide as d3ForceCollide,
-  forceManyBody, forceSimulation,
-  forceX, forceY,
+  forceManyBody,
+  forceSimulation,
+  forceX,
+  forceY,
 } from 'd3-force';
 import { scaleLinear, scaleLog } from 'd3-scale';
 import { select as d3select } from 'd3-selection';
@@ -14,7 +16,12 @@ import * as PIXI from 'pixi.js-legacy';
 
 import { cursor } from '@/services/CursorFocusService';
 import { OutlineFilter } from '@/shared/graphics/filtres';
-import { colorConvert, colorScale, filledCircleTexture, hasTransition } from '@/shared/utils';
+import {
+  colorConvert,
+  colorScale,
+  filledCircleTexture,
+  hasTransition,
+} from '@/shared/utils';
 
 import forceCluster from './forceCluster';
 import forceCollide from './forceCollide';
@@ -187,9 +194,13 @@ const delay = (ms) => new Promise((resolve) => {
 
 class Repositories extends PIXI.Container {
   _radiusGetter = radiusDefault;
+
   _groupGetter = groupDefault;
+
   _alphaGetter = alphaDefault;
+
   _keyGetter = keyDefault;
+
   _textGetter = textDefault;
 
   constructor(interaction, options = {}) {
@@ -209,19 +220,18 @@ class Repositories extends PIXI.Container {
     this._forceCluster = forceCluster()
       .group(group)
       .strength(0.05)
-      .radius(radius)
-    ;
+      .radius(radius);
+
     this._forceCollide = d3ForceCollide()
       .strength(0.3)
-      .radius((node) => radius(node) * 1.15 + 2)
-    ;
+      .radius((node) => radius(node) * 1.15 + 2);
+
     this._forceCollide = forceCollide()
       .strength(0.3)
       .radius((node) => radius(node) * 1.15 + 2)
       .group(group)
       .padOutside(50)
-      .padInside(0)
-    ;
+      .padInside(0);
 
     this._simulation = forceSimulation()
       .velocityDecay(0.05)
@@ -230,8 +240,7 @@ class Repositories extends PIXI.Container {
       .force('y', forceY(0).strength(0.05))
       .force('charge', forceManyBody())
       .force('cluster', this._forceCluster)
-      .force('collide', this._forceCollide)
-    ;
+      .force('collide', this._forceCollide);
 
     this._simulation.nodes([]);
 
@@ -282,8 +291,8 @@ class Repositories extends PIXI.Container {
     this._simulation = null;
   }
 
-  on() {
-    const value = this._event.on.apply(this._event, arguments);
+  on(...args) {
+    const value = this._event.on(...args);
     return value === this._event ? this : value;
   }
 
@@ -308,9 +317,7 @@ class Repositories extends PIXI.Container {
   updateLayout() {
     const data = this._simulation.nodes();
 
-    const nodes = this._shadow
-      .selectAll('.node')
-      .data(data, this._keyOfItem);
+    const nodes = this._shadow.selectAll('.node').data(data, this._keyOfItem);
 
     const nodesEnter = nodes
       .enter()
@@ -324,12 +331,12 @@ class Repositories extends PIXI.Container {
       .attr('radius', 0)
       .each(this._addNode);
 
-    this._shadowNodes = nodesEnter.merge(nodes)
+    this._shadowNodes = nodesEnter
+      .merge(nodes)
       .attr('text', this._textOfItem)
       .attr('x', getX)
       .attr('y', getY)
-      .attr('radius', this._radiusOfItem)
-    ;
+      .attr('radius', this._radiusOfItem);
 
     this._shadowNodes
       .transition()
@@ -337,10 +344,10 @@ class Repositories extends PIXI.Container {
       .attr('color', this._textColorOfItem)
       .attr('stroke', this._borderColorOfItem)
       .attr('fill', this._colorOfItem)
-      .attr('backgroundAlpha', this._alphaOfItem)
-    ;
+      .attr('backgroundAlpha', this._alphaOfItem);
 
-    nodes.exit()
+    nodes
+      .exit()
       .transition()
       .duration(500)
       .attr('opacity', 0)
@@ -421,6 +428,8 @@ class Repositories extends PIXI.Container {
 
     this._keyGetter = getter || keyDefault;
     this.updateLayout();
+
+    return this;
   }
 
   select(key) {
@@ -430,6 +439,8 @@ class Repositories extends PIXI.Container {
 
     this._selected = key;
     this.updateLayout();
+
+    return this;
   }
 
   _bindMethods() {
@@ -626,7 +637,12 @@ class Repositories extends PIXI.Container {
         this._selected = key;
       }
 
-      this._event.call(Events.selectItem, node.graphic, event, this._selected ? data : null);
+      this._event.call(
+        Events.selectItem,
+        node.graphic,
+        event,
+        this._selected ? data : null,
+      );
       return;
     }
 
@@ -646,9 +662,7 @@ class Repositories extends PIXI.Container {
   }
 
   _keyOfHovered() {
-    return this._keyOfItem(
-      d3select(this._hovered || {}).datum() || {},
-    );
+    return this._keyOfItem(d3select(this._hovered || {}).datum() || {});
   }
 
   _radiusOfItem(node) {
@@ -698,6 +712,7 @@ class Repositories extends PIXI.Container {
   get _selected() {
     return this.__selected;
   }
+
   set _selected(value) {
     this.__selected = value;
     this._updateFocused();
@@ -706,16 +721,14 @@ class Repositories extends PIXI.Container {
   get _hovered() {
     return this.__hovered;
   }
+
   set _hovered(value) {
     this.__hovered = value;
     this._updateFocused();
   }
 
   _restartSimulation() {
-    this._simulation
-      .alpha(0.5)
-      .restart()
-    ;
+    this._simulation.alpha(0.5).restart();
     this._stopEarly(5e3);
   }
 
@@ -747,6 +760,8 @@ class Repositories extends PIXI.Container {
 
     this._shadowNodes?.attr('x', getX).attr('y', getY);
     this.forceRendering();
+
+    return this;
   }
 }
 

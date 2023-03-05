@@ -6,7 +6,7 @@ const PrivateRoute = (props) => {
   const { render, component: Component, ...rest } = props;
 
   const routeRender = useCallback(
-    (routeProps) => Component ? <Component {...routeProps} /> : render(routeProps),
+    (routeProps) => (Component ? <Component {...routeProps} /> : render(routeProps)),
     [Component, render],
   );
 

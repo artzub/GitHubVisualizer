@@ -19,14 +19,22 @@ const StateTypes = {
 
 const FocusOverlay = ({ globalListener }) => {
   const roCallback = useRef();
-  const [clickSoundPlay, { stop: clickSoundStop }] = useSound(SoundTypes.click, { volume: 0.25 });
-  const [hoverSoundPlay, { stop: hoverSoundStop }] = useSound(SoundTypes.hover, { volume: 0.25 });
+  const [clickSoundPlay, { stop: clickSoundStop }] = useSound(
+    SoundTypes.click,
+    { volume: 0.25 },
+  );
+  const [hoverSoundPlay, { stop: hoverSoundStop }] = useSound(
+    SoundTypes.hover,
+    { volume: 0.25 },
+  );
 
-  const ro = useRef(new ResizeObserver((...args) => {
-    if (roCallback.current) {
-      roCallback.current(...args);
-    }
-  }));
+  const ro = useRef(
+    new ResizeObserver((...args) => {
+      if (roCallback.current) {
+        roCallback.current(...args);
+      }
+    }),
+  );
 
   useEffect(
     () => {
@@ -42,7 +50,7 @@ const FocusOverlay = ({ globalListener }) => {
       roCallback.current = (entries) => {
         entries.forEach((entry) => {
           if (entry.target !== state.current && entry.target !== state.focused) {
-            entries.forEach((entry) => ro.current.unobserve(entry.target));
+            entries.forEach((item) => ro.current.unobserve(item.target));
           } else {
             if (entry.target === state[StateTypes.hovered]) {
               cursor.focusOn(state[StateTypes.hovered]);
@@ -57,6 +65,14 @@ const FocusOverlay = ({ globalListener }) => {
 
       const onClick = () => {
         clickSoundPlay();
+      };
+
+      const onDown = () => {
+        cursor.press();
+      };
+
+      const onUp = () => {
+        cursor.release();
       };
 
       const onEnter = (event) => {
@@ -114,14 +130,6 @@ const FocusOverlay = ({ globalListener }) => {
         state[StateTypes.focused] = item;
       };
 
-      const onDown = () => {
-        cursor.press();
-      };
-
-      const onUp = () => {
-        cursor.release();
-      };
-
       const onLeave = (event) => {
         let item = state[StateTypes.hovered];
 
@@ -171,7 +179,11 @@ const FocusOverlay = ({ globalListener }) => {
 
       return () => {
         if (state[StateTypes.hovered]) {
-          state[StateTypes.hovered].removeEventListener('pointerdown', onDown, true);
+          state[StateTypes.hovered].removeEventListener(
+            'pointerdown',
+            onDown,
+            true,
+          );
         }
 
         document.removeEventListener('focus', onFocus, true);
@@ -181,7 +193,13 @@ const FocusOverlay = ({ globalListener }) => {
         document.removeEventListener('pointerup', onUp, true);
       };
     },
-    [clickSoundPlay, clickSoundStop, globalListener, hoverSoundPlay, hoverSoundStop],
+    [
+      clickSoundPlay,
+      clickSoundStop,
+      globalListener,
+      hoverSoundPlay,
+      hoverSoundStop,
+    ],
   );
 
   useEffect(
@@ -200,12 +218,28 @@ const FocusOverlay = ({ globalListener }) => {
         }
       };
 
-      document.documentElement?.addEventListener('pointerenter', onDocumentEnter, true);
-      document.documentElement?.addEventListener('pointerleave', onDocumentLeave, true);
+      document.documentElement?.addEventListener(
+        'pointerenter',
+        onDocumentEnter,
+        true,
+      );
+      document.documentElement?.addEventListener(
+        'pointerleave',
+        onDocumentLeave,
+        true,
+      );
 
       return () => {
-        document.documentElement?.removeEventListener('pointerenter', onDocumentEnter, true);
-        document.documentElement?.removeEventListener('pointerleave', onDocumentLeave, true);
+        document.documentElement?.removeEventListener(
+          'pointerenter',
+          onDocumentEnter,
+          true,
+        );
+        document.documentElement?.removeEventListener(
+          'pointerleave',
+          onDocumentLeave,
+          true,
+        );
       };
     },
     [],

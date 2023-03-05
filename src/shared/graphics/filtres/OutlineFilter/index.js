@@ -1,7 +1,9 @@
 import * as PIXI from 'pixi.js-legacy';
 
-import fragment from './fragment.js';
-import vertex from './vertex.js';
+import fragment from './fragment';
+import vertex from './vertex';
+
+const PI_2 = Math.PI * 2;
 
 // TODO remove after migration to pixi v7
 
@@ -14,10 +16,13 @@ import vertex from './vertex.js';
  */
 class OutlineFilter extends PIXI.Filter {
   static MIN_SAMPLES = 1;
+
   static MAX_SAMPLES = 100;
 
   _thickness = 1;
+
   _alpha = 1.0;
+
   _knockout = false;
 
   /**
@@ -28,9 +33,20 @@ class OutlineFilter extends PIXI.Filter {
    * @param {number} [alpha=1.0] - The alpha of the outline.
    * @param {boolean} [knockout=false] - Only render outline, not the contents.
    */
-  constructor(thickness = 1, color = 0x000000, quality = 0.1, alpha = 1.0, knockout = false)
-  {
-    super(vertex, fragment.replace(/\{\{angleStep\}\}/, OutlineFilter.getAngleStep(quality)));
+  constructor(
+    thickness = 1,
+    color = 0x000000,
+    quality = 0.1,
+    alpha = 1.0,
+    knockout = false,
+  ) {
+    super(
+      vertex,
+      fragment.replace(
+        /\{\{angleStep\}\}/,
+        OutlineFilter.getAngleStep(quality),
+      ),
+    );
 
     this.uniforms.uThickness = new Float32Array([0, 0]);
     this.uniforms.uColor = new Float32Array([0, 0, 0, 1]);
@@ -52,7 +68,7 @@ class OutlineFilter extends PIXI.Filter {
       OutlineFilter.MIN_SAMPLES,
     );
 
-    return (Math.PI * 2 / samples).toFixed(7);
+    return (PI_2 / samples).toFixed(7);
   }
 
   apply(filterManager, input, output, clear) {
@@ -71,6 +87,7 @@ class OutlineFilter extends PIXI.Filter {
   get alpha() {
     return this._alpha;
   }
+
   set alpha(value) {
     this._alpha = value;
   }
@@ -82,6 +99,7 @@ class OutlineFilter extends PIXI.Filter {
   get color() {
     return PIXI.utils.rgb2hex(this.uniforms.uColor);
   }
+
   set color(value) {
     PIXI.utils.hex2rgb(value, this.uniforms.uColor);
   }
@@ -93,6 +111,7 @@ class OutlineFilter extends PIXI.Filter {
   get knockout() {
     return this._knockout;
   }
+
   set knockout(value) {
     this._knockout = value;
   }
@@ -104,6 +123,7 @@ class OutlineFilter extends PIXI.Filter {
   get thickness() {
     return this._thickness;
   }
+
   set thickness(value) {
     this._thickness = value;
     this.padding = value;

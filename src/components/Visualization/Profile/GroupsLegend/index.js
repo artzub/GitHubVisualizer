@@ -5,7 +5,12 @@ import { select as d3select } from 'd3-selection';
 import * as PIXI from 'pixi.js-legacy';
 
 import { cursor } from '@/services/CursorFocusService';
-import { colorConvert, colorScale, hasTransition, roundedRectangularTexture } from '@/shared/utils';
+import {
+  colorConvert,
+  colorScale,
+  hasTransition,
+  roundedRectangularTexture,
+} from '@/shared/utils';
 
 const textStyle = {
   fontSize: '2.4em',
@@ -163,8 +168,8 @@ class GroupsLegend extends PIXI.Container {
     this._destroyed = true;
   }
 
-  on() {
-    const value = this._event.on.apply(this._event, arguments);
+  on(...args) {
+    const value = this._event.on(...args);
     return value === this._event ? this : value;
   }
 
@@ -180,15 +185,14 @@ class GroupsLegend extends PIXI.Container {
 
     this._groupGetter = getter || groupDefault;
     this.updateGroups();
+
+    return this;
   }
 
   data(data) {
-    this._rawData = (data || []);
+    this._rawData = data || [];
 
     return this.updateGroups();
-  }
-
-  resize() {
   }
 
   updateGroups() {
@@ -214,25 +218,22 @@ class GroupsLegend extends PIXI.Container {
   }
 
   updateLayout() {
-    const nodes = this._shadow
-      .selectAll('.node')
-      .data(this._groupData, getKey)
-    ;
+    const nodes = this._shadow.selectAll('.node').data(this._groupData, getKey);
 
-    const nodesEnter = nodes.enter()
+    const nodesEnter = nodes
+      .enter()
       .append('shadow')
       .attr('class', 'node')
       .attr('id', getKey)
       .attr('opacity', 0)
       .attr('hovered', 0)
-      .each(this._addNode)
-    ;
+      .each(this._addNode);
 
-    this._shadowNodes = nodes.merge(nodesEnter)
+    this._shadowNodes = nodes
+      .merge(nodesEnter)
       .attr('value', getValue)
       .attr('text', getKey)
-      .each(updateNodeGraphic)
-    ;
+      .each(updateNodeGraphic);
 
     this._shadowNodes
       .transition()
@@ -242,12 +243,9 @@ class GroupsLegend extends PIXI.Container {
       .attr('barColor', this._getBarColor)
       .attr('nameColor', this._getNameColor)
       .attr('valueColor', this._getValueColor)
-      .attr('opacity', 1)
-    ;
+      .attr('opacity', 1);
 
-    nodes.exit()
-      .each(this._removeGraphic)
-      .remove();
+    nodes.exit().each(this._removeGraphic).remove();
 
     this.forceRendering();
 
@@ -306,15 +304,19 @@ class GroupsLegend extends PIXI.Container {
       nameNode.rotation = -Math.PI / 2;
       nameNode.name = 'name';
 
-      let width = nameNode.height * 1.5;
+      const width = nameNode.height * 1.5;
 
-      const barNode = new PIXI.Sprite(roundedRectangularTexture('#fff', 1, 1, 0));
+      const barNode = new PIXI.Sprite(
+        roundedRectangularTexture('#fff', 1, 1, 0),
+      );
       barNode.width = width * 0.8;
       barNode.anchor.set(0.5, 0);
       barNode.y = 2;
       barNode.name = 'bar';
 
-      const boundNode = new PIXI.Sprite(roundedRectangularTexture('#fff', 1, 1, 0));
+      const boundNode = new PIXI.Sprite(
+        roundedRectangularTexture('#fff', 1, 1, 0),
+      );
       boundNode.width = width;
       boundNode.alpha = 0;
       boundNode.anchor.set(0.5, 0);

@@ -11,7 +11,11 @@ const forceCollide = () => {
   let maxRadius;
 
   function force(alpha) {
-    const qt = quadtree(nodes, (d) => d.x, (d) => d.y);
+    const qt = quadtree(
+      nodes,
+      (d) => d.x,
+      (d) => d.y,
+    );
 
     nodes.forEach((node) => {
       const r = radius(node) + maxRadius;
@@ -24,14 +28,14 @@ const forceCollide = () => {
         if (!q.length) {
           do {
             if (q.data !== node) {
-              const pad = (group(node) === group(q.data) ? padInside : padOutside);
-              const r = radius(node) + radius(q.data) + pad;
+              const pad = group(node) === group(q.data) ? padInside : padOutside;
+              const nr = radius(node) + radius(q.data) + pad;
               let x = node.x - q.data.x;
               let y = node.y - q.data.y;
               let l = Math.hypot(x, y);
 
-              if (l < r) {
-                l = (l - r) / (l || 1) * alpha * strength;
+              if (l < nr) {
+                l = ((l - nr) / (l || 1)) * alpha * strength;
                 x *= l;
                 y *= l;
 
@@ -77,7 +81,7 @@ const forceCollide = () => {
     if (args.length < 1) {
       return group;
     }
-    group = args[0];
+    [group] = args;
     return force;
   };
 
@@ -93,7 +97,7 @@ const forceCollide = () => {
     if (args.length < 1) {
       return radius;
     }
-    radius = args[0];
+    [radius] = args;
     return force;
   };
 

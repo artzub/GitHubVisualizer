@@ -20,11 +20,11 @@ const Visualization = () => {
   const [dir, from] = useMemo(
     () => {
       const last = prev.current;
-      const dir = Order[stage] - Order[prev.current];
+      const direction = Order[stage] - Order[prev.current];
 
       prev.current = stage;
 
-      return [dir, last];
+      return [direction, last];
     },
     [stage],
   );
@@ -36,7 +36,7 @@ const Visualization = () => {
         $prev={from === StageTypes.profile}
         $dir={dir}
       />
-      {/*<Tab
+      {/* <Tab
         $active={stage === StageTypes.repository}
         $prev={from === StageTypes.repository}
         $dir={dir}
@@ -49,7 +49,7 @@ const Visualization = () => {
         $dir={dir}
       >
         {StageTypes.show}
-      </Tab>*/}
+      </Tab> */}
     </Container>
   );
 };

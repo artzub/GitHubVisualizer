@@ -19,14 +19,14 @@ const bindGraphic = (graphic) => function () {
 };
 
 const updatePosition = function () {
-  const graphic = this.graphic;
+  const { graphic } = this;
   const attrs = this.attributes;
   graphic.x = +attrs.x.value;
   graphic.y = +attrs.y.value;
 };
 
 const drawRect = function () {
-  const graphic = this.graphic;
+  const { graphic } = this;
   const attrs = this.attributes;
   const x0 = +attrs.x0.value;
   const y0 = +attrs.y0.value;
@@ -38,7 +38,12 @@ const drawRect = function () {
 
   graphic.clear();
   graphic.lineStyle(1, 0xffffff, 0.2);
-  graphic.drawRect(x0 + (width && 0.5), y0 + (height && 0.5), width, height - (height && 0.5));
+  graphic.drawRect(
+    x0 + (width && 0.5),
+    y0 + (height && 0.5),
+    width,
+    height - (height && 0.5),
+  );
 };
 
 export class Cursor extends PIXI.Container {
@@ -89,7 +94,7 @@ export class Cursor extends PIXI.Container {
     }
 
     const stickSize = 10;
-    let points = [
+    const points = [
       [stickSize, 0, 0.5, 0, 0.5, stickSize],
       [0.5, stickSize, 0.5, 0, -stickSize + 0.5, 0],
       [-stickSize + 0.5, 0, 0.5, 0, 0.5, -stickSize],
@@ -241,7 +246,10 @@ export class Cursor extends PIXI.Container {
   }
 
   onPointerMove(event) {
-    if ((this._focused && event?.currentTarget !== this._focused) || !event?.data?.global) {
+    if (
+      (this._focused && event?.currentTarget !== this._focused)
+      || !event?.data?.global
+    ) {
       return;
     }
 
@@ -250,9 +258,7 @@ export class Cursor extends PIXI.Container {
   }
 
   moveToPoint(x, y) {
-    this._shadowMain
-      .attr('x', x)
-      .attr('y', y);
+    this._shadowMain.attr('x', x).attr('y', y);
   }
 
   show() {
@@ -265,10 +271,7 @@ export class Cursor extends PIXI.Container {
   }
 
   hide() {
-    this._shadowMain
-      .transition('fade')
-      .duration(duration)
-      .attr('opacity', 0);
+    this._shadowMain.transition('fade').duration(duration).attr('opacity', 0);
   }
 
   _expand() {
@@ -308,8 +311,8 @@ export class Cursor extends PIXI.Container {
       this._shadowBorders
         .transition('border-move')
         .duration(duration)
-        .attr('x', ([x]) => Math.sign(x) * -1 * Math.max(w2 + offset, 12))
-        .attr('y', ([, y]) => Math.sign(y) * -1 * Math.max(h2 + offset, 12));
+        .attr('x', (d) => Math.sign(d[0]) * -1 * Math.max(w2 + offset, 12))
+        .attr('y', (d) => Math.sign(d[1]) * -1 * Math.max(h2 + offset, 12));
     }
 
     if (this._dots) {

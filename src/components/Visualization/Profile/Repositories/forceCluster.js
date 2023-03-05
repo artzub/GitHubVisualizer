@@ -32,7 +32,7 @@ const forceCluster = () => {
     if (args.length < 1) {
       return group;
     }
-    group = args[0];
+    [group] = args;
     return force;
   };
 
@@ -40,7 +40,7 @@ const forceCluster = () => {
     if (args.length < 1) {
       return radius;
     }
-    radius = args[0];
+    [radius] = args;
     getCentroid = centroid(radius);
     return force;
   };

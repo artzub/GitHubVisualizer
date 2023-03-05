@@ -20,7 +20,7 @@ const ButtonContainer = styled.div`
   min-width: 64px;
   max-width: 64px;
   overflow: hidden;
-  
+
   & > * {
     transition: margin-left 0.3s, transform 0.3s;
     margin-left: 0;
@@ -32,7 +32,6 @@ const ButtonContainer = styled.div`
     transform: translate(-50%, 0);
   }
 `;
-
 
 const Header = (props) => {
   const { disabled, ...rest } = props;

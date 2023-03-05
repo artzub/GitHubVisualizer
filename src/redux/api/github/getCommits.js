@@ -5,31 +5,33 @@ import getClient from './getClient';
 
 /**
  * Gets commits from a repo's branch of a user
- * @param {String} owner - login of a user of an organization
- * @param {String} repo - name of repository
- * @param {String} branch - name of branch
- * @param {Number} [perPage] - page size, default 10, (max is 100)
- * @param {Number} [page] - index of page
+ * @param {Object} options
+ * @param {String} options.owner - login of a user of an organization
+ * @param {String} options.repo - name of repository
+ * @param {String} options.branch - name of branch
+ * @param {Number} [options.perPage] - page size, default 10, (max is 100)
+ * @param {Number} [options.page] - index of page
  * @return {Promise<{rateLimit: *, data: Array, pageInfo: *}>}
  */
-export const getCommits = ({ owner, repo, branch, perPage = 10, page }) =>
-  withCancellation(async (signal) => {
-    const client = getClient();
+export const getCommits = (options) => withCancellation(async (signal) => {
+  const { owner, repo, branch, perPage = 10, page } = options || {};
+  const client = getClient();
 
-    const data = await client.repos.listCommits({
-      repo,
-      owner,
-      sha: branch,
-      per_page: perPage,
-      page,
-      request: {
-        signal,
-      },
-    });
+  const data = await client.repos.listCommits({
+    repo,
+    owner,
+    sha: branch,
+    per_page: perPage,
+    page,
+    request: {
+      signal,
+    },
+  });
 
-    const ids = data?.data?.map(({ sha }) => sha) || [];
+  const ids = data?.data?.map(({ sha }) => sha) || [];
 
-    const commits = await Promise.all(ids.map(async (ref) => {
+  const commits = await Promise.all(
+    ids.map(async (ref) => {
       const d = await client.repos.getCommit({
         owner,
         repo,
@@ -39,13 +41,14 @@ export const getCommits = ({ owner, repo, branch, perPage = 10, page }) =>
         },
       });
       return [d?.data, d?.headers];
-    }));
+    }),
+  );
 
-    const [[,rateHeaders]] = commits.slice(-1);
+  const [[, rateHeaders]] = commits.slice(-1);
 
-    return {
-      data: commits.map(([item]) => item),
-      pageInfo: parsePageInfo(data?.headers),
-      rateLimit: parseRateLimit(rateHeaders),
-    };
-  });
+  return {
+    data: commits.map(([item]) => item),
+    pageInfo: parsePageInfo(data?.headers),
+    rateLimit: parseRateLimit(rateHeaders),
+  };
+});

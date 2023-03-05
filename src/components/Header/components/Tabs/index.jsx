@@ -24,12 +24,12 @@ const Tab = styled.button`
   font-size: 12px;
   color: ${({ $active }) => teal[$active ? 200 : 700]};
   padding: 3px 6px;
-  padding-right: ${({ $notDivider }) => $notDivider ? null : '10px'};
+  padding-right: ${({ $notDivider }) => ($notDivider ? null : '10px')};
   outline: 0;
-  cursor: ${({ $active }) => $active ? 'default' : 'pointer'};
+  cursor: ${({ $active }) => ($active ? 'default' : 'pointer')};
   background: transparent;
   flex: 1 1 0;
-  
+
   transition: opacity 0.3s, color 0.3s;
   &:hover:not(:disabled) {
     color: ${({ $active }) => teal[$active ? 200 : 400]};
@@ -38,14 +38,14 @@ const Tab = styled.button`
     color: ${({ $active }) => teal[$active ? 200 : 100]};
   }
 
-  pointer-events: ${({ $active }) => $active ? 'none' : null};
-  
+  pointer-events: ${({ $active }) => ($active ? 'none' : null)};
+
   &:disabled {
     color: #888888;
     cursor: default;
     pointer-events: none;
   }
-  
+
   &:before {
     content: '';
     position: absolute;
@@ -53,10 +53,10 @@ const Tab = styled.button`
     top: 0;
     bottom: 0;
     width: 2px;
-    border-right: ${({ $notDivider }) => $notDivider ? null : '1px solid rgba(0,0,0,0.3)'};
-    box-shadow: ${({ $notDivider }) => $notDivider ? null : '1px 0 0 0 rgba(0,0,0,0.2)'};
+    border-right: ${({ $notDivider }) => ($notDivider ? null : '1px solid rgba(0,0,0,0.3)')};
+    box-shadow: ${({ $notDivider }) => ($notDivider ? null : '1px 0 0 0 rgba(0,0,0,0.2)')};
   }
-  
+
   & > span {
     pointer-events: none;
   }
@@ -137,7 +137,7 @@ const Tabs = () => {
   useEffect(
     () => {
       if (!slider) {
-        return;
+        return undefined;
       }
 
       const end = () => {

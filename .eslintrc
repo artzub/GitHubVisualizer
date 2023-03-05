@@ -30,14 +30,11 @@
   },
 
   "extends": [
-    "eslint:recommended",
-    "plugin:react/recommended",
-    "plugin:jest/recommended",
-    "plugin:promise/recommended",
-    "plugin:security/recommended"
+    "airbnb"
   ],
 
   "plugins": [
+    "react",
     "react-hooks",
     "react-redux",
     "jest",
@@ -49,73 +46,57 @@
   ],
 
   "rules": {
-    "semi": [2, "always"],
-    "eol-last": ["error", "always"],
-
     "security/detect-object-injection": [0],
 
     "promise/prefer-await-to-callbacks": "warn",
     "promise/prefer-await-to-then": "warn",
     "promise/always-return": "warn",
 
-    "react/jsx-indent": [2, 2, {"indentLogicalExpressions": true, "checkAttributes": true}],
-    "react/jsx-props-no-spreading":  [0],
-    "react/jsx-no-bind": [0],
-    "react/jsx-indent-props": [2, 2],
-    "react/function-component-definition": [1, { "namedComponents": "arrow-function", "unnamedComponents": "arrow-function" }],
-    "react/jsx-max-props-per-line": [1, { "when":  "multiline" }],
-    "react/jsx-no-literals": [0],
-    "react/jsx-max-depth": [0],
-    "react/jsx-sort-props": [0],
-    "react/jsx-fragments": ["warn", "element"],
-    "react/sort-prop-types": [0],
-    // "import/no-unused-modules": [1, {"unusedExports": true}], // uncomment to find out what files are unused
+    "semi": [2, "always"],
+    "eol-last": ["error", "always"],
     "no-unused-vars": "warn",
     "no-multi-spaces": "warn",
     "no-restricted-syntax": ["error", "IfStatement > :not(BlockStatement).consequent"],
     "arrow-parens": "warn",
-    "comma-dangle": ["warn", "always-multiline"],
+    "comma-dangle": "warn",
     "padded-blocks": ["warn", "never"],
-    "react/require-default-props": "warn",
     "linebreak-style": "off",
     "arrow-body-style": "off",
     "no-param-reassign": "off",
-    "react/no-typos": "off",
     "func-names": "off",
-    "import/no-named-as-default-member": "off",
-    "import/no-named-as-default": "off",
-    "import/prefer-default-export": "off",
     "max-len": ["error", {"code": 180, "ignoreRegExpLiterals": true, "tabWidth": 2}],
     "no-console": ["warn"],
     "no-underscore-dangle": "off",
-    "object-curly-newline": ["error", {
-      "ImportDeclaration": {"multiline": true, "consistent": true, "minProperties": 6}
-    }],
-    "react/jsx-filename-extension": ["warn", { "extensions": [".js", ".jsx"] }],
-    "react/jsx-one-expression-per-line": "off",
-    "react/destructuring-assignment": "off",
-    "react/no-danger": "off",
-    "react-hooks/rules-of-hooks": "error",
     "max-classes-per-file": "off",
-    "react/jsx-curly-spacing": [2, {"when": "never"}],
     "object-curly-spacing": ["warn", "always", { "objectsInObjects": true }],
     "indent": ["error", 2, { "SwitchCase": 1 }],
-    "react/react-in-jsx-scope": "off",
+    "quotes": ["error", "single", { "avoidEscape": true }],
+    "no-else-return": ["error", { "allowElseIf": false }],
+    "curly": ["error"],
+    "no-constructor-return": "off",
+    "object-curly-newline": ["error", {
+      "ImportDeclaration": { "multiline": true, "consistent": true, "minProperties": 6 },
+      "ObjectPattern": { "multiline": true },
+      "ObjectExpression": { "multiline": true, "consistent": true }
+    }],
     "function-call-argument-newline": ["error", "consistent"],
     "function-paren-newline": ["error", "multiline-arguments"],
-    "netography/function-paren-newline": ["error", {
-      "pattern": "^use(Memo|Callback|Effect|LayoutEffect)$",
-      "minArgs": 1
-    }, {
-      "pattern": "^createSelector$"
-    }, {
-      "pattern": "^from$",
-      "minArgs": 1
+    "no-unsafe-optional-chaining": ["error", {
+      "disallowArithmeticOperators": false
     }],
-    "netography/object-property-newline": ["error", {
-      "minProperties": 7,
-      "minLineLength": 80
-    }],
+
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "jsx": "never"
+      }
+    ],
+    // "import/no-unused-modules": [1, {"unusedExports": true}], // uncomment to find out what files are unused
+    "import/no-named-as-default-member": "off",
+    "import/no-named-as-default": "off",
+    "import/prefer-default-export": "off",
     "import/order": ["error", {
       "newlines-between": "always",
       "groups": [
@@ -166,9 +147,63 @@
         "caseInsensitive": true
       }
     }],
+
+    "netography/function-paren-newline": ["error", {
+      "pattern": "^use(Memo|Callback|Effect|LayoutEffect)$",
+      "minArgs": 1
+    }, {
+      "pattern": "^createSelector$"
+    }, {
+      "pattern": "^from$",
+      "minArgs": 1
+    }],
+    "netography/object-property-newline": ["error", {
+      "minProperties": 7,
+      "minLineLength": 80
+    }],
+
     "react/forbid-component-props": [0],
-    "quotes": ["error", "single", { "avoidEscape": true }],
     "react/jsx-no-leaked-render": [0],
-    "react/jsx-newline": [0]
+    "react/jsx-newline": [0],
+    "react/jsx-indent-props": ["error", 2],
+    "react/jsx-first-prop-new-line": ["error", "multiline"],
+    "react/jsx-closing-bracket-location": ["error", "tag-aligned"],
+    "react/jsx-closing-tag-location": "error",
+    "react/jsx-no-constructed-context-values": "error",
+    "react/jsx-max-props-per-line": ["error", { "maximum": { "single": 3, "multi": 1 } }],
+    "react/jsx-wrap-multilines": ["error", {
+      "declaration": "parens-new-line",
+      "assignment": "parens-new-line",
+      "return": "parens-new-line",
+      "arrow": "parens-new-line",
+      "condition": "parens-new-line",
+      "logical": "parens-new-line",
+      "prop": "parens-new-line"
+    }],
+    "react/jsx-curly-newline": ["error", {
+      "multiline": "consistent",
+      "singleline": "forbid"
+    }],
+    "react/function-component-definition": [2, {
+      "namedComponents": ["arrow-function"],
+      "unnamedComponents": ["arrow-function"]
+    }],
+    "react/jsx-indent": [2, 2, {"indentLogicalExpressions": true, "checkAttributes": true}],
+    "react/jsx-props-no-spreading":  [0],
+    "react/jsx-no-bind": [0],
+    "react/jsx-no-literals": [0],
+    "react/jsx-max-depth": [0],
+    "react/jsx-sort-props": [0],
+    "react/jsx-fragments": ["warn", "element"],
+    "react/sort-prop-types": [0],
+    "react/require-default-props": "warn",
+    "react/no-typos": "off",
+    "react/jsx-filename-extension": ["warn", { "extensions": [".jsx"] }],
+    "react/jsx-one-expression-per-line": "off",
+    "react/destructuring-assignment": "off",
+    "react/no-danger": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "react/jsx-curly-spacing": [2, {"when": "never"}],
+    "react/react-in-jsx-scope": "off"
   }
 }

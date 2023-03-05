@@ -6,27 +6,28 @@ import { repository } from './transforms';
 
 /**
  * Gets repositories of an owner
- * @param {String} owner - login of a user of an organization
- * @param {Number} [perPage] - page size, default 10, (max is 100)
- * @param {Number} [page] - index of page
+ * @param {Object} options
+ * @param {String} options.owner - login of a user of an organization
+ * @param {Number} [options.perPage] - page size, default 10, (max is 100)
+ * @param {Number} [options.page] - index of page
  * @return {Promise<{rateLimit: *, data: Array, pageInfo: *}>}
  */
-export const getRepositories = ({ owner, perPage = 10, page }) =>
-  withCancellation(async (signal) => {
-    const client = getClient();
+export const getRepositories = (options) => withCancellation(async (signal) => {
+  const { owner, perPage = 10, page } = options || {};
+  const client = getClient();
 
-    const data = await client.repos.listForUser({
-      username: owner,
-      per_page: perPage,
-      page,
-      request: {
-        signal,
-      },
-    });
-
-    return {
-      data: (data?.data || []).map(repository),
-      pageInfo: parsePageInfo(data?.headers),
-      rateLimit: parseRateLimit(data?.headers),
-    };
+  const data = await client.repos.listForUser({
+    username: owner,
+    per_page: perPage,
+    page,
+    request: {
+      signal,
+    },
   });
+
+  return {
+    data: (data?.data || []).map(repository),
+    pageInfo: parsePageInfo(data?.headers),
+    rateLimit: parseRateLimit(data?.headers),
+  };
+});
