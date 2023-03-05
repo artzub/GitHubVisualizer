@@ -1,5 +1,6 @@
 // TODO use it after migration to pixi.js v7
 // import { OutlineFilter } from '@pixi/filter-outline';
+import 'd3-transition';
 import { extent } from 'd3-array';
 import { color as d3color } from 'd3-color';
 import { dispatch } from 'd3-dispatch';
@@ -12,6 +13,7 @@ import {
 } from 'd3-force';
 import { scaleLinear, scaleLog } from 'd3-scale';
 import { select as d3select } from 'd3-selection';
+import { Viewport } from 'pixi-viewport';
 import * as PIXI from 'pixi.js-legacy';
 
 import { cursor } from '@/services/CursorFocusService';
@@ -103,7 +105,7 @@ const addNodeFactory = (container) => function () {
 
   this.graphic = graphic;
 
-  container.addChild(graphic);
+  container._group.addChild(graphic);
 };
 
 const updateNodePosition = function () {
@@ -115,8 +117,8 @@ const updateNodePosition = function () {
 
   const attrs = this.attributes;
 
-  const x = +attrs.x?.value ?? 0;
-  const y = +attrs.y?.value ?? 0;
+  const x = +attrs.x?.value;
+  const y = +attrs.y?.value;
 
   graphic.x = x;
   graphic.y = y;
@@ -127,18 +129,18 @@ const updateNodeGraphic = function () {
 
   const attrs = this.attributes;
 
-  const radius = Math.max(+attrs.radius?.value ?? 0, 0);
+  const radius = Math.max(+attrs.radius?.value, 0);
   const diameter = radius * 2;
   const color = attrs.color?.value ?? '#000';
   const fill = attrs.fill?.value ?? '#fff';
   const stroke = attrs.stroke?.value ?? '#000';
   const text = attrs.text?.value ?? '';
-  const backgroundAlpha = +attrs.backgroundAlpha?.value ?? 1;
-  const opacity = +attrs.opacity?.value ?? 1;
+  const backgroundAlpha = +(attrs.backgroundAlpha?.value ?? 1);
+  const opacity = +(attrs.opacity?.value ?? 1);
 
-  const hovered = +attrs.hovered?.value ?? 0;
-  const selected = +attrs.selected?.value ?? 0;
-  const colorless = +attrs.colorless?.value ?? 0;
+  const hovered = +attrs.hovered?.value;
+  const selected = +attrs.selected?.value;
+  const colorless = +attrs.colorless?.value;
 
   if (graphic && graphic.alpha !== opacity) {
     graphic.alpha = opacity;
@@ -170,9 +172,9 @@ const updateNodeGraphic = function () {
     circleNode.tint = tint;
   }
 
-  if (boundsNode.width !== diameter - 4) {
-    boundsNode.width = diameter - 4;
-    boundsNode.height = diameter - 4;
+  if (boundsNode.width !== diameter - 2) {
+    boundsNode.width = diameter - 2;
+    boundsNode.height = diameter - 2;
   }
 
   tint = colorConvert(bleach(stroke, colorless));
@@ -229,6 +231,26 @@ class Repositories extends PIXI.Container {
     this._interaction = interaction;
 
     this._bindMethods();
+
+    this._viewport = new Viewport({
+      passiveWheel: false,
+      interaction,
+    });
+
+    this._viewport
+      .drag()
+      .pinch()
+      .wheel()
+      .decelerate()
+      .clampZoom({ minScale: 0.1, maxScale: 2 });
+
+    this._viewport.moveCenter(0, 0);
+
+    this._group = new PIXI.Container();
+
+    this._viewport.addChild(this._group);
+
+    this.addChild(this._viewport);
 
     this._shadow = d3select(document.createElement('shadow'));
 
@@ -293,6 +315,23 @@ class Repositories extends PIXI.Container {
     };
 
     this._drawTimer = requestAnimationFrame(drawLoop);
+
+    const onWheel = () => {
+      if (this._hovered) {
+        cursor.refreshFocus();
+      }
+    };
+
+    this._viewport.on('wheel', onWheel);
+    this._viewport.on('wheel-scroll', onWheel);
+    this._viewport.on('pointerdown', () => {
+      if (!this._hovered) {
+        cursor.showResize();
+      }
+    });
+    this._viewport.on('pointerup', () => {
+      cursor.hideResize();
+    });
   }
 
   destroy(...args) {
@@ -476,7 +515,7 @@ class Repositories extends PIXI.Container {
 
   _bindMethods() {
     this._addNode = addNodeFactory(this);
-    this._removeNode = removeNodeFactory(this);
+    this._removeNode = removeNodeFactory(this._group);
 
     this._radiusOfItem = this._radiusOfItem.bind(this);
     this._colorOfItem = this._colorOfItem.bind(this);
@@ -592,12 +631,12 @@ class Repositories extends PIXI.Container {
 
     this._clicked = node;
 
-    node.startPoint = event.data.getLocalPosition(this);
-
     cursor.press();
 
     const data = d3select(node).datum();
     const { graphic } = node;
+
+    node.startPoint = this._viewport.toWorld(event.data.global);
 
     this.cursor = 'grabbing';
 
@@ -606,6 +645,8 @@ class Repositories extends PIXI.Container {
     this._emit(Events.dragStart, graphic, event, data);
 
     this.parent.interactiveChildren = false;
+
+    this._viewport.plugins.pause('drag');
 
     this._interaction
       .on('pointermove', this._onDrag)
@@ -622,13 +663,16 @@ class Repositories extends PIXI.Container {
     const node = this._clicked;
 
     const { x, y } = node.startPoint;
-    const point = event.data.getLocalPosition(this);
+
+    const point = this._viewport.toWorld(event.data.global);
 
     this._dragging = this._dragging || Math.hypot(point.x - x, point.y - y) > 0;
 
     if (!this._dragging) {
       return;
     }
+
+    cursor.showResize();
 
     const data = d3select(node).datum();
 
@@ -654,12 +698,15 @@ class Repositories extends PIXI.Container {
     const node = this._clicked;
     this._clicked = null;
 
+    node.startPoint = null;
+
     const prevDragging = this._dragging;
     this._dragging = false;
 
     const data = d3select(node).datum();
 
     cursor.release();
+    cursor.hideResize();
 
     this.cursor = 'pointer';
 
@@ -673,6 +720,8 @@ class Repositories extends PIXI.Container {
     d3select(document.body).style('user-select', null);
 
     this._event.call(Events.dragEnd, node.graphic, event, data);
+
+    this._viewport.plugins.resume('drag');
 
     if (!prevDragging) {
       const key = this._keyOfItem(data);
@@ -810,6 +859,40 @@ class Repositories extends PIXI.Container {
     this.forceRendering();
 
     return this;
+  }
+
+  resize(width, height) {
+    this._resizeViewport(width, height);
+  }
+
+  /**
+   * @param {{ x: number, y: number }} center
+   * @return {Repositories}
+   */
+  resetViewport(center) {
+    if (this.destroyed) {
+      return this;
+    }
+
+    this._viewport.moveCenter(center || { x: 0, y: 0 });
+    this._viewport.fit(true);
+
+    return this;
+  }
+
+  _resizeViewport(width, height, worldWidth, worldHeight, fit, center) {
+    const wWidth = worldWidth || width * 4;
+    const wHeight = worldHeight || height * 4;
+
+    const lastCenter = center || this._viewport.center;
+
+    this._viewport.resize(width, height, wWidth, wHeight);
+
+    if (fit) {
+      this.resetViewport(lastCenter);
+    } else {
+      this._viewport.moveCenter(lastCenter);
+    }
   }
 }
 

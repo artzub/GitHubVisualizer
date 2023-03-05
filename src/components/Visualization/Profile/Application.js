@@ -1,5 +1,3 @@
-import { select as d3select } from 'd3-selection';
-import { zoom as d3zoom, zoomIdentity, zoomTransform } from 'd3-zoom';
 import * as PIXI from 'pixi.js-legacy';
 
 import { colorScale } from '@/shared/utils';
@@ -29,38 +27,6 @@ class Application {
     this._instance.renderer.plugins.interaction.cursorStyles.default = 'none';
 
     container.append(this._instance.view);
-
-    this._onlyZoom = true;
-
-    this._zoom = d3zoom()
-      .scaleExtent([0.5, 1])
-      .on('zoom', this._zoomed.bind(this))
-      .on('start', (event) => {
-        if (this._onlyZoom) {
-          return;
-        }
-
-        if (event.sourceEvent?.type === 'mousedown') {
-          this._lastCursor = this._d3view.style('cursor');
-          this._d3view.style('cursor', 'move');
-        }
-      })
-      .on('end', () => {
-        if (this._onlyZoom) {
-          return;
-        }
-
-        this._d3view.style('cursor', this._lastCursor || 'none');
-      })
-      .filter((event) => {
-        if (event.type === 'wheel') {
-          return true;
-        }
-
-        return event.ctrlKey;
-      });
-
-    this._d3view = d3select(this._instance.view).call(this._zoom);
 
     this._instance.queueResize();
 
@@ -170,32 +136,8 @@ class Application {
     return this;
   }
 
-  _zoomed(event) {
-    const { transform } = event;
-
-    if (!this._onlyZoom) {
-      this._group.x = transform.x;
-      this._group.y = transform.y;
-    }
-    this._group.scale.x = transform.k;
-    this._group.scale.y = transform.k;
-  }
-
   _resize(width, height) {
-    if (this._onlyZoom) {
-      this._group.x = width * 0.5;
-      this._group.y = height * 0.5;
-    } else {
-      this._prevTransform = this._prevTransform || zoomIdentity.translate(0, 0);
-
-      const transform = zoomTransform(this._d3view.node())
-        .translate(-this._prevTransform.x, -this._prevTransform.y)
-        .translate(width * 0.5, height * 0.5);
-
-      this._prevTransform = zoomIdentity.translate(width * 0.5, height * 0.5);
-
-      this._d3view.call(this._zoom.transform, transform);
-    }
+    this._group.resize(width, height);
 
     this._groupsLegend.x = 25;
     this._groupsLegend.y = height - 120;

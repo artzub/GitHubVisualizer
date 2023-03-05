@@ -59,6 +59,12 @@ class Wrapper {
   hide = () => this.getInstance().hide();
 
   show = () => this.getInstance().show();
+
+  refreshFocus = () => this.getInstance().refreshFocus();
+
+  showResize = () => this.getInstance().showResize();
+
+  hideResize = () => this.getInstance().hideResize();
 }
 
 export default Wrapper;

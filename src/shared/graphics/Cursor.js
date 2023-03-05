@@ -18,9 +18,16 @@ const bindGraphic = (graphic) => function () {
   this.graphic = graphic;
 };
 
-const updatePosition = function () {
+const updateGraphic = function () {
   const { graphic } = this;
   const attrs = this.attributes;
+
+  const opacity = +(attrs.opacity?.value ?? 1);
+
+  if (graphic.alpha !== opacity) {
+    graphic.alpha = opacity;
+  }
+
   graphic.x = +attrs.x.value;
   graphic.y = +attrs.y.value;
 };
@@ -92,6 +99,40 @@ export class Cursor extends PIXI.Container {
       this._lines = lines;
       this.addChild(...lines);
     }
+
+    const arrows = [];
+    const arrowsPivot = [
+      [4.5, -0.5],
+      [4.5, 0.5],
+      [3.5, 0.5],
+      [3.5, 0],
+    ];
+    this._shadowArrows = this._shadow
+      .selectAll('.arrow')
+      .data(this._linesRates)
+      .enter()
+      .append('shadow')
+      .attr('class', 'arrow')
+      .attr('id', (d, i) => `locator_arrow_${i + 1}`)
+      .attr('opacity', 0)
+      .attr('x', (d) => d[0] * 12)
+      .attr('y', (d) => d[1] * 12)
+      .each(function (d, i) {
+        const item = new PIXI.Graphics();
+        item.beginFill(0xffffff);
+        item.moveTo(0, 0);
+        item.lineTo(4, 4);
+        item.lineTo(8, 0);
+        item.endFill();
+        item.angle = d[0] && -d[0] * 90;
+        item.angle = d[1] < 0 ? 180 : item.angle;
+        item.pivot.set(...arrowsPivot[i]);
+        item.alpha = 0;
+        this.graphic = item;
+        arrows.push(item);
+      });
+    this._arrows = arrows;
+    this.addChild(...arrows);
 
     const stickSize = 10;
     const points = [
@@ -202,6 +243,14 @@ export class Cursor extends PIXI.Container {
     return this;
   }
 
+  refreshFocus() {
+    if (this._focused) {
+      this._expand();
+    }
+
+    return this;
+  }
+
   press() {
     if (!this._focused) {
       return this;
@@ -274,13 +323,28 @@ export class Cursor extends PIXI.Container {
     this._shadowMain.transition('fade').duration(duration).attr('opacity', 0);
   }
 
+  showResize() {
+    this._shadowArrows.transition('fade').duration(duration).attr('opacity', 1);
+  }
+
+  hideResize() {
+    this._shadowArrows.transition('fade').duration(duration).attr('opacity', 0);
+  }
+
   _expand() {
     const bounds = this._focused.getLocalBounds();
 
+    let scale = 1;
+
+    if (this._focused.getBounds) {
+      const { width } = this._focused.getBounds();
+      scale = width / bounds.width;
+    }
+
     const { width, height, x, y } = bounds;
 
-    const w2 = width * 0.5;
-    const h2 = height * 0.5;
+    let w2 = width * 0.5;
+    let h2 = height * 0.5;
     const pos = this._focused.getGlobalPosition(undefined, true);
 
     if (x >= 0 || width / Math.abs(x) !== 2) {
@@ -290,6 +354,9 @@ export class Cursor extends PIXI.Container {
     if (y >= 0 || height / Math.abs(y) !== 2) {
       pos.y += y + h2;
     }
+
+    w2 *= scale;
+    h2 *= scale;
 
     this._shadowMain
       .transition('move')
@@ -302,6 +369,14 @@ export class Cursor extends PIXI.Container {
     if (this._lines) {
       this._shadowLines
         .transition('line-move')
+        .duration(duration)
+        .attr('x', (d) => d[0] * Math.max(w2 + offset, 12))
+        .attr('y', (d) => d[1] * Math.max(h2 + offset, 12));
+    }
+
+    if (this._arrows) {
+      this._shadowArrows
+        .transition('arrow-move')
         .duration(duration)
         .attr('x', (d) => d[0] * Math.max(w2 + offset, 12))
         .attr('y', (d) => d[1] * Math.max(h2 + offset, 12));
@@ -344,6 +419,14 @@ export class Cursor extends PIXI.Container {
         .attr('y', (d) => d[1] * 12);
     }
 
+    if (this._arrows) {
+      this._shadowArrows
+        .transition('arrow-move')
+        .duration(duration)
+        .attr('x', (d) => d[0] * 12)
+        .attr('y', (d) => d[1] * 12);
+    }
+
     if (this._borders) {
       this._shadowBorders
         .transition('border-move')
@@ -380,15 +463,19 @@ export class Cursor extends PIXI.Container {
     this._firstRendering = this._firstRendering ?? true;
 
     if (this._firstRendering || hasTransition(this._shadowLines)) {
-      this._shadowLines?.each(updatePosition);
+      this._shadowLines?.each(updateGraphic);
+    }
+
+    if (this._firstRendering || hasTransition(this._shadowArrows)) {
+      this._shadowArrows?.each(updateGraphic);
     }
 
     if (this._firstRendering || hasTransition(this._shadowBorders)) {
-      this._shadowBorders?.each(updatePosition);
+      this._shadowBorders?.each(updateGraphic);
     }
 
     if (this._firstRendering || hasTransition(this._shadowDots)) {
-      this._shadowDots?.each(updatePosition);
+      this._shadowDots?.each(updateGraphic);
     }
 
     if (this._firstRendering || hasTransition(this._shadowRect)) {
