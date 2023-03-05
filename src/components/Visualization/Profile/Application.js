@@ -79,6 +79,17 @@ class Application {
     this._instance.stage.addChild(this._group);
 
     this._groupsLegend = new GroupsLegend({ colorScale: colorScaleFn });
+
+    this._groupsLegend.on(
+      `${EventsGroupsLegend.overItemLegend}.inside`,
+      (_, data) => {
+        this._group.hoveredGroup(data.key);
+      },
+    );
+    this._groupsLegend.on(`${EventsGroupsLegend.outItemLegend}.inside`, () => {
+      this._group.hoveredGroup();
+    });
+
     this._instance.stage.addChild(this._groupsLegend);
   }
 

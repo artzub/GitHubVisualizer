@@ -1,4 +1,4 @@
-import { color, hsl as hslColor } from 'd3-color';
+import { color } from 'd3-color';
 import { dispatch } from 'd3-dispatch';
 import { scaleSqrt } from 'd3-scale';
 import { select as d3select } from 'd3-selection';
@@ -7,6 +7,7 @@ import * as PIXI from 'pixi.js-legacy';
 import { cursor } from '@/services/CursorFocusService';
 import {
   colorConvert,
+  discolor,
   colorScale,
   hasTransition,
   roundedRectangularTexture,
@@ -139,9 +140,7 @@ class GroupsLegend extends PIXI.Container {
         return expectedColor;
       }
 
-      const hsl = hslColor(color(expectedColor));
-      hsl.s = 0.05;
-      return hsl;
+      return discolor(expectedColor, 0.05, 1);
     };
 
     this._getBarHeight = (node) => this._scale(+getValue(node));
@@ -292,7 +291,7 @@ class GroupsLegend extends PIXI.Container {
           .attr('nameColor', that._getNameColor)
           .attr('valueColor', that._getValueColor)
           .attr('hovered', 0);
-        that._emit(Events.overItemLegend, event, this, this.__data__);
+        that._emit(Events.outItemLegend, event, this, this.__data__);
       });
 
       const nameNode = new PIXI.Text(getKey(node), {

@@ -19,6 +19,7 @@ import { OutlineFilter } from '@/shared/graphics/filtres';
 import {
   colorConvert,
   colorScale,
+  discolor,
   filledCircleTexture,
   hasTransition,
 } from '@/shared/utils';
@@ -56,6 +57,10 @@ export const Events = {
   dragStart: 'dragStart',
   drag: 'drag',
   dragEnd: 'dragEnd',
+};
+
+const bleach = (color, rate) => {
+  return discolor(color, 0.05, rate);
 };
 
 const removeNodeFactory = (container) => function () {
@@ -131,6 +136,10 @@ const updateNodeGraphic = function () {
   const backgroundAlpha = +attrs.backgroundAlpha?.value ?? 1;
   const opacity = +attrs.opacity?.value ?? 1;
 
+  const hovered = +attrs.hovered?.value ?? 0;
+  const selected = +attrs.selected?.value ?? 0;
+  const colorless = +attrs.colorless?.value ?? 0;
+
   if (graphic && graphic.alpha !== opacity) {
     graphic.alpha = opacity;
     graphic.visible = opacity > 0;
@@ -143,11 +152,20 @@ const updateNodeGraphic = function () {
   const [circleNode, boundsNode, textNode] = graphic.children;
   const [filter] = boundsNode.filters;
 
-  if (circleNode.alpha !== backgroundAlpha) {
-    circleNode.alpha = backgroundAlpha;
+  const bgAlpha = Math.max(backgroundAlpha, selected * 0.8, hovered * 0.9);
+
+  if (circleNode.alpha !== bgAlpha) {
+    circleNode.alpha = bgAlpha;
   }
 
-  let tint = colorConvert(fill);
+  let tint = d3color(fill);
+
+  const rate = Math.max(hovered, selected) * 0.5;
+  if (rate > 0) {
+    tint = tint.brighter(rate);
+  }
+
+  tint = colorConvert(bleach(tint, colorless));
   if (tint !== circleNode.tint) {
     circleNode.tint = tint;
   }
@@ -157,7 +175,7 @@ const updateNodeGraphic = function () {
     boundsNode.height = diameter - 4;
   }
 
-  tint = colorConvert(stroke);
+  tint = colorConvert(bleach(stroke, colorless));
   if (boundsNode.tint !== tint) {
     boundsNode.tint = tint;
     filter.color = tint;
@@ -176,7 +194,7 @@ const updateNodeGraphic = function () {
     hasChanged = true;
   }
 
-  tint = colorConvert(color);
+  tint = colorConvert(bleach(color, colorless));
   if (tint !== textNode.tint) {
     textNode.tint = tint;
   }
@@ -328,6 +346,7 @@ class Repositories extends PIXI.Container {
       .attr('opacity', 1)
       .attr('hovered', 0)
       .attr('selected', 0)
+      .attr('colorless', 0)
       .attr('radius', 0)
       .each(this._addNode);
 
@@ -344,7 +363,10 @@ class Repositories extends PIXI.Container {
       .attr('color', this._textColorOfItem)
       .attr('stroke', this._borderColorOfItem)
       .attr('fill', this._colorOfItem)
-      .attr('backgroundAlpha', this._alphaOfItem);
+      .attr('backgroundAlpha', this._alphaOfItem)
+      .attr('hovered', this._hoveredOfItem)
+      .attr('selected', this._selectedOfItem)
+      .attr('colorless', this._colorlessOfItem);
 
     nodes
       .exit()
@@ -438,7 +460,16 @@ class Repositories extends PIXI.Container {
     }
 
     this._selected = key;
-    this.updateLayout();
+
+    return this;
+  }
+
+  hoveredGroup(group) {
+    if (this.destroyed) {
+      return this;
+    }
+
+    this._hoveredGroup = group;
 
     return this;
   }
@@ -454,6 +485,21 @@ class Repositories extends PIXI.Container {
     this._alphaOfItem = this._alphaOfItem.bind(this);
     this._keyOfItem = this._keyOfItem.bind(this);
     this._textOfItem = this._textOfItem.bind(this);
+    this._selectedOfItem = (node) => +(this._keyOfItem(node) === this._selected);
+    this._colorlessOfItem = (node) => {
+      const group = this._groupGetter(node);
+
+      const isColorless = this._hoveredGroup != null && group !== this._hoveredGroup;
+
+      return +isColorless;
+    };
+    this._hoveredOfItem = (node) => {
+      if (this._hoveredGroup != null) {
+        return (1 - this._colorlessOfItem(node)) * 0.5;
+      }
+
+      return +(this._keyOfItem(node) === this._keyOfHovered());
+    };
 
     this._onPointerOver = this._onPointerOver.bind(this);
     this._onPointerOut = this._onPointerOut.bind(this);
@@ -670,27 +716,11 @@ class Repositories extends PIXI.Container {
   }
 
   _colorOfItem(node) {
-    const color = this._colors(this._groupGetter(node));
-
-    const key = this._keyOfItem(node);
-    const keyHovered = this._keyOfHovered();
-
-    if (this._selected === key || keyHovered) {
-      return d3color(color).brighter(0.5);
-    }
-
-    return color;
+    return this._colors(this._groupGetter(node));
   }
 
   _alphaOfItem(node) {
-    const key = this._keyOfItem(node);
-    const keyHovered = this._keyOfHovered();
-
-    if (key === keyHovered) {
-      return 0.9;
-    }
-
-    return this._selected === key ? 0.8 : this._alpha(this._alphaGetter(node));
+    return this._alpha(this._alphaGetter(node));
   }
 
   _keyOfItem(node) {
@@ -703,10 +733,19 @@ class Repositories extends PIXI.Container {
 
   _updateFocused() {
     this._shadowNodes
-      .transition('focus')
+      ?.transition('focus')
       .duration(200)
-      .attr('fill', this._colorOfItem)
-      .attr('backgroundAlpha', this._alphaOfItem);
+      .attr('hovered', this._hoveredOfItem)
+      .attr('selected', this._selectedOfItem)
+      .attr('colorless', this._colorlessOfItem);
+  }
+
+  _updateColorless() {
+    this._shadowNodes
+      ?.transition('colorless')
+      .duration(200)
+      .attr('hovered', this._hoveredOfItem)
+      .attr('colorless', this._colorlessOfItem);
   }
 
   get _selected() {
@@ -725,6 +764,15 @@ class Repositories extends PIXI.Container {
   set _hovered(value) {
     this.__hovered = value;
     this._updateFocused();
+  }
+
+  get _hoveredGroup() {
+    return this.__hoveredGroup;
+  }
+
+  set _hoveredGroup(value) {
+    this.__hoveredGroup = value ?? null;
+    this._updateColorless();
   }
 
   _restartSimulation() {
