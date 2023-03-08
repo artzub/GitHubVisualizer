@@ -19,6 +19,7 @@ const StateTypes = {
 
 const FocusOverlay = ({ globalListener }) => {
   const roCallback = useRef();
+  const moCallback = useRef();
   const [clickSoundPlay, { stop: clickSoundStop }] = useSound(
     SoundTypes.click,
     { volume: 0.25 },
@@ -30,9 +31,13 @@ const FocusOverlay = ({ globalListener }) => {
 
   const ro = useRef(
     new ResizeObserver((...args) => {
-      if (roCallback.current) {
-        roCallback.current(...args);
-      }
+      roCallback.current?.(...args);
+    }),
+  );
+
+  const mo = useRef(
+    new MutationObserver((...args) => {
+      moCallback.current?.(...args);
     }),
   );
 
@@ -63,6 +68,28 @@ const FocusOverlay = ({ globalListener }) => {
         });
       };
 
+      moCallback.current = (mutations) => {
+        const item = state[StateTypes.hovered];
+
+        if (!item) {
+          return;
+        }
+
+        mutations.forEach((mutation) => {
+          if (!mutation.removedNodes.length) {
+            return;
+          }
+
+          mutation.removedNodes.forEach((node) => {
+            if (node === item || node.contains(item)) {
+              ro.current.unobserve(item);
+              cursor.focusOn(null);
+              state[StateTypes.hovered] = null;
+            }
+          });
+        });
+      };
+
       const onClick = () => {
         clickSoundPlay();
       };
@@ -89,6 +116,7 @@ const FocusOverlay = ({ globalListener }) => {
           item.removeEventListener('pointerdown', onDown, true);
           item.removeEventListener('click', onClick, true);
           ro.current.unobserve(item);
+          mo.current.disconnect();
         }
 
         if (item !== event.target) {
@@ -101,6 +129,7 @@ const FocusOverlay = ({ globalListener }) => {
           ro.current.observe(item);
           item.addEventListener('pointerdown', onDown, true);
           item.addEventListener('click', onClick, true);
+          mo.current.observe(document.body, { childList: true, subtree: true });
         }
 
         state[StateTypes.hovered] = item;
@@ -137,6 +166,7 @@ const FocusOverlay = ({ globalListener }) => {
           hoverSoundStop();
 
           if (item) {
+            mo.current.disconnect();
             ro.current.unobserve(item);
             item.removeEventListener('pointerdown', onDown, true);
             item.removeEventListener('click', onClick, true);
@@ -178,6 +208,10 @@ const FocusOverlay = ({ globalListener }) => {
       document.addEventListener('pointerup', onUp, true);
 
       return () => {
+        mo.current.disconnect();
+        roCallback.current = null;
+        moCallback.current = null;
+
         if (state[StateTypes.hovered]) {
           state[StateTypes.hovered].removeEventListener(
             'pointerdown',
@@ -223,11 +257,7 @@ const FocusOverlay = ({ globalListener }) => {
         onDocumentEnter,
         true,
       );
-      document.documentElement?.addEventListener(
-        'pointerleave',
-        onDocumentLeave,
-        true,
-      );
+      document.documentElement?.addEventListener('pointerleave', onDocumentLeave);
 
       return () => {
         document.documentElement?.removeEventListener(
@@ -238,7 +268,6 @@ const FocusOverlay = ({ globalListener }) => {
         document.documentElement?.removeEventListener(
           'pointerleave',
           onDocumentLeave,
-          true,
         );
       };
     },
