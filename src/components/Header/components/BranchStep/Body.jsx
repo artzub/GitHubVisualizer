@@ -6,7 +6,13 @@ import { FixedSizeList } from 'react-window';
 import debounce from 'lodash.debounce';
 import styled from 'styled-components';
 
-import { Avatar, ListItem as ListItemOrigin, ListItemAvatar, ListSubheader, TextField } from '@mui/material';
+import {
+  Avatar,
+  ListItem as ListItemOrigin,
+  ListItemAvatar,
+  ListSubheader,
+  TextField,
+} from '@mui/material';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 
@@ -18,12 +24,12 @@ import slice from '@/redux/modules/branches';
 import repositoriesSlice from '@/redux/modules/repositories';
 
 import Highlight from '@/shared/components/Highlight';
+import ListItemButton from '@/shared/components/ListItemButton';
 import LoadingOverlay from '@/shared/components/LoadingOverlay';
 import { ScrollBarMixin } from '@/shared/components/ScrollBar';
 import { useUIProperty } from '@/shared/hooks';
 import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
 
-import ListItemButton from '../shared/ListItemButton';
 import Marker from '../shared/Marker';
 
 import Secondary from './Secondary';
@@ -83,14 +89,13 @@ const Body = () => {
   const { isFetching, items } = useSelector(slice.selectors.getState);
   const [bodyOpen, setBodyOpen] = useUIProperty('bodyOpen');
   const [filtered, setFiltered] = useState(items);
-  const { selected: repository } = useSelector(repositoriesSlice.selectors.getState);
+  const { selected: repository } = useSelector(
+    repositoriesSlice.selectors.getState,
+  );
   const { defaultBranch } = repository || {};
 
   const changeSearch = useMemo(
-    () => debounce(
-      (value) => setSearch(value),
-      300,
-    ),
+    () => debounce((value) => setSearch(value), 300),
     [],
   );
 
@@ -142,7 +147,10 @@ const Body = () => {
             primary={(
               <Primary>
                 {isDefault && <Marker>default</Marker>}
-                <Highlight search={search} text={item.name} />
+                <Highlight
+                  search={search}
+                  text={item.name}
+                />
               </Primary>
             )}
             secondary={<Secondary item={item} />}

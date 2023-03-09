@@ -25,12 +25,12 @@ import { UrlPratTypes } from '@/models/UrlPartTypes';
 import slice from '@/redux/modules/repositories';
 
 import Highlight from '@/shared/components/Highlight';
+import ListItemButton from '@/shared/components/ListItemButton';
 import LoadingOverlay from '@/shared/components/LoadingOverlay';
 import { ScrollBarMixin } from '@/shared/components/ScrollBar';
 import { useUIProperty } from '@/shared/hooks';
 import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
 
-import ListItemButton from '../shared/ListItemButton';
 import Marker from '../shared/Marker';
 
 import Secondary from './Secondary';

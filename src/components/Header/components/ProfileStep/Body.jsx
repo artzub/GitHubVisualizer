@@ -4,7 +4,13 @@ import { useDebounce } from 'react-use';
 
 import styled from 'styled-components';
 
-import { Avatar, ListItem as ListItemOrigin, ListItemAvatar, ListSubheader, TextField } from '@mui/material';
+import {
+  Avatar,
+  ListItem as ListItemOrigin,
+  ListItemAvatar,
+  ListSubheader,
+  TextField,
+} from '@mui/material';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 
@@ -13,12 +19,11 @@ import { UrlPratTypes } from '@/models/UrlPartTypes';
 import slice from '@/redux/modules/profiles';
 
 import Highlight from '@/shared/components/Highlight';
+import ListItemButton from '@/shared/components/ListItemButton';
 import LoadingOverlay from '@/shared/components/LoadingOverlay';
 import ScrollBar from '@/shared/components/ScrollBar';
 import { useUIProperty } from '@/shared/hooks';
 import { useRedirectTo } from '@/shared/hooks/useRedirectTo';
-
-import ListItemButton from '../shared/ListItemButton';
 
 const Container = styled.div`
   min-height: 100px;
@@ -57,13 +62,19 @@ const NotData = styled(({ className }) => (
 `;
 
 const SearchHeader = (
-  <ListSubheader component="li" disableSticky>
+  <ListSubheader
+    component="li"
+    disableSticky
+  >
     Search results
   </ListSubheader>
 );
 
 const TopHeader = (
-  <ListSubheader component="li" disableSticky>
+  <ListSubheader
+    component="li"
+    disableSticky
+  >
     Top profiles
   </ListSubheader>
 );
@@ -132,7 +143,12 @@ const Body = () => {
           <Avatar src={profile.avatar} />
         </ListItemAvatar>
         <ListItemText
-          primary={<Highlight search={search} text={profile.login} />}
+          primary={(
+            <Highlight
+              search={search}
+              text={profile.login}
+            />
+          )}
           secondary={profile.type}
         />
       </ListItem>
