@@ -6,6 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import ModalOrigin from '@mui/material/Modal';
 import Paper from '@mui/material/Paper';
 import Slide from '@mui/material/Slide';
+import useEventCallback from '@mui/material/utils/useEventCallback';
 
 import CloseIcon from 'mdi-react/CloseIcon';
 
@@ -60,6 +61,10 @@ const getModalContainer = () => {
 export const Modal = (props) => {
   const { children, isOpen, onClose, onEntered, ...tail } = props;
 
+  const onClickCloseButton = useEventCallback((event) => {
+    onClose?.(event, 'closeButton');
+  });
+
   return (
     <ModalStyled
       closeAfterTransition
@@ -75,7 +80,7 @@ export const Modal = (props) => {
         onEntered={onEntered}
       >
         <Container elevation={3}>
-          <CloseButton onClick={onClose}>
+          <CloseButton onClick={onClickCloseButton}>
             <CloseIcon />
           </CloseButton>
           <Content>{children}</Content>
@@ -86,13 +91,14 @@ export const Modal = (props) => {
 };
 
 Modal.propTypes = {
-  children: PropTypes.node.isRequired,
   isOpen: PropTypes.bool.isRequired,
+  children: PropTypes.node,
   onClose: PropTypes.func,
   onEntered: PropTypes.func,
 };
 
 Modal.defaultProps = {
+  children: null,
   onEntered: null,
   onClose: null,
 };
