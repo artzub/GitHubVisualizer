@@ -3,22 +3,17 @@ import { useDispatch } from 'react-redux';
 
 import emojisSlice from '@/redux/modules/emojis';
 
-import { useStageBranches } from '@/components/StageController/useStageBranches';
-import { useStageCommits } from '@/components/StageController/useStageCommits';
-import { useStageProfiles } from '@/components/StageController/useStageProfiles';
-import { useStageRepositories } from '@/components/StageController/useStageRepositories';
 import { useRouteMatches } from '@/shared/hooks/useRouteMatches';
+
+import { useStageBranches } from './useStageBranches';
+import { useStageCommits } from './useStageCommits';
+import { useStageProfiles } from './useStageProfiles';
+import { useStageRepositories } from './useStageRepositories';
 
 const StageController = () => {
   const dispatch = useDispatch();
 
-  const {
-    service,
-    profile,
-    repository,
-    branch,
-    commits,
-  } = useRouteMatches();
+  const { service, profile, repository, branch, commits } = useRouteMatches();
 
   // fetch list of emojis
   useEffect(
