@@ -20,6 +20,7 @@ import BranchStepBody from './components/BranchStep/Body';
 import BranchStepHeader from './components/BranchStep/Header';
 import CommitsStepBody from './components/CommitsStep/Body';
 import CommitsStepHeaderOrigin from './components/CommitsStep/Header';
+import Menu from './components/Menu';
 import ProfileStepBody from './components/ProfileStep/Body';
 import ProfileStepHeader from './components/ProfileStep/Header';
 import RepoStepBody from './components/RepositoryStep/Body';
@@ -57,7 +58,7 @@ const RepoBranchContainer = styled.div`
   flex-direction: column;
   overflow: hidden;
   flex: 2 1 auto;
-  
+
   & > * {
     width: 100%;
   }
@@ -84,7 +85,9 @@ const Header = () => {
   const branchRef = useRef();
   const commitsRef = useRef();
   const { selected: profile } = useSelector(profilesSlice.selectors.getState);
-  const { selected: repository } = useSelector(repositoriesSlice.selectors.getState);
+  const { selected: repository } = useSelector(
+    repositoriesSlice.selectors.getState,
+  );
   const { selected: branch } = useSelector(branchesSlice.selectors.getState);
 
   const StepBody = StepBodies[step];
@@ -138,7 +141,12 @@ const Header = () => {
   );
 
   return (
-    <PaperStyled elevation={3} ref={ref}>
+    <PaperStyled
+      elevation={3}
+      ref={ref}
+    >
+      <Menu />
+      <Divider />
       <Container>
         <ProfileStepHeader
           onClick={onClick(StageTypes.profile)}
