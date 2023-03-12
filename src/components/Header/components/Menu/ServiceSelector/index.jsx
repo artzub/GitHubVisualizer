@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import styled from 'styled-components';
@@ -64,6 +64,13 @@ const ServiceSelector = () => {
   const { service: currentService } = useRouteMatches();
   const navigate = useNavigate();
   const [value, setValue] = useState(currentService || '');
+
+  useEffect(
+    () => {
+      setValue(currentService || '');
+    },
+    [currentService],
+  );
 
   const services = useMemo(
     () => {

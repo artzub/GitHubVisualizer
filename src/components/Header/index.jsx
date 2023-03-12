@@ -14,7 +14,7 @@ import branchesSlice from '@/redux/modules/branches';
 import profilesSlice from '@/redux/modules/profiles';
 import repositoriesSlice from '@/redux/modules/repositories';
 
-import { useUIProperty } from '@/shared/hooks';
+import { useRouteMatches, useUIProperty } from '@/shared/hooks';
 
 import BranchStepBody from './components/BranchStep/Body';
 import BranchStepHeader from './components/BranchStep/Header';
@@ -77,6 +77,7 @@ const StepBodies = {
 };
 
 const Header = () => {
+  const { service } = useRouteMatches();
   const [step, setStep] = useUIProperty('step');
   const [bodyOpen, setBodyOpen] = useUIProperty('bodyOpen');
   const ref = useRef();
@@ -150,6 +151,7 @@ const Header = () => {
       <Container>
         <ProfileStepHeader
           onClick={onClick(StageTypes.profile)}
+          disabled={!service}
           divider
           ref={profileRef}
         />

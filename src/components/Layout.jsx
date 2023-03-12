@@ -21,11 +21,8 @@ const Layout = () => (
         path="about"
         element={<div />}
       />
-      <Route
-        path="*"
-        element={<StageController />}
-      />
     </Routes>
+    <StageController />
     <Visualization />
     <Progress />
     <Header />
