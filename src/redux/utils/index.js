@@ -10,6 +10,7 @@ export const startFetching = (state) => {
   state.isFetching = true;
   state._requests = (state._requests ?? 0) + 1;
   state.error = '';
+  state.errorStatus = 0;
 };
 
 /**
@@ -29,10 +30,7 @@ export const stopFetching = (state) => {
  */
 export const incrementFetching = (state, { payload: { data, append } }) => {
   const fixed = Array.isArray(data) ? data : [];
-  state.items = append ? [
-    ...state.items,
-    ...fixed,
-  ] : fixed;
+  state.items = append ? [...state.items, ...fixed] : fixed;
 };
 
 /**
@@ -40,7 +38,8 @@ export const incrementFetching = (state, { payload: { data, append } }) => {
  * @param {*} state
  * @param {Error} payload
  */
-export const fail = (state, { payload: { message } }) => {
+export const fail = (state, { payload: { message, status } }) => {
   stopFetching(state);
   state.error = message;
+  state.errorStatus = status;
 };
