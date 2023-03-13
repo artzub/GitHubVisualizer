@@ -8,7 +8,7 @@ import Item from './Item';
 
 const GroupHeader = (props) => (
   <ListSubheader
-    component="li"
+    component="div"
     disableSticky
     {...props}
   />
@@ -36,7 +36,7 @@ const Group = (props) => {
 
 Group.propTypes = {
   items: PropTypes.arrayOf(PropTypes.shape()).isRequired,
-  title: PropTypes.string.isRequired,
+  title: PropTypes.node.isRequired,
 };
 
 export default Group;

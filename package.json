@@ -1,6 +1,6 @@
 {
-  "name": "github-visualizer",
-  "fullname": "GitHub Visualizer",
+  "name": "visgit",
+  "fullname": "Git Visualization",
   "version": "1.0.0",
   "description": "The service for visualizing github users activity and repositories history.",
   "main": "build/main.js",

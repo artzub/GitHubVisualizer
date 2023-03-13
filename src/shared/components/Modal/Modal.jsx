@@ -59,7 +59,7 @@ const getModalContainer = () => {
 };
 
 export const Modal = (props) => {
-  const { children, isOpen, onClose, onEntered, ...tail } = props;
+  const { children, isOpen, isCloseShown, onClose, onEntered, ...tail } = props;
 
   const onClickCloseButton = useEventCallback((event) => {
     onClose?.(event, 'closeButton');
@@ -80,9 +80,11 @@ export const Modal = (props) => {
         onEntered={onEntered}
       >
         <Container elevation={3}>
-          <CloseButton onClick={onClickCloseButton}>
-            <CloseIcon />
-          </CloseButton>
+          {isCloseShown && (
+            <CloseButton onClick={onClickCloseButton}>
+              <CloseIcon />
+            </CloseButton>
+          )}
           <Content>{children}</Content>
         </Container>
       </Slide>
@@ -92,12 +94,14 @@ export const Modal = (props) => {
 
 Modal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
+  isCloseShown: PropTypes.bool,
   children: PropTypes.node,
   onClose: PropTypes.func,
   onEntered: PropTypes.func,
 };
 
 Modal.defaultProps = {
+  isCloseShown: true,
   children: null,
   onEntered: null,
   onClose: null,

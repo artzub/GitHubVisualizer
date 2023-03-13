@@ -1,19 +1,23 @@
 import PropTypes from 'prop-types';
 
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 import ListItemOrigin from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 
 const ListItem = styled(ListItemOrigin)`
-  cursor: pointer;
   transition: background 0.3s;
-  &:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
-  &:active {
-    background: rgba(255, 255, 255, 0.2);
-  }
+
+  ${({ $isInteractive }) => ($isInteractive ?? true)
+    && css`
+      cursor: pointer;
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      &:active {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    `}
 `;
 
 const Item = (props) => {
@@ -22,13 +26,16 @@ const Item = (props) => {
   return (
     <ListItem
       key={key}
+      component="div"
       {...tail}
     >
       {body}
-      <ListItemText
-        primary={primary}
-        secondary={secondary}
-      />
+      {primary || secondary ? (
+        <ListItemText
+          primary={primary}
+          secondary={secondary}
+        />
+      ) : null}
     </ListItem>
   );
 };

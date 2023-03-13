@@ -4,11 +4,29 @@ import { Outlet, Route, Routes } from 'react-router-dom';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 
 import GithubIcon from 'mdi-react/GithubIcon';
+import GitIcon from 'mdi-react/GitIcon';
+import GitlabIcon from 'mdi-react/GitlabIcon';
 
 import NavLink from '@/shared/components/NavLink';
 
-import Auth from './Auth';
-import { Collection } from './Collection';
+import Collection from './Collection';
+import GitHub from './Connection/GitHub';
+
+const sxStyle = {
+  alignItems: 'center',
+  display: 'flex',
+  justifyContent: 'center',
+};
+const getConnectionItem = ({ key, title, icon }) => ({
+  key,
+  title,
+  alignItems: 'center',
+  body: <ListItemAvatar sx={sxStyle}>{icon}</ListItemAvatar>,
+  component: NavLink,
+  to: `./connection/${key}`,
+  tabIndex: 0,
+  primary: title,
+});
 
 const items = [
   {
@@ -18,26 +36,21 @@ const items = [
   {
     title: 'API Connections',
     items: [
-      {
+      getConnectionItem({
         key: 'github',
         title: 'GitHub',
-        alignItems: 'center',
-        body: (
-          <ListItemAvatar
-            sx={{
-              alignItems: 'center',
-              display: 'flex',
-              justifyContent: 'center',
-            }}
-          >
-            <GithubIcon />
-          </ListItemAvatar>
-        ),
-        component: NavLink,
-        to: './auth/github',
-        tabIndex: 0,
-        primary: 'GitHub',
-      },
+        icon: <GithubIcon />,
+      }),
+      getConnectionItem({
+        key: 'gitlab',
+        title: 'GitLab',
+        icon: <GitlabIcon />,
+      }),
+      getConnectionItem({
+        key: 'bitbucket',
+        title: 'Bitbucket',
+        icon: <GitIcon />,
+      }),
     ],
   },
 ];
@@ -63,9 +76,10 @@ const Settings = () => {
         element={<Body />}
       >
         <Route
-          path="auth/*"
-          element={<Auth path="." />}
+          path="connection/github"
+          element={<GitHub path="." />}
         />
+        <Route path="*" />
       </Route>
     </Routes>
   );

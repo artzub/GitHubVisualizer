@@ -15,12 +15,12 @@ const RouteModal = (props) => {
 
   const location = useLocation();
 
-  const { key, state } = location;
-  const { from } = state || {};
+  const { from } = location.state || {};
 
   const navType = useNavigationType();
 
   const navigate = useNavigate();
+  const { pathname } = useResolvedPath(path);
   const parent = useResolvedPath(`${path}/..`);
 
   const onClose = useEventCallback((event, reason) => {
@@ -28,7 +28,7 @@ const RouteModal = (props) => {
       return;
     }
 
-    if (navType !== 'REPLACE' && key !== 'default') {
+    if (navType !== 'REPLACE' && location.key !== 'default') {
       navigate(-1);
       return;
     }
@@ -39,6 +39,7 @@ const RouteModal = (props) => {
   return (
     <Modal
       isOpen
+      isCloseShown={pathname === location.pathname}
       onClose={onClose}
       {...tail}
     />

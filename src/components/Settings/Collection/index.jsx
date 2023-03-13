@@ -4,7 +4,7 @@ import RouteModal from '@/shared/components/RouteModal';
 
 import Group from './Group';
 
-export const Collection = (props) => {
+const Collection = (props) => {
   const { items, ...tail } = props;
 
   return <RouteModal {...tail}>{items.map(Group)}</RouteModal>;
@@ -13,3 +13,5 @@ export const Collection = (props) => {
 Collection.propTypes = {
   items: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
+
+export default Collection;
