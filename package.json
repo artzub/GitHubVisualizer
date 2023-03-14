@@ -1,8 +1,8 @@
 {
   "name": "visgit",
-  "fullname": "Git Visualization",
+  "fullname": "VisGit",
   "version": "1.0.0",
-  "description": "The service for visualizing github users activity and repositories history.",
+  "description": "The service for visualizing git services users activity and repositories history.",
   "main": "build/main.js",
   "private": true,
   "repository": {

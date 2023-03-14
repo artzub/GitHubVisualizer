@@ -603,11 +603,13 @@ module.exports = function (webpackEnv) {
         )
       ),
       new FaviconsWebpackPlugin({
-        logo: paths.appSrc + '/assets/favicon.png',
-        prefix: 'static/icons',
+        logo: paths.appSrc + '/assets/favicon.svg',
+        prefix: 'static/icons/',
         favicons: {
           appName: appPackageJson.fullname,
-          appShortName: appPackageJson.name
+          appShortName: appPackageJson.name,
+          background: "transparent",
+          theme_color: "#000000",
         }
       }),
       // Inlines the webpack runtime script. This script is too small to warrant
