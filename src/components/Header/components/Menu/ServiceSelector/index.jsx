@@ -86,18 +86,23 @@ const ServiceSelector = () => {
   const renderValue = useCallback(
     () => {
       if (!value) {
+        document.title = 'VisGit';
         return placeholder;
       }
 
       const service = services[value];
 
-      return service ? (
+      if (!service) {
+        return value;
+      }
+
+      document.title = `VisGit ${service.title}`;
+
+      return (
         <Item
           {...service}
           asValue
         />
-      ) : (
-        value
       );
     },
     [value],
