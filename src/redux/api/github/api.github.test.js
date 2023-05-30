@@ -15,6 +15,12 @@ describe('Github Rest API', () => {
     expect(Array.isArray(data.data)).toBe(true);
   });
 
+  it('should get profile of the authenticated user', async () => {
+    expect(getProfile).toBeInstanceOf(Function);
+    const data = await getProfile();
+    expect(data).toHaveProperty('data.login', 'artzub');
+  });
+
   it('should get profile of user by login', async () => {
     expect(getProfile).toBeInstanceOf(Function);
     const login = 'artzub';

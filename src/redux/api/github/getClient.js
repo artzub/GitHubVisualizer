@@ -1,6 +1,6 @@
 import { Octokit } from '@octokit/rest';
 
-import { appNameVersion } from '@/shared/utils';
+import { appNameVersion } from '@/shared/utils/appNameVersion';
 
 let instance;
 let lastToken;

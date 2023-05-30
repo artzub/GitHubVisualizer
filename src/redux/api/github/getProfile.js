@@ -6,18 +6,26 @@ import { parseRateLimit } from './utils';
 
 /**
  * Gets profile by owner's login
- * @param {String} login - login of a user
+ * @param {String} [login] - login of a user
  * @return {Promise<{rateLimit: *, data: object}>}
  */
 export const getProfile = (login) => withCancellation(async (signal) => {
   const client = getClient();
 
-  const data = await client.users.getByUsername({
-    username: login,
-    request: {
-      signal,
-    },
-  });
+  const request = {
+    signal,
+  };
+
+  const promise = login
+    ? client.users.getByUsername({
+      username: login,
+      request,
+    })
+    : client.users.getAuthenticated({
+      request,
+    });
+
+  const data = await promise;
 
   return {
     data: data?.data && profile(data?.data),
