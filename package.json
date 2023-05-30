@@ -18,11 +18,11 @@
     "visualizer"
   ],
   "author": "Artem Zubkov <artzub@gmail.com> (https://artzub.com)",
-  "license": "Apache-2.0",
+  "license": "GPL-3.0-or-later",
   "licenses": [
     {
-      "type": "Apache-2.0",
-      "url": "http://www.apache.org/licenses/LICENSE-2.0"
+      "type": "GNU General Public License v3.0 or later",
+      "url": "https://www.gnu.org/licenses/gpl-3.0-standalone.html"
     }
   ],
   "bugs": {
