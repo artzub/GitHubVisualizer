@@ -11,7 +11,7 @@ import useEventCallback from '@mui/material/utils/useEventCallback';
 import Modal from '@/shared/components/Modal';
 
 const RouteModal = (props) => {
-  const { path, ...tail } = props;
+  const { parent, onClose, ...tail } = props;
 
   const location = useLocation();
 
@@ -20,34 +20,42 @@ const RouteModal = (props) => {
   const navType = useNavigationType();
 
   const navigate = useNavigate();
-  const { pathname } = useResolvedPath(path);
-  const parent = useResolvedPath(`${path}/..`);
+  const { pathname } = useResolvedPath('.');
+  const { pathname: parentPathname } = useResolvedPath(parent || './..');
 
-  const onClose = useEventCallback((event, reason) => {
+  const doClose = useEventCallback((event, reason) => {
     if (reason !== 'closeButton') {
       return;
     }
 
-    if (navType !== 'REPLACE' && location.key !== 'default') {
+    if (!(from || navType === 'REPLACE' || location.key === 'default')) {
       navigate(-1);
       return;
     }
 
-    navigate(from || parent.pathname, { replace: true });
+    navigate(from || parentPathname, { replace: true });
+
+    onClose?.(event, reason);
   });
 
   return (
     <Modal
       isOpen
       isCloseShown={pathname === location.pathname}
-      onClose={onClose}
       {...tail}
+      onClose={doClose}
     />
   );
 };
 
 RouteModal.propTypes = {
-  path: PropTypes.string.isRequired,
+  parent: PropTypes.string,
+  onClose: PropTypes.func,
+};
+
+RouteModal.defaultProps = {
+  parent: null,
+  onClose: null,
 };
 
 export default RouteModal;
