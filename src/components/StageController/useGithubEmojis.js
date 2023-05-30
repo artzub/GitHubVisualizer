@@ -21,6 +21,6 @@ export const useGithubEmojis = (service) => {
         dispatch(emojisSlice.actions.cancel());
       };
     },
-    [service, dispatch],
+    [service],
   );
 };

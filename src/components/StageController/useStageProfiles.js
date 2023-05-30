@@ -17,14 +17,7 @@ export const useStageProfiles = (service, profile) => {
         dispatch(profilesSlice.actions.cancel('global'));
       };
     },
-    [dispatch, service],
-  );
-
-  useEffect(
-    () => {
-      dispatch(profilesSlice.actions.clear());
-    },
-    [dispatch, service],
+    [service],
   );
 
   useEffect(
@@ -39,6 +32,6 @@ export const useStageProfiles = (service, profile) => {
         dispatch(profilesSlice.actions.cancel('profile'));
       };
     },
-    [profile, login, dispatch],
+    [profile, login],
   );
 };

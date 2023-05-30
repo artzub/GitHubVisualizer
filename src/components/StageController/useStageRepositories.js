@@ -20,16 +20,18 @@ export const useStageRepositories = (name) => {
   useEffect(
     () => {
       dispatch(repositoriesSlice.actions.clear());
-      dispatch(repositoriesSlice.actions.fetch({
-        owner,
-        amount,
-      }));
+      dispatch(
+        repositoriesSlice.actions.fetch({
+          owner,
+          amount,
+        }),
+      );
 
       return () => {
         dispatch(repositoriesSlice.actions.cancel());
       };
     },
-    [owner, amount, dispatch],
+    [owner, amount],
   );
 
   useSetSelected({

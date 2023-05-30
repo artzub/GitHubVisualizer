@@ -58,10 +58,7 @@ const items = [
 const Body = () => {
   return (
     <Fragment>
-      <Collection
-        items={items}
-        path="."
-      />
+      <Collection items={items} />
 
       <Outlet />
     </Fragment>
@@ -77,7 +74,7 @@ const Settings = () => {
       >
         <Route
           path="connection/github"
-          element={<GitHub path="." />}
+          element={<GitHub parent="../.." />}
         />
         <Route path="*" />
       </Route>

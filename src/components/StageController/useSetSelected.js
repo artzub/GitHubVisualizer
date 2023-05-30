@@ -11,7 +11,14 @@ const defaultCondition = (name, selected) => name === selected;
  * @param {Function} [skipCondition]
  * @param {Function} [preAction]
  */
-export const useSetSelected = ({ name, selected, items, action, skipCondition, preAction }) => {
+export const useSetSelected = ({
+  name,
+  selected,
+  items,
+  action,
+  skipCondition,
+  preAction,
+}) => {
   const dispatch = useDispatch();
 
   const skip = skipCondition || defaultCondition;
@@ -34,6 +41,6 @@ export const useSetSelected = ({ name, selected, items, action, skipCondition, p
 
       dispatch(action(found));
     },
-    [name, selected, items, dispatch, action, preAction, skip],
+    [name, selected, items, action, preAction, skip],
   );
 };

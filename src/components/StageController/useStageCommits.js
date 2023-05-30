@@ -15,7 +15,9 @@ export const useStageCommits = (amount) => {
   const [, setPause] = useUIProperty('pause');
   const [refreshKey] = useUIProperty('refreshKey');
 
-  const { selected: repository } = useSelector(repositoriesSlice.selectors.getState);
+  const { selected: repository } = useSelector(
+    repositoriesSlice.selectors.getState,
+  );
   const { selected: profile } = useSelector(profilesSlice.selectors.getState);
   const { selected } = useSelector(branchesSlice.selectors.getState);
 
@@ -38,21 +40,28 @@ export const useStageCommits = (amount) => {
 
       setStoredValue(fixedAmount);
 
-      dispatch(commitsSlice.actions.fetch({
-        owner,
-        repo,
-        branch,
-        amount: fixedAmount,
-      }));
+      dispatch(
+        commitsSlice.actions.fetch({
+          owner,
+          repo,
+          branch,
+          amount: fixedAmount,
+        }),
+      );
 
       return () => {
         dispatch(commitsSlice.actions.cancel());
       };
     },
     [
-      branch, owner, repo,
-      dispatch, amount, setStoredValue,
-      refreshKey, setStart, setPause,
+      branch,
+      owner,
+      repo,
+      amount,
+      setStoredValue,
+      refreshKey,
+      setStart,
+      setPause,
     ],
   );
 };

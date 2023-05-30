@@ -18,7 +18,9 @@ export const useStageBranches = (name) => {
   const dispatch = useDispatch();
   const redirectTo = useRedirectTo(UrlPratTypes.branch);
 
-  const { selected: repository } = useSelector(repositoriesSlice.selectors.getState);
+  const { selected: repository } = useSelector(
+    repositoriesSlice.selectors.getState,
+  );
   const { selected: profile } = useSelector(profilesSlice.selectors.getState);
   const { selected, items } = useSelector(branchesSlice.selectors.getState);
 
@@ -33,16 +35,18 @@ export const useStageBranches = (name) => {
         return undefined;
       }
 
-      dispatch(branchesSlice.actions.fetch({
-        owner,
-        repo,
-      }));
+      dispatch(
+        branchesSlice.actions.fetch({
+          owner,
+          repo,
+        }),
+      );
 
       return () => {
         dispatch(branchesSlice.actions.cancel());
       };
     },
-    [dispatch, owner, repo],
+    [owner, repo],
   );
 
   useSetSelected({
