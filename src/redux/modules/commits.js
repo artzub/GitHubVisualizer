@@ -10,6 +10,10 @@ import {
   fail,
 } from '@/redux/utils';
 
+import errorsSlice from './errors';
+
+const { actions: { lastError } } = errorsSlice;
+
 const initialState = {
   items: [],
 };
@@ -76,7 +80,7 @@ export default createSlice({
 
           yield put(actions.stopFetching());
         } catch (error) {
-          yield put(actions.fail(error));
+          yield put(lastError(actions.fail(error)));
         } finally {
           if (yield cancelled()) {
             yield put(actions.stopFetching());

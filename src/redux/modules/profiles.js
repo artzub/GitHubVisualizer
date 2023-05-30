@@ -3,9 +3,14 @@ import { call, cancelled, put } from 'redux-saga/effects';
 import { getProfile, searchAccount } from '@/redux/api/github';
 import { createSlice, startFetching, stopFetching, fail } from '@/redux/utils';
 
+import errorsSlice from './errors';
+
+const { actions: { lastError } } = errorsSlice;
+
 const initialState = {
   isFetching: false,
   selected: null,
+  authenticated: null,
   items: [],
   top: [],
   error: null,
@@ -23,6 +28,12 @@ export default createSlice({
     fetchProfileSuccess: (state, { payload }) => {
       stopFetching(state);
       setSelected(state, payload);
+    },
+
+    fetchAuthenticated: startFetching,
+    fetchAuthenticatedSuccess: (state, { payload }) => {
+      stopFetching(state);
+      state.authenticated = payload;
     },
 
     setSelected: (state, { payload }) => {
@@ -51,7 +62,22 @@ export default createSlice({
           const { data } = yield call(getProfile, payload);
           yield put(actions.fetchProfileSuccess(data));
         } catch (error) {
-          yield put(actions.fail(error));
+          yield put(lastError(actions.fail(error)));
+        } finally {
+          if (yield cancelled()) {
+            yield put(actions.stopFetching());
+          }
+        }
+      },
+    },
+
+    [actions.fetchAuthenticated]: {
+      * saga() {
+        try {
+          const { data } = yield call(getProfile);
+          yield put(actions.fetchAuthenticatedSuccess(data));
+        } catch (error) {
+          yield put(lastError(actions.fail(error)));
         } finally {
           if (yield cancelled()) {
             yield put(actions.stopFetching());
@@ -66,7 +92,7 @@ export default createSlice({
           const { data } = yield call(searchAccount, payload);
           yield put(actions.searchSuccess(data));
         } catch (error) {
-          yield put(actions.fail(error));
+          yield put(lastError(actions.fail(error)));
         } finally {
           if (yield cancelled()) {
             yield put(actions.stopFetching());
@@ -81,7 +107,7 @@ export default createSlice({
           const { data } = yield call(searchAccount, 'followers:>1000');
           yield put(actions.fetchTopSuccess(data));
         } catch (error) {
-          yield put(actions.fail(error));
+          yield put(lastError(actions.fail(error)));
         } finally {
           if (yield cancelled()) {
             yield put(actions.stopFetching());

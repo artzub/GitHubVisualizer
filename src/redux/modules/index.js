@@ -3,6 +3,7 @@ import { all } from 'redux-saga/effects';
 import branches from './branches';
 import commits from './commits';
 import emojis from './emojis';
+import errors from './errors';
 import profiles from './profiles';
 import progress from './progress';
 import repositories from './repositories';
@@ -16,6 +17,7 @@ const rootSlices = [
   branches,
   commits,
   emojis,
+  errors,
   profiles,
   ui,
   progress,

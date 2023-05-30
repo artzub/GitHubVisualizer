@@ -1,7 +1,11 @@
-import { call, put } from 'redux-saga/effects';
+import { call, put, cancelled } from 'redux-saga/effects';
 
 import { getEmojis } from '@/redux/api/github/getEmojis';
 import { createSlice, startFetching, stopFetching, fail } from '@/redux/utils';
+
+import errorsSlice from './errors';
+
+const { actions: { lastError } } = errorsSlice;
 
 const initialState = {
   items: {},
@@ -17,6 +21,7 @@ export default createSlice({
       state.items = payload;
     },
 
+    stopFetching,
     fail,
   },
 
@@ -27,7 +32,11 @@ export default createSlice({
           const { data } = yield call(getEmojis);
           yield put(actions.fetchSuccess(data));
         } catch (error) {
-          yield put(actions.fail(error));
+          yield put(lastError(actions.fail(error)));
+        } finally {
+          if (yield cancelled()) {
+            yield put(actions.stopFetching());
+          }
         }
       },
     },
