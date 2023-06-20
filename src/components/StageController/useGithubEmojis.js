@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { Services } from '@/models/Services';
+
 import emojisSlice from '@/redux/modules/emojis';
 
 export const useGithubEmojis = (service) => {
@@ -11,7 +13,7 @@ export const useGithubEmojis = (service) => {
   // fetch list of emojis
   useEffect(
     () => {
-      if (service !== 'github' || Object.values(emojis).length) {
+      if (service !== Services.Github || Object.values(emojis).length) {
         return undefined;
       }
 

@@ -7,6 +7,8 @@ import GithubIcon from 'mdi-react/GithubIcon';
 import GitIcon from 'mdi-react/GitIcon';
 import GitlabIcon from 'mdi-react/GitlabIcon';
 
+import { Services } from '@/models/Services';
+
 import NavLink from '@/shared/components/NavLink';
 
 import Collection from './Collection';
@@ -17,7 +19,7 @@ const sxStyle = {
   display: 'flex',
   justifyContent: 'center',
 };
-const getConnectionItem = ({ key, title, icon }) => ({
+const getConnectionItem = ({ key, title, icon, ...tail }) => ({
   key,
   title,
   alignItems: 'center',
@@ -26,6 +28,7 @@ const getConnectionItem = ({ key, title, icon }) => ({
   to: `./connection/${key}`,
   tabIndex: 0,
   primary: title,
+  ...tail,
 });
 
 const items = [
@@ -37,19 +40,21 @@ const items = [
     title: 'API Connections',
     items: [
       getConnectionItem({
-        key: 'github',
+        key: Services.Github,
         title: 'GitHub',
         icon: <GithubIcon />,
       }),
       getConnectionItem({
-        key: 'gitlab',
+        key: Services.Gitlab,
         title: 'GitLab',
         icon: <GitlabIcon />,
+        disabled: true,
       }),
       getConnectionItem({
-        key: 'bitbucket',
+        key: Services.Bitbucket,
         title: 'Bitbucket',
         icon: <GitIcon />,
+        disabled: true,
       }),
     ],
   },

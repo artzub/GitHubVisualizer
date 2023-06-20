@@ -10,8 +10,6 @@ import { useStateAuthenticated } from './useStateAuthenticated';
 const Authenticated = () => {
   const { service, profile, repository, branch, commits } = useRouteMatches();
 
-  console.log('Authenticated');
-
   useGithubEmojis(service);
   useStageProfiles(service, profile);
   useStageRepositories(repository);

@@ -30,21 +30,25 @@ const GlobalStyle = createGlobalStyle`
     text-rendering: optimizeLegibility;
     font-family: 'JetBrains Mono', monospace;
   }
-  
+
   button:not(#id_fake_for_hack) {
     outline: 0;
   }
-  
+
   .hovered {
     cursor: pointer;
   }
-  
+
   .draggable {
     cursor: grab;
   }
-  
+
   .dragging {
     cursor: grabbing;
+  }
+
+  [disabled] {
+    pointer-events: none;
   }
 
   //body {

@@ -32,13 +32,6 @@ export const useStateAuthenticated = (service) => {
     needRefresh.current += 1;
   }
 
-  console.log(
-    'useStateAuthenticated',
-    prevPathname.current,
-    pathname,
-    needRefresh.current,
-  );
-
   prevPathname.current = pathname;
 
   const redirectToConnection = useEventCallback(() => {
@@ -50,7 +43,6 @@ export const useStateAuthenticated = (service) => {
 
   useEffect(
     () => {
-      console.log('request', service, needRefresh.current);
       isAuthenticated.current = false;
       dispatch(profilesSlice.actions.clear());
       dispatch(profilesSlice.actions.fetchAuthenticated(null, 'authenticated'));

@@ -10,6 +10,8 @@ import GithubIcon from 'mdi-react/GithubIcon';
 import GitIcon from 'mdi-react/GitIcon';
 import GitlabIcon from 'mdi-react/GitlabIcon';
 
+import { Services } from '@/models/Services';
+
 import { useRouteMatches } from '@/shared/hooks/useRouteMatches';
 
 import Item from './Item';
@@ -40,21 +42,21 @@ const Placeholder = styled.div`
 
 const servicesMock = [
   {
-    key: 'github',
+    key: Services.Github,
     title: 'GitHub',
     icon: <GithubIcon />,
   },
   {
-    key: 'gitlab',
+    key: Services.Gitlab,
     title: 'GitLab',
     icon: <GitlabIcon />,
-    // disabled: true,
+    disabled: true,
   },
   {
-    key: 'bitbucket',
+    key: Services.Bitbucket,
     title: 'Bitbucket',
     icon: <GitIcon />,
-    // disabled: true,
+    disabled: true,
   },
 ];
 
